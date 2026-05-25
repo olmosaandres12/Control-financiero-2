@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)https://4fca45db.control-financiero-au9.pages.dev/ajustes -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Olvisión — Ajustes</title>
+  <link rel="stylesheet" href="./Olvisión — Ajustes_files/app.css">
+  <link rel="icon" type="image/png" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <link rel="apple-touch-icon" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <script src="./Olvisión — Ajustes_files/supabase-js@2"></script>
+  <script src="./Olvisión — Ajustes_files/config.js"></script>
+  <script src="./Olvisión — Ajustes_files/cache.js"></script>
+  <script src="./Olvisión — Ajustes_files/utils.js"></script>
+  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <style>
+    /* ── Tabs ── */
+    .ajustes-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .ajustes-tab {
+      flex: 1;
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: white;
+      color: #94a3b8;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: all .2s;
+    }
+    .ajustes-tab.activo {
+      background: #1E3A8A;
+      color: white;
+    }
+
+    /* ── Sección card ── */
+    .seccion-card {
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .seccion-titulo {
+      font-size: 13px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .seccion-count {
+      background: #eff6ff;
+      color: #1E3A8A;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 20px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    /* ── Tags ── */
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      min-height: 28px;
+    }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f1f5f9;
+      border: 1.5px solid #e2e8f0;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: background .15s;
+    }
+    .tag-chip .remove-tag {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 0 0 2px;
+      display: flex;
+      align-items: center;
+      transition: color .15s;
+      font-family: 'Nunito', sans-serif;
+    }
+    .tag-chip .remove-tag:hover { color: #ef4444; }
+    .empty-tags {
+      color: #cbd5e1;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* ── Add row ── */
+    .add-row {
+      display: flex;
+      gap: 8px;
+    }
+    .add-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      outline: none;
+      transition: border-color .2s;
+      background: #f8fafc;
+    }
+    .add-row input:focus {
+      border-color: #1E3A8A;
+      background: white;
+    }
+    .add-row input::placeholder { color: #94a3b8; font-weight: 500; }
+    .btn-add {
+      background: #1E3A8A;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .btn-add:hover { background: #1e40af; }
+    .btn-add:active { transform: scale(.97); }
+
+    /* ── Separador entre secciones de tratamientos ── */
+    .seccion-sep {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 16px 0;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1E3A8A;
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0;
+      transition: all .3s;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(30,58,138,.3);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="./Olvisión — Ajustes_files/logo_app.png" alt="Olvisión"></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
+        <a class="snav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
+    </aside>
+
+    <div class="app-content">
+
+      <!-- TOP NAV -->
+      <nav class="nav">
+        <div class="nav-left">
+          <a class="nav-back" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html">‹</a>
+          <div>
+            <div class="nav-title">🏷️ Ajustes de productos</div>
+            <div class="nav-sub">Marcas · Tratamientos</div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main">
+
+        <!-- TABS -->
+        <div class="ajustes-tabs">
+          <button class="ajustes-tab activo" id="tab-btn-marcas" onclick="switchTab(&#39;marcas&#39;)">🏷️ Marcas</button>
+          <button class="ajustes-tab" id="tab-btn-tratamientos" onclick="switchTab(&#39;tratamientos&#39;)">🔬 Tratamientos</button>
+        </div>
+
+        <!-- ══ PANEL MARCAS ══ -->
+        <div id="panel-marcas">
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">
+              👓 Marcas de Armazón
+              <span class="seccion-count" id="count-armazon">14</span>
+            </div>
+            <div class="tags-wrap" id="tags-armazon">
+            <span class="tag-chip">
+              Lisbon
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,0)">×</button>
+            </span>
+            <span class="tag-chip">
+              Puccini
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,1)">×</button>
+            </span>
+            <span class="tag-chip">
+              Usual
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,2)">×</button>
+            </span>
+            <span class="tag-chip">
+              Karina Rabolini
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,3)">×</button>
+            </span>
+            <span class="tag-chip">
+              Sarkany
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,4)">×</button>
+            </span>
+            <span class="tag-chip">
+              Union Pacific
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,5)">×</button>
+            </span>
+            <span class="tag-chip">
+              Giudicatti
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,6)">×</button>
+            </span>
+            <span class="tag-chip">
+              On-Off
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,7)">×</button>
+            </span>
+            <span class="tag-chip">
+              Nitido
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,8)">×</button>
+            </span>
+            <span class="tag-chip">
+              Lavanette
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,9)">×</button>
+            </span>
+            <span class="tag-chip">
+              Atlantis
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,10)">×</button>
+            </span>
+            <span class="tag-chip">
+              Optic 100
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,11)">×</button>
+            </span>
+            <span class="tag-chip">
+              Skyblack
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,12)">×</button>
+            </span>
+            <span class="tag-chip">
+              Punto Zeta
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,13)">×</button>
+            </span></div>
+            <div class="add-row">
+              <input type="text" id="input-armazon" placeholder="Nueva marca…" maxlength="60" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;marcas_armazon&#39;,&#39;armazon&#39;)">
+              <button class="btn-add" onclick="agregarItem(&#39;marcas_armazon&#39;,&#39;armazon&#39;)">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">
+              👁️ Marcas Lentes de Contacto
+              <span class="seccion-count" id="count-contacto">6</span>
+            </div>
+            <div class="tags-wrap" id="tags-contacto">
+            <span class="tag-chip">
+              Acuvue 2
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,0)">×</button>
+            </span>
+            <span class="tag-chip">
+              Acuvue Oasys
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,1)">×</button>
+            </span>
+            <span class="tag-chip">
+              Acuvue Vita
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,2)">×</button>
+            </span>
+            <span class="tag-chip">
+              Baush y Lomb Ultra
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,3)">×</button>
+            </span>
+            <span class="tag-chip">
+              Softlens 59
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,4)">×</button>
+            </span>
+            <span class="tag-chip">
+              Vanguard
+              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,5)">×</button>
+            </span></div>
+            <div class="add-row">
+              <input type="text" id="input-contacto" placeholder="Nueva marca…" maxlength="60" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;marcas_lentes_contacto&#39;,&#39;contacto&#39;)">
+              <button class="btn-add" onclick="agregarItem(&#39;marcas_lentes_contacto&#39;,&#39;contacto&#39;)">+ Agregar</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ══ PANEL TRATAMIENTOS ══ -->
+        <div id="panel-tratamientos" style="display:none">
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">👓 Monofocal</div>
+            <div class="tags-wrap" id="tags-monofocal">
+            <span class="tag-chip">
+              Orgánico Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,0)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Blanco con AR
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,1)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Blue-Cut
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,2)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Fotocromático
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,3)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Foto. Blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,4)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Fotocromático Espejado
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,5)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Blue HD 1.60 con AR
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,6)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico HD (1.61)
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,7)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico HD (1.67)
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,8)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Polarizado
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,9)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,10)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Blanco con AR
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,11)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Blue-Cut
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,12)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Fotocromático
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,13)">×</button>
+            </span></div>
+            <div class="add-row">
+              <input type="text" id="input-monofocal" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_monofocal&#39;,&#39;monofocal&#39;)">
+              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_monofocal&#39;,&#39;monofocal&#39;)">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">👴 Bifocal</div>
+            <div class="tags-wrap" id="tags-bifocal">
+            <span class="tag-chip">
+              Orgánico Flat Top Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,0)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Flat Top Blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,1)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Flat Top Fotocromático
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,2)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Flat Top Fotocromático Blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,3)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Invisible Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,4)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Invisible Blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,5)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Invisible Fotocromático
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,6)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Invisible Fotocromático Blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,7)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Invisible HD
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,8)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Blanco 1.67
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,9)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Flat Top Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,10)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Flat Top Fotocromático (Bichara)
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,11)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Invisible Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,12)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Invisible Blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,13)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Invisible Fotocromático
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,14)">×</button>
+            </span></div>
+            <div class="add-row">
+              <input type="text" id="input-bifocal" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_bifocal&#39;,&#39;bifocal&#39;)">
+              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_bifocal&#39;,&#39;bifocal&#39;)">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">💻 Ocupacional</div>
+            <div class="tags-wrap" id="tags-ocupacional">
+            <span class="tag-chip">
+              Orgánico Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,0)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Blue-Cut
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,1)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Blue HD
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,2)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico + AR Green
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,3)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico + AR Green +
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,4)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico + AR Blue +
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,5)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,6)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato Blue-Cut
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,7)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato + AR Green
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,8)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato + AR Green +
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,9)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato + AR Blue +
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,10)">×</button>
+            </span></div>
+            <div class="add-row">
+              <input type="text" id="input-ocupacional" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_ocupacional&#39;,&#39;ocupacional&#39;)">
+              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_ocupacional&#39;,&#39;ocupacional&#39;)">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">👑 Progresivo / Multifocal</div>
+            <div class="tags-wrap" id="tags-progresivo">
+            <span class="tag-chip">
+              Orgánico Blanco
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,0)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Blue / Blue-Cut
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,1)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Fotocromático
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,2)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Fotocromático Blue / Blue-Cut
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,3)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico HD 1.61
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,4)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Polarizado
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,5)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Alto Índice 1.74
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,6)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Alto Índice 1.67 Blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,7)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Alto Índice 1.67 Fotocromático
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,8)">×</button>
+            </span>
+            <span class="tag-chip">
+              Policarbonato (línea premium POINT)
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,9)">×</button>
+            </span></div>
+            <div class="add-row">
+              <input type="text" id="input-progresivo" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_progresivo&#39;,&#39;progresivo&#39;)">
+              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_progresivo&#39;,&#39;progresivo&#39;)">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">🕶️ Solares y Teñidos</div>
+            <div class="tags-wrap" id="tags-tenido">
+            <span class="tag-chip">
+              Orgánico Compacto gris
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,0)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Compacto sepia
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,1)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Compacto verde
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,2)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Degradé gris
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,3)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Degradé sepia
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,4)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Degradé verde
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,5)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Espejado red
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,6)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Espejado blue
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,7)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Espejado silver
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,8)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Espejado gold
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,9)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Espejado pink
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,10)">×</button>
+            </span>
+            <span class="tag-chip">
+              Orgánico Anactínico
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,11)">×</button>
+            </span>
+            <span class="tag-chip">
+              Polarizado gris
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,12)">×</button>
+            </span>
+            <span class="tag-chip">
+              Polarizado sepia
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,13)">×</button>
+            </span>
+            <span class="tag-chip">
+              Polarizado verde
+              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,14)">×</button>
+            </span></div>
+            <div class="add-row">
+              <input type="text" id="input-tenido" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_tenido&#39;,&#39;tenido&#39;)">
+              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_tenido&#39;,&#39;tenido&#39;)">+ Agregar</button>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+      <!-- BOTTOM NAV -->
+      <nav class="bottom-nav">
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
+        <a class="bnav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="bnav-icon">⚙️</span><span class="bnav-label">Config.</span></a>
+      </nav>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
+    const { createClient } = supabase;
+    const _sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href = 'index.html'; }
+
+    // ── Estado ────────────────────────────────────────────────
+    const estado = {
+      marcas_armazon:           [],
+      marcas_lentes_contacto:   [],
+      tratamientos_monofocal:   [],
+      tratamientos_bifocal:     [],
+      tratamientos_ocupacional: [],
+      tratamientos_progresivo:  [],
+      tratamientos_tenido:      []
+    };
+
+    const mapaUI = {
+      marcas_armazon:           { tags: 'tags-armazon',     count: 'count-armazon'  },
+      marcas_lentes_contacto:   { tags: 'tags-contacto',    count: 'count-contacto' },
+      tratamientos_monofocal:   { tags: 'tags-monofocal',   count: null },
+      tratamientos_bifocal:     { tags: 'tags-bifocal',     count: null },
+      tratamientos_ocupacional: { tags: 'tags-ocupacional',  count: null },
+      tratamientos_progresivo:  { tags: 'tags-progresivo',  count: null },
+      tratamientos_tenido:      { tags: 'tags-tenido',      count: null }
+    };
+
+    // ── Carga ─────────────────────────────────────────────────
+    async function cargarTodo() {
+      const { data, error } = await _sb
+        .from('configuracion')
+        .select('clave,valor')
+        .in('clave', Object.keys(estado));
+      if (error) { mostrarToast('❌ Error al cargar'); return; }
+      data.forEach(row => {
+        try { estado[row.clave] = JSON.parse(row.valor) || []; }
+        catch { estado[row.clave] = []; }
+        renderTags(row.clave);
+      });
+    }
+
+    // ── Render tags ───────────────────────────────────────────
+    function renderTags(clave) {
+      const ui = mapaUI[clave];
+      if (!ui) return;
+      const container = document.getElementById(ui.tags);
+      const arr = estado[clave];
+      const viewer = isViewer();
+      container.innerHTML = arr.length === 0
+        ? '<span class="empty-tags">Sin opciones todavía</span>'
+        : arr.map((item, i) => `
+            <span class="tag-chip">
+              ${escH(item)}
+              ${viewer ? '' : `<button class="remove-tag" onclick="eliminarItem('${clave}',${i})">×</button>`}
+            </span>`).join('');
+      if (ui.count) document.getElementById(ui.count).textContent = arr.length;
+    }
+
+    // ── Agregar ───────────────────────────────────────────────
+    async function agregarItem(clave, inputSuffix) {
+      if (isViewer()) return;
+      const input = document.getElementById('input-' + inputSuffix);
+      const valor = input.value.trim();
+      if (!valor) return;
+      if (estado[clave].some(v => v.toLowerCase() === valor.toLowerCase())) {
+        mostrarToast('⚠️ Ya existe esa opción');
+        input.value = '';
+        return;
+      }
+      estado[clave].push(valor);
+      renderTags(clave);
+      input.value = '';
+      input.focus();
+      await guardar(clave);
+    }
+
+    // ── Eliminar ──────────────────────────────────────────────
+    async function eliminarItem(clave, index) {
+      if (isViewer()) return;
+      if (!confirm(`¿Eliminar "${estado[clave][index]}"?`)) return;
+      estado[clave].splice(index, 1);
+      renderTags(clave);
+      await guardar(clave);
+    }
+
+    // ── Guardar ───────────────────────────────────────────────
+    async function guardar(clave) {
+      const { error } = await _sb
+        .from('configuracion')
+        .upsert({ clave, valor: JSON.stringify(estado[clave]) }, { onConflict: 'clave' });
+      mostrarToast(error ? '❌ Error al guardar' : '✅ Guardado');
+      if (error) console.error(error);
+    }
+
+    // ── Tabs ──────────────────────────────────────────────────
+    function switchTab(nombre) {
+      document.getElementById('panel-marcas').style.display       = nombre === 'marcas'       ? 'block' : 'none';
+      document.getElementById('panel-tratamientos').style.display = nombre === 'tratamientos' ? 'block' : 'none';
+      document.getElementById('tab-btn-marcas').className       = 'ajustes-tab' + (nombre === 'marcas'       ? ' activo' : '');
+      document.getElementById('tab-btn-tratamientos').className = 'ajustes-tab' + (nombre === 'tratamientos' ? ' activo' : '');
+    }
+
+    // ── Helpers ───────────────────────────────────────────────
+    function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    let toastTimer;
+    function mostrarToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    cargarTodo();
+  </script>
+
+
+</body></html>

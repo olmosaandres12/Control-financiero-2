@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<!-- saved from url=(0066)https://4fca45db.control-financiero-au9.pages.dev/%C3%ADndice.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Olvisión — Acceso</title>
+  <link href="./Olvisión — Acceso_files/css2" rel="stylesheet">
+  <link rel="icon" type="image/png" href="./Olvisión — Acceso_files/logo_app.png">
+  <link rel="apple-touch-icon" href="./Olvisión — Acceso_files/logo_app.png">
+  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #1E3A8A;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 36px 28px 30px;
+      width: min(380px, 100%);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+      text-align: center;
+    }
+
+    .logo-wrap { margin-bottom: 10px; }
+    .logo-wrap img { width: 72px; height: 72px; object-fit: contain; border-radius: 16px; }
+    .logo-fallback {
+      width: 72px; height: 72px; border-radius: 16px;
+      background: #1E3A8A; color: #f9f4ab;
+      font-size: 28px; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    h1 { font-size: 24px; font-weight: 800; color: #1E3A8A; margin-bottom: 2px; }
+    .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+
+    .user-selector { display: flex; gap: 10px; margin-bottom: 22px; }
+    .user-btn {
+      flex: 1; padding: 13px 8px 11px; border: 2px solid #e5e7eb; border-radius: 16px;
+      background: white; cursor: pointer; font-family: 'Nunito', sans-serif;
+      font-size: 13px; font-weight: 700; color: #6b7280;
+      transition: border-color 0.18s, background 0.18s, color 0.18s, transform 0.1s;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .user-btn .icon { font-size: 24px; line-height: 1; }
+    .user-btn .role-label { font-size: 10px; font-weight: 600; opacity: 0.65; letter-spacing: 0.5px; text-transform: uppercase; }
+    .user-btn:hover { border-color: #1E3A8A; color: #1E3A8A; }
+    .user-btn:active { transform: scale(0.95); }
+    .user-btn.active { border-color: #1E3A8A; background: #1E3A8A; color: white; }
+    .user-btn.active .role-label { opacity: 0.7; }
+
+    .hint { font-size: 12px; color: #9ca3af; margin-bottom: 16px; min-height: 16px; transition: color 0.2s; }
+    .hint.ready { color: #1E3A8A; font-weight: 600; }
+
+    .pin-display {
+      display: flex; gap: 14px; justify-content: center; align-items: center;
+      margin-bottom: 14px; min-height: 22px;
+    }
+    .pin-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid #d1d5db; background: transparent;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .pin-dot.filled  { background: #1E3A8A; border-color: #1E3A8A; transform: scale(1.15); }
+    .pin-dot.error   { background: #ef4444; border-color: #ef4444; }
+
+    .error-msg { font-size: 13px; font-weight: 700; color: #ef4444; min-height: 18px; margin-bottom: 14px; }
+
+    .keypad-wrap { transition: opacity 0.2s; }
+    .keypad-wrap.locked { opacity: 0.3; pointer-events: none; }
+
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .key {
+      padding: 17px 10px; border: none; border-radius: 14px; background: #f3f4f6;
+      font-family: 'Nunito', sans-serif; font-size: 21px; font-weight: 700; color: #1f2937;
+      cursor: pointer; transition: background 0.12s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent; user-select: none;
+    }
+    .key:hover  { background: #e9ecf0; }
+    .key:active { transform: scale(0.91); background: #dde1e7; }
+    .key.zero   { grid-column: 2; }
+    .key.del    { background: #fee2e2; color: #ef4444; font-size: 17px; }
+    .key.del:active { background: #fecaca; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX(5px); }
+    }
+    .shake { animation: shake 0.45s ease; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <div class="logo-wrap">
+      <img src="./Olvisión — Acceso_files/logo_app.png" alt="Olvisión" onerror="this.style.display=&#39;none&#39;; this.nextElementSibling.style.display=&#39;inline-flex&#39;">
+      <span class="logo-fallback" style="display:none">OV</span>
+    </div>
+
+    <h1>Olvisión</h1>
+    <p class="subtitle">Control Financiero</p>
+
+    <div class="user-selector">
+      <button class="user-btn" id="btn-admin" onclick="selectUser(&#39;admin&#39;)">
+        <span class="icon">👨‍💼</span>
+        <span>Andres</span>
+        <span class="role-label">Admin</span>
+      </button>
+      <button class="user-btn" id="btn-viewer" onclick="selectUser(&#39;viewer&#39;)">
+        <span class="icon">👁</span>
+        <span>Luis</span>
+        <span class="role-label">Visualizador</span>
+      </button>
+    </div>
+
+    <p class="hint" id="hint">Seleccioná tu usuario para continuar</p>
+
+    <div class="pin-display" id="pin-display">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+
+    <p class="error-msg" id="error-msg"></p>
+
+    <div class="keypad-wrap locked" id="keypad-wrap">
+      <div class="keypad">
+        <button class="key" onclick="pressKey(&#39;1&#39;)">1</button>
+        <button class="key" onclick="pressKey(&#39;2&#39;)">2</button>
+        <button class="key" onclick="pressKey(&#39;3&#39;)">3</button>
+        <button class="key" onclick="pressKey(&#39;4&#39;)">4</button>
+        <button class="key" onclick="pressKey(&#39;5&#39;)">5</button>
+        <button class="key" onclick="pressKey(&#39;6&#39;)">6</button>
+        <button class="key" onclick="pressKey(&#39;7&#39;)">7</button>
+        <button class="key" onclick="pressKey(&#39;8&#39;)">8</button>
+        <button class="key" onclick="pressKey(&#39;9&#39;)">9</button>
+        <div></div>
+        <button class="key zero" onclick="pressKey(&#39;0&#39;)">0</button>
+        <button class="key del" onclick="deleteLast()">⌫</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="./Olvisión — Acceso_files/supabase-js@2"></script>
+  <script src="./Olvisión — Acceso_files/config.js"></script>
+
+  <script>
+    if (sessionStorage.getItem('olvision_auth')) {
+      window.location.replace('dashboard.html');
+    }
+
+    let selectedRole = null, pin = '', locked = false;
+
+    function selectUser(role) {
+      selectedRole = role; pin = ''; locked = false;
+      updateDots(); clearError();
+      document.getElementById('hint').textContent = 'Ingresá tu PIN';
+      document.getElementById('hint').classList.add('ready');
+      document.getElementById('keypad-wrap').classList.remove('locked');
+      document.getElementById('btn-admin').classList.toggle('active', role === 'admin');
+      document.getElementById('btn-viewer').classList.toggle('active', role === 'viewer');
+    }
+
+    function pressKey(digit) {
+      if (!selectedRole || locked) return;
+      if (pin.length >= 4) return;
+      pin += digit; updateDots();
+      if (pin.length === 4) checkPin();
+    }
+
+    function deleteLast() {
+      if (locked) return;
+      if (pin.length === 0) return;
+      pin = pin.slice(0, -1); updateDots(); clearError();
+    }
+
+    function updateDots() {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById('d' + i);
+        dot.classList.toggle('filled', i < pin.length);
+        dot.classList.remove('error');
+      }
+    }
+
+    function clearError() { document.getElementById('error-msg').textContent = ''; }
+
+    function checkPin() {
+      locked = true;
+      const correctPin = selectedRole === 'admin' ? PIN_ADMIN : PIN_VIEWER;
+      if (pin === correctPin) {
+        sessionStorage.setItem('userRole', selectedRole);
+        sessionStorage.setItem('userName', selectedRole === 'admin' ? 'Andres' : 'Luis');
+        sessionStorage.setItem('authenticated', 'true');
+        sessionStorage.setItem('pin_ok', 'true');
+        sessionStorage.setItem('olvision_auth', 'true');
+        window.location.replace('dashboard.html');
+      } else {
+        const display = document.getElementById('pin-display');
+        for (let i = 0; i < 4; i++) document.getElementById('d' + i).classList.add('error');
+        display.classList.add('shake');
+        document.getElementById('error-msg').textContent = 'PIN incorrecto. Intentá de nuevo.';
+        setTimeout(() => {
+          display.classList.remove('shake');
+          pin = ''; locked = false; updateDots();
+        }, 800);
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+      if (e.key === 'Backspace') deleteLast();
+    });
+  </script>
+
+
+</body></html>

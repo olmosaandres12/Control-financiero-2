@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)https://4fca45db.control-financiero-au9.pages.dev/sueldos -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Olvisión — Sueldos</title>
+  <link rel="stylesheet" href="./Olvisión — Sueldos_files/app.css">
+  <link rel="icon" type="image/png" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <link rel="apple-touch-icon" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <script src="./Olvisión — Sueldos_files/supabase-js@2"></script>
+  <script src="./Olvisión — Sueldos_files/config.js"></script>
+  <script src="./Olvisión — Sueldos_files/cache.js"></script>
+  <script src="./Olvisión — Sueldos_files/utils.js"></script>
+  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <style>
+    .periodo-selector, .anio-selector { display: flex; align-items: center; justify-content: space-between; background: white; border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .periodo-btn, .anio-btn, .com-mes-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #1E3A8A; padding: 4px 8px; }
+    .periodo-nombre, .anio-nombre, .com-mes-nombre { font-size: 17px; font-weight: 800; color: #1e293b; }
+    .resumen { background: #1E3A8A; border-radius: 20px; padding: 20px; margin-bottom: 20px; color: white; }
+    .resumen-titulo { font-size: 12px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .resumen-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .resumen-item { text-align: center; }
+    .resumen-item .valor { font-size: 18px; font-weight: 900; }
+    .resumen-item .etiqueta { font-size: 11px; color: #93c5fd; margin-top: 2px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 9px 4px; border-radius: 12px; border: none; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; background: white; color: #94a3b8; }
+    .tab.activo { background: #1E3A8A; color: white; }
+    .empleada-section { margin-bottom: 28px; }
+    .empleada-section-header { display: flex; align-items: center; justify-content: space-between; background: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .empleada-section-nombre { font-size: 19px; font-weight: 900; color: #1e293b; }
+    .btn-config-sueldo { background: #f1f5f9; border: none; border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; font-family: 'Nunito', sans-serif; }
+    .quin-wrap { margin-bottom: 10px; }
+    .quin-collapsed { background: white; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #e2e8f0; user-select: none; }
+    .quin-collapsed.pagado { border-left-color: #10b981; }
+    .quin-collapsed.parcial { border-left-color: #f59e0b; }
+    .quin-collapsed.pendiente { border-left-color: #ef4444; }
+    .quin-collapsed.sin-crear { border-left-color: #e2e8f0; border-style: dashed; }
+    .quin-collapse-titulo { font-size: 14px; font-weight: 800; color: #1e293b; }
+    .quin-collapse-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .quin-collapse-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .quin-arrow { font-size: 20px; color: #94a3b8; transition: transform 0.2s; display: inline-block; }
+    .quin-arrow.abierto { transform: rotate(90deg); }
+    .quin-body { display: none; }
+    .quin-body.abierto { display: block; }
+    .quincena-detail { background: white; border-radius: 0 0 14px 14px; padding: 16px; border-top: 1px solid #f1f5f9; box-shadow: 0 4px 8px rgba(0,0,0,0.06); margin-top: -4px; }
+    .quincena-detail.borde-verde { border-left: 4px solid #10b981; border-bottom: 4px solid #10b981; border-right: 4px solid #10b981; }
+    .quincena-detail.borde-amarillo { border-left: 4px solid #f59e0b; border-bottom: 4px solid #f59e0b; border-right: 4px solid #f59e0b; }
+    .quincena-detail.borde-rojo { border-left: 4px solid #ef4444; border-bottom: 4px solid #ef4444; border-right: 4px solid #ef4444; }
+    .tres-valores { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .valor-box { background: #f8fafc; border-radius: 12px; padding: 10px; text-align: center; }
+    .valor-box.pagado-box { background: #f0fdf4; }
+    .valor-box.saldo-box { background: #fef2f2; }
+    .valor-box .vb-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .valor-box .vb-monto { font-size: 15px; font-weight: 900; color: #1e293b; margin-top: 3px; }
+    .valor-box.pagado-box .vb-monto { color: #10b981; }
+    .valor-box.saldo-box .vb-monto { color: #ef4444; }
+    .progreso-wrap { margin-bottom: 12px; }
+    .progreso-label { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 6px; }
+    .progreso-bar { background: #f1f5f9; border-radius: 20px; height: 10px; overflow: hidden; }
+    .progreso-fill { height: 100%; border-radius: 20px; transition: width 0.4s; }
+    .progreso-fill.completo { background: #10b981; }
+    .progreso-fill.parcial { background: #f59e0b; }
+    .historial { margin-bottom: 12px; }
+    .historial-titulo { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .pago-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 4px; }
+    .pago-fecha { font-size: 12px; color: #64748b; font-weight: 600; }
+    .pago-forma { font-size: 11px; color: #94a3b8; }
+    .pago-monto { font-size: 15px; font-weight: 800; color: #10b981; }
+    .pago-del { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 14px; padding: 2px 4px; }
+    .btn-pagar-parcial { background: #f9f4ab; color: #1E3A8A; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; width: 100%; }
+    .btn-ver-comprobante { background: #dbeafe; border: none; border-radius: 8px; padding: 3px 8px; font-size: 14px; cursor: pointer; flex-shrink: 0; line-height: 1; }
+    .campo-comprobante { margin-bottom: 14px; }
+    .campo-comprobante label { display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px; }
+    .campo-comprobante input[type="file"] { display: block; width: 100%; font-size: 13px; color: #64748b; font-family: 'Nunito', sans-serif; cursor: pointer; padding: 4px 0; }
+    .comp-preview-img { width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px; margin: 12px 0; display: block; }
+    .comp-descarga { display: block; text-align: center; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: #1E3A8A; text-decoration: none; }
+    .com-total-card { background: #1E3A8A; border-radius: 20px; padding: 20px; margin-bottom: 20px; color: white; }
+    .com-total-titulo { font-size: 12px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .com-total-monto { font-size: 32px; font-weight: 900; margin-bottom: 14px; }
+    .com-prod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .com-prod-item { background: rgba(255,255,255,0.12); border-radius: 10px; padding: 8px 10px; }
+    .com-prod-nombre { font-size: 10px; color: #93c5fd; font-weight: 700; text-transform: uppercase; }
+    .com-prod-monto { font-size: 14px; font-weight: 900; color: white; }
+    .com-vendor-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .com-vendor-card.pagada { border-left: 4px solid #10b981; }
+    .com-vendor-card.pendiente-com { border-left: 4px solid #ef4444; }
+    .com-vendor-card.sin-com { border-left: 4px solid #e2e8f0; }
+    .com-vendor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .com-vendor-nombre { font-size: 17px; font-weight: 900; color: #1e293b; }
+    .pct-badge { background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+    .pct-badge.cero { background: #f1f5f9; color: #94a3b8; }
+    .btn-com-config { background: none; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.7; }
+    .com-vendor-ventas { font-size: 13px; color: #64748b; margin-bottom: 6px; }
+    .com-vendor-monto-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .com-vendor-monto-val { font-size: 26px; font-weight: 900; color: #1E3A8A; margin-bottom: 14px; }
+    .com-pagado-info { background: #f0fdf4; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #065f46; font-weight: 700; line-height: 1.6; }
+    .com-sin-label { font-size: 13px; color: #94a3b8; font-style: italic; }
+    .hist-resumen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .hist-res-card { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-align: center; }
+    .hist-res-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .hist-res-val { font-size: 16px; font-weight: 900; color: #1e293b; }
+    .hist-res-val.verde { color: #10b981; }
+    .hist-res-val.rojo { color: #ef4444; }
+    .hist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hist-mes-card { background: white; border-radius: 14px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; border-top: 3px solid #e2e8f0; transition: transform 0.1s; }
+    .hist-mes-card:active { transform: scale(0.97); }
+    .hist-mes-card.verde { border-top-color: #10b981; }
+    .hist-mes-card.amarillo { border-top-color: #f59e0b; }
+    .hist-mes-card.rojo { border-top-color: #ef4444; }
+    .hist-mes-card.activo-hist { outline: 2px solid #1E3A8A; }
+    .hist-mes-nombre { font-size: 14px; font-weight: 900; color: #1e293b; margin-bottom: 8px; }
+    .hist-fila { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #475569; margin-bottom: 3px; }
+    .hist-fila-label { min-width: 22px; font-size: 13px; }
+    .hist-divider { height: 1px; background: #f1f5f9; margin: 6px 0; }
+    .hist-loading { text-align: center; color: #94a3b8; padding: 40px 20px; font-size: 14px; }
+    .emp-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .emp-card.inactivo { opacity: 0.55; }
+    .emp-nombre { font-size: 17px; font-weight: 900; color: #1e293b; }
+    .emp-detalle { font-size: 12px; color: #64748b; margin-top: 3px; }
+    .emp-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .emp-badge { padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .emp-badge.verde { background: #d1fae5; color: #065f46; }
+    .emp-badge.gris { background: #f1f5f9; color: #94a3b8; }
+    .emp-badge.azul { background: #dbeafe; color: #1e40af; }
+    .emp-badge.celeste { background: #f0fdf4; color: #065f46; }
+    .emp-acciones { display: flex; gap: 6px; flex-shrink: 0; margin-top: 2px; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
+    .overlay.visible { display: flex; }
+    .modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }
+    .modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 6px; text-align: center; }
+    .modal-sub { font-size: 14px; color: #64748b; text-align: center; margin-bottom: 20px; }
+    .saldo-display { background: #fef2f2; border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; text-align: center; }
+    .saldo-display .label { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+    .saldo-display .monto { font-size: 28px; font-weight: 900; color: #ef4444; margin-top: 4px; }
+    .aviso-gastos { background: #f0fdf4; border: 2px solid #10b981; border-radius: 12px; padding: 10px 14px; margin: 12px 0; font-size: 13px; color: #065f46; font-weight: 700; }
+    .overflow-preview { border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; font-size: 13px; font-weight: 700; line-height: 1.8; }
+    .overflow-preview.excede  { background: #fffbeb; border: 2px solid #f9f4ab; color: #92400e; }
+    .overflow-preview.exacto  { background: #f0fdf4; border: 2px solid #10b981; color: #065f46; }
+    .overflow-preview.parcial { background: #f8fafc; border: 2px solid #e2e8f0; color: #475569; }
+    .empty { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }
+    .loading-comisiones { text-align: center; padding: 30px; color: #94a3b8; font-size: 14px; }
+
+    /* ── MODAL WHATSAPP ── */
+    .wa-box {
+      background: #f0fdf4; border: 2px solid #10b981; border-radius: 16px;
+      padding: 18px; margin-bottom: 16px; font-size: 13px; font-weight: 600;
+      color: #1e293b; line-height: 1.9; white-space: pre;
+      font-family: 'Courier New', monospace; word-break: break-word;
+      overflow-x: auto;
+    }
+    .btn-copiar-wa {
+      background: #25D366; color: white; border: none; border-radius: 14px;
+      padding: 14px; font-size: 15px; font-weight: 800; cursor: pointer;
+      font-family: 'Nunito', sans-serif; width: 100%; margin-bottom: 10px;
+      letter-spacing: 0.2px; display: flex; align-items: center;
+      justify-content: center; gap: 8px; transition: opacity .15s;
+    }
+    .btn-copiar-wa:active { opacity: 0.85; }
+    .wa-copiado { text-align: center; font-size: 13px; color: #10b981; font-weight: 800; margin-bottom: 10px; display: none; }
+
+    @media (min-width: 768px) {
+      .overlay { align-items: center; }
+      .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
+      .hist-grid { grid-template-columns: repeat(3, 1fr); }
+      .hist-resumen { grid-template-columns: repeat(4, 1fr); }
+      .com-prod-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+<link rel="stylesheet" href="./Olvisión — Sueldos_files/estetica.css"></head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="./Olvisión — Sueldos_files/logo_app.png" alt="Olvisión"></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
+    </aside>
+
+    <div class="app-content">
+      <nav class="nav">
+        <div class="nav-left">
+          <a class="nav-back" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html">‹</a>
+          <div>
+            <div class="nav-title">👥 Sueldos</div>
+            <div class="nav-sub" id="nav-sub">Abril 2026</div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main">
+        <div class="tabs">
+          <button class="tab activo" id="tab-sueldos" onclick="cambiarTab(&#39;sueldos&#39;)">💰 Sueldos</button>
+          <button class="tab" id="tab-comisiones" onclick="cambiarTab(&#39;comisiones&#39;)">📊 Comisiones</button>
+          <button class="tab" id="tab-historico" onclick="cambiarTab(&#39;historico&#39;)">📅 Histórico</button>
+          <button class="tab" id="tab-personal" onclick="cambiarTab(&#39;personal&#39;)">👤 Personal</button>
+        </div>
+
+        <div id="panel-sueldos">
+          <div class="periodo-selector">
+            <button class="periodo-btn" onclick="cambiarMes(-1)">‹</button>
+            <span class="periodo-nombre" id="periodo-nombre">Abril 2026</span>
+            <button class="periodo-btn" onclick="cambiarMes(1)">›</button>
+          </div>
+          <div class="resumen">
+            <div class="resumen-titulo">👥 Resumen del mes</div>
+            <div class="resumen-grid">
+              <div class="resumen-item"><div class="valor" id="res-total">$1.150.000</div><div class="etiqueta">Total</div></div>
+              <div class="resumen-item"><div class="valor" id="res-pagado">$1.035.000</div><div class="etiqueta">Pagado</div></div>
+              <div class="resumen-item"><div class="valor" id="res-saldo">$115.000</div><div class="etiqueta">Pendiente</div></div>
+            </div>
+          </div>
+          <div id="section-empleados"><div class="empleada-section">
+        <div class="empleada-section-header">
+          <div class="empleada-section-nombre">👤 Sandra</div>
+          <button class="btn-config-sueldo" onclick="abrirConfig(&#39;Sandra&#39;)">⚙️ Configurar</button>
+        </div><div class="quin-wrap">
+          <div class="quin-collapsed pagado" onclick="toggleQuin(&#39;sandra-q1&#39;)">
+            <div><div class="quin-collapse-titulo">Quincena 1ra — 1 al 15</div><div class="quin-collapse-sub">Abril 2026 · $350.000</div></div>
+            <div class="quin-collapse-right">
+              <span style="font-size:12px;font-weight:800;color:#10b981">✅ Pagado</span>
+              <button onclick="event.stopPropagation();abrirEditarQuincena(&#39;0beab4f1-0f54-4afc-8728-0ecb435947da&#39;,&#39;Sandra&#39;,1,350000,350000)" style="background:#f1f5f9;border:none;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;font-family:&#39;Nunito&#39;,sans-serif;flex-shrink:0">✏️</button>
+              <span class="quin-arrow" id="qa-sandra-q1">›</span>
+            </div>
+          </div>
+          <div class="quin-body" id="qb-sandra-q1">
+            <div class="quincena-detail borde-verde">
+              <div class="tres-valores">
+                <div class="valor-box"><div class="vb-label">Total</div><div class="vb-monto">$350.000</div></div>
+                <div class="valor-box pagado-box"><div class="vb-label">Pagado</div><div class="vb-monto">$350.000</div></div>
+                <div class="valor-box saldo-box"><div class="vb-label">Saldo</div><div class="vb-monto">✅</div></div>
+              </div>
+              <div class="progreso-wrap">
+                <div class="progreso-label"><span>100% pagado</span><span>$350.000 / $350.000</span></div>
+                <div class="progreso-bar"><div class="progreso-fill completo" style="width:100%"></div></div>
+              </div>
+              <div class="historial"><div class="historial-titulo">Historial de pagos</div><div class="pago-item">
+              <div><div class="pago-fecha">25/04/2026</div><div class="pago-forma">Transferencia</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$200.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;9fc3f8b9-b69d-45bf-986e-0aa1608d2a8b&#39;,&#39;0beab4f1-0f54-4afc-8728-0ecb435947da&#39;)">🗑️</button>
+              </div>
+            </div><div class="pago-item">
+              <div><div class="pago-fecha">05/05/2026</div><div class="pago-forma">Efectivo</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$150.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;f5bb4b3c-79d1-45f6-91ff-69f85fc01ebe&#39;,&#39;0beab4f1-0f54-4afc-8728-0ecb435947da&#39;)">🗑️</button>
+              </div>
+            </div></div>
+              
+            </div>
+          </div>
+        </div><div class="quin-wrap">
+          <div class="quin-collapsed parcial" onclick="toggleQuin(&#39;sandra-q2&#39;)">
+            <div><div class="quin-collapse-titulo">Quincena 2da — 16 al fin</div><div class="quin-collapse-sub">Abril 2026 · $350.000</div></div>
+            <div class="quin-collapse-right">
+              <span style="font-size:12px;font-weight:800;color:#f59e0b">🟡 $50.000 pendiente</span>
+              <button onclick="event.stopPropagation();abrirEditarQuincena(&#39;9a335260-8fbd-4e9f-ac90-577f595699b4&#39;,&#39;Sandra&#39;,2,350000,300000)" style="background:#f1f5f9;border:none;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;font-family:&#39;Nunito&#39;,sans-serif;flex-shrink:0">✏️</button>
+              <span class="quin-arrow" id="qa-sandra-q2">›</span>
+            </div>
+          </div>
+          <div class="quin-body" id="qb-sandra-q2">
+            <div class="quincena-detail borde-amarillo">
+              <div class="tres-valores">
+                <div class="valor-box"><div class="vb-label">Total</div><div class="vb-monto">$350.000</div></div>
+                <div class="valor-box pagado-box"><div class="vb-label">Pagado</div><div class="vb-monto">$300.000</div></div>
+                <div class="valor-box saldo-box"><div class="vb-label">Saldo</div><div class="vb-monto">$50.000</div></div>
+              </div>
+              <div class="progreso-wrap">
+                <div class="progreso-label"><span>86% pagado</span><span>$300.000 / $350.000</span></div>
+                <div class="progreso-bar"><div class="progreso-fill parcial" style="width:86%"></div></div>
+              </div>
+              <div class="historial"><div class="historial-titulo">Historial de pagos</div><div class="pago-item">
+              <div><div class="pago-fecha">05/05/2026</div><div class="pago-forma">Efectivo · A cuenta</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$50.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;fae6ce1b-2594-489a-ba05-113750de245d&#39;,&#39;9a335260-8fbd-4e9f-ac90-577f595699b4&#39;)">🗑️</button>
+              </div>
+            </div><div class="pago-item">
+              <div><div class="pago-fecha">09/05/2026</div><div class="pago-forma">Efectivo</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$150.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;ad3ecf95-1b73-4b45-aad9-1525e99f6897&#39;,&#39;9a335260-8fbd-4e9f-ac90-577f595699b4&#39;)">🗑️</button>
+              </div>
+            </div><div class="pago-item">
+              <div><div class="pago-fecha">18/05/2026</div><div class="pago-forma">Transferencia</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$100.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;d681ad2b-8726-4d78-b990-7a853f0f7f12&#39;,&#39;9a335260-8fbd-4e9f-ac90-577f595699b4&#39;)">🗑️</button>
+              </div>
+            </div></div>
+              <button class="btn-pagar-parcial" onclick="event.stopPropagation();abrirModalPago(&#39;9a335260-8fbd-4e9f-ac90-577f595699b4&#39;,&#39;Sandra&#39;,2,&#39;2026-04&#39;,50000)">💰 Registrar pago</button>
+            </div>
+          </div>
+        </div></div><div class="empleada-section">
+        <div class="empleada-section-header">
+          <div class="empleada-section-nombre">👤 Valentina</div>
+          <button class="btn-config-sueldo" onclick="abrirConfig(&#39;Valentina&#39;)">⚙️ Configurar</button>
+        </div><div class="quin-wrap">
+          <div class="quin-collapsed pagado" onclick="toggleQuin(&#39;valentina-q1&#39;)">
+            <div><div class="quin-collapse-titulo">Quincena 1ra — 1 al 15</div><div class="quin-collapse-sub">Abril 2026 · $225.000</div></div>
+            <div class="quin-collapse-right">
+              <span style="font-size:12px;font-weight:800;color:#10b981">✅ Pagado</span>
+              <button onclick="event.stopPropagation();abrirEditarQuincena(&#39;243963b4-3537-487b-b4c2-92bfa55752ae&#39;,&#39;Valentina&#39;,1,225000,225000)" style="background:#f1f5f9;border:none;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;font-family:&#39;Nunito&#39;,sans-serif;flex-shrink:0">✏️</button>
+              <span class="quin-arrow" id="qa-valentina-q1">›</span>
+            </div>
+          </div>
+          <div class="quin-body" id="qb-valentina-q1">
+            <div class="quincena-detail borde-verde">
+              <div class="tres-valores">
+                <div class="valor-box"><div class="vb-label">Total</div><div class="vb-monto">$225.000</div></div>
+                <div class="valor-box pagado-box"><div class="vb-label">Pagado</div><div class="vb-monto">$225.000</div></div>
+                <div class="valor-box saldo-box"><div class="vb-label">Saldo</div><div class="vb-monto">✅</div></div>
+              </div>
+              <div class="progreso-wrap">
+                <div class="progreso-label"><span>100% pagado</span><span>$225.000 / $225.000</span></div>
+                <div class="progreso-bar"><div class="progreso-fill completo" style="width:100%"></div></div>
+              </div>
+              <div class="historial"><div class="historial-titulo">Historial de pagos</div><div class="pago-item">
+              <div><div class="pago-fecha">25/04/2026</div><div class="pago-forma">Transferencia</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$125.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;7a8f35bb-2379-4eb3-befd-b169ad135243&#39;,&#39;243963b4-3537-487b-b4c2-92bfa55752ae&#39;)">🗑️</button>
+              </div>
+            </div><div class="pago-item">
+              <div><div class="pago-fecha">02/05/2026</div><div class="pago-forma">Transferencia</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$100.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;9cb19446-ac9e-454e-a9df-ec29b3cf3771&#39;,&#39;243963b4-3537-487b-b4c2-92bfa55752ae&#39;)">🗑️</button>
+              </div>
+            </div></div>
+              
+            </div>
+          </div>
+        </div><div class="quin-wrap">
+          <div class="quin-collapsed parcial" onclick="toggleQuin(&#39;valentina-q2&#39;)">
+            <div><div class="quin-collapse-titulo">Quincena 2da — 16 al fin</div><div class="quin-collapse-sub">Abril 2026 · $225.000</div></div>
+            <div class="quin-collapse-right">
+              <span style="font-size:12px;font-weight:800;color:#f59e0b">🟡 $65.000 pendiente</span>
+              <button onclick="event.stopPropagation();abrirEditarQuincena(&#39;1a617a39-05e1-4fd5-8c97-6694b9e2c40b&#39;,&#39;Valentina&#39;,2,225000,160000)" style="background:#f1f5f9;border:none;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;font-family:&#39;Nunito&#39;,sans-serif;flex-shrink:0">✏️</button>
+              <span class="quin-arrow" id="qa-valentina-q2">›</span>
+            </div>
+          </div>
+          <div class="quin-body" id="qb-valentina-q2">
+            <div class="quincena-detail borde-amarillo">
+              <div class="tres-valores">
+                <div class="valor-box"><div class="vb-label">Total</div><div class="vb-monto">$225.000</div></div>
+                <div class="valor-box pagado-box"><div class="vb-label">Pagado</div><div class="vb-monto">$160.000</div></div>
+                <div class="valor-box saldo-box"><div class="vb-label">Saldo</div><div class="vb-monto">$65.000</div></div>
+              </div>
+              <div class="progreso-wrap">
+                <div class="progreso-label"><span>71% pagado</span><span>$160.000 / $225.000</span></div>
+                <div class="progreso-bar"><div class="progreso-fill parcial" style="width:71%"></div></div>
+              </div>
+              <div class="historial"><div class="historial-titulo">Historial de pagos</div><div class="pago-item">
+              <div><div class="pago-fecha">09/05/2026</div><div class="pago-forma">Efectivo</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$100.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;f3ab7705-8695-43f2-9923-167f9cd3015a&#39;,&#39;1a617a39-05e1-4fd5-8c97-6694b9e2c40b&#39;)">🗑️</button>
+              </div>
+            </div><div class="pago-item">
+              <div><div class="pago-fecha">19/05/2026</div><div class="pago-forma">Transferencia</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+$60.000</div>
+                
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago(&#39;09955793-e647-47dd-a5ea-67c7269eba08&#39;,&#39;1a617a39-05e1-4fd5-8c97-6694b9e2c40b&#39;)">🗑️</button>
+              </div>
+            </div></div>
+              <button class="btn-pagar-parcial" onclick="event.stopPropagation();abrirModalPago(&#39;1a617a39-05e1-4fd5-8c97-6694b9e2c40b&#39;,&#39;Valentina&#39;,2,&#39;2026-04&#39;,65000)">💰 Registrar pago</button>
+            </div>
+          </div>
+        </div></div></div>
+        </div>
+
+        <div id="panel-comisiones" style="display:none">
+          <div class="periodo-selector">
+            <button class="com-mes-btn" onclick="cambiarMesCom(-1)">‹</button>
+            <span class="com-mes-nombre" id="com-mes-nombre">Abril 2026</span>
+            <button class="com-mes-btn" onclick="cambiarMesCom(1)">›</button>
+          </div>
+          <div id="contenido-comisiones"><div class="loading-comisiones">Seleccioná un mes</div></div>
+        </div>
+
+        <div id="panel-historico" style="display:none">
+          <div class="anio-selector">
+            <button class="anio-btn" onclick="cambiarAnio(-1)">‹</button>
+            <span class="anio-nombre" id="anio-nombre">2026</span>
+            <button class="anio-btn" onclick="cambiarAnio(1)">›</button>
+          </div>
+          <div class="hist-resumen">
+            <div class="hist-res-card"><div class="hist-res-label">Sueldos pagados</div><div class="hist-res-val verde" id="hist-pagado">$0</div></div>
+            <div class="hist-res-card"><div class="hist-res-label">Pendiente</div><div class="hist-res-val rojo" id="hist-pendiente">$0</div></div>
+            <div class="hist-res-card"><div class="hist-res-label">Com. pagadas</div><div class="hist-res-val verde" id="hist-com-pagado">$0</div></div>
+            <div class="hist-res-card"><div class="hist-res-label">Meses con deuda</div><div class="hist-res-val rojo" id="hist-meses-deuda">—</div></div>
+          </div>
+          <div class="section-title" style="margin-bottom:12px">📅 Estado por mes · Tocá para ir al mes</div>
+          <div class="hist-grid" id="hist-grid"><div class="hist-loading">Cargando...</div></div>
+        </div>
+
+        <div id="panel-personal" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-size:18px;font-weight:800;color:#1e293b">👤 Empleados</div>
+            <button onclick="abrirModalEmpleadoNuevo()" style="background:#1E3A8A;color:white;border:none;border-radius:12px;padding:10px 18px;font-family:&#39;Nunito&#39;,sans-serif;font-size:13px;font-weight:800;cursor:pointer">+ Nuevo</button>
+          </div>
+          <div id="lista-empleados"><div class="empty">Cargando...</div></div>
+        </div>
+      </main>
+
+      <nav class="bottom-nav">
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
+        <a class="bnav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="bnav-icon">👥</span><span class="bnav-label">Sueldos</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- MODAL: PAGO SUELDO -->
+  <div class="overlay" id="overlay-pago" onclick="cerrarFuera(event,&#39;overlay-pago&#39;)">
+    <div class="modal">
+      <div class="modal-titulo" id="pago-titulo">Registrar pago</div>
+      <div class="modal-sub" id="pago-sub">—</div>
+      <div class="saldo-display">
+        <div class="label">Saldo pendiente esta quincena</div>
+        <div class="monto" id="pago-saldo-display">$0</div>
+      </div>
+      <div class="campo"><label>Monto a pagar $</label>
+        <input type="text" data-miles="true" id="pago-monto" placeholder="0" inputmode="numeric" oninput="fmtMiles(this);actualizarPreviewPago()">
+      </div>
+      <div id="pago-overflow-preview" style="display:none" class="overflow-preview excede"></div>
+      <div class="campo"><label>Fecha del pago</label><input type="date" id="pago-fecha"></div>
+      <div class="campo"><label>Forma de pago</label>
+        <select id="pago-forma"><option value="">Seleccionar</option><option>Efectivo</option><option>T. Credito</option><option>Debito</option><option>QR</option><option>Transferencia</option></select>
+      </div>
+      <div class="campo"><label>Notas (opcional)</label><input type="text" id="pago-notas" placeholder="Ej: Anticipo..." autocomplete="off"></div>
+      <div class="campo-comprobante">
+        <label>📎 Comprobante (opcional)</label>
+        <input type="file" id="pago-comprobante" accept="image/*,application/pdf">
+      </div>
+      <div class="aviso-gastos">✅ Este pago se registrará automáticamente en Gastos como Costo Admin.</div>
+      <button class="btn-guardar" onclick="guardarPago()">✅ Registrar pago</button>
+      <button class="btn-cancelar" onclick="cerrarModal(&#39;overlay-pago&#39;)">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: VER COMPROBANTE -->
+  <div class="overlay" id="overlay-comprobante" onclick="cerrarModal(&#39;overlay-comprobante&#39;)">
+    <div class="modal" style="padding:20px 20px 36px">
+      <div class="modal-titulo">🧾 Comprobante</div>
+      <img id="comp-img" src="https://4fca45db.control-financiero-au9.pages.dev/sueldos" alt="Comprobante" class="comp-preview-img">
+      <a id="comp-descarga" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos#" target="_blank" class="comp-descarga">⬇️ Abrir en pantalla completa</a>
+      <button class="btn-cancelar" onclick="cerrarModal(&#39;overlay-comprobante&#39;)">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: MENSAJE WHATSAPP -->
+  <div class="overlay" id="overlay-wa" onclick="cerrarFuera(event,&#39;overlay-wa&#39;)">
+    <div class="modal">
+      <div class="modal-titulo">💬 Mensaje para WhatsApp</div>
+      <div class="modal-sub">Copialo y pegalo en el chat de la empleada</div>
+      <div class="wa-box" id="wa-texto"></div>
+      <div class="wa-copiado" id="wa-copiado">✅ ¡Copiado al portapapeles!</div>
+      <button class="btn-copiar-wa" onclick="copiarMensajeWA()">
+        <span style="font-size:18px">📋</span> Copiar mensaje
+      </button>
+      <button class="btn-cancelar" onclick="cerrarModal(&#39;overlay-wa&#39;)">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA / EDITAR QUINCENA -->
+  <div class="overlay" id="overlay-quincena" onclick="cerrarFuera(event,&#39;overlay-quincena&#39;)">
+    <div class="modal">
+      <div class="modal-titulo" id="quin-titulo">Nueva quincena</div>
+      <div class="modal-sub" id="quin-sub">—</div>
+      <input type="hidden" id="quin-mode" value="crear">
+      <input type="hidden" id="quin-sueldo-id" value="">
+      <div class="campo"><label>Monto total $</label><input type="text" data-miles="true" id="quin-monto" placeholder="Ej: 400000" inputmode="numeric" oninput="fmtMiles(this)"></div>
+      <div class="campo" id="quin-notas-campo"><label>Notas (opcional)</label><input type="text" id="quin-notas" placeholder="Ej: Incluye descuento de cuota" autocomplete="off"></div>
+      <button class="btn-guardar" id="quin-btn-guardar" onclick="guardarQuincena()">✅ Crear quincena</button>
+      <button class="btn-cancelar" onclick="cerrarModal(&#39;overlay-quincena&#39;)">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIG -->
+  <div class="overlay" id="overlay-config" onclick="cerrarFuera(event,&#39;overlay-config&#39;)">
+    <div class="modal">
+      <div class="modal-titulo" id="config-titulo">Configurar</div>
+      <div class="modal-sub">Estos valores se usan como referencia</div>
+      <input type="hidden" id="config-empleada">
+      <div id="config-sueldo-campo" class="campo">
+        <label>Sueldo por quincena $</label>
+        <input type="text" data-miles="true" id="config-monto" placeholder="Ej: 400000" inputmode="numeric" oninput="fmtMiles(this)">
+      </div>
+      <div class="campo">
+        <label>% Comisión</label>
+        <input type="number" id="config-comision" placeholder="Ej: 4" inputmode="numeric" step="0.5">
+        <small style="color:#94a3b8;font-size:12px">Ponelo en 0 si no cobra comisión</small>
+      </div>
+      <button class="btn-guardar" onclick="guardarConfig()">✅ Guardar</button>
+      <button class="btn-cancelar" onclick="cerrarModal(&#39;overlay-config&#39;)">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: PAGO COMISIÓN -->
+  <div class="overlay" id="overlay-pago-com" onclick="cerrarFuera(event,&#39;overlay-pago-com&#39;)">
+    <div class="modal">
+      <div class="modal-titulo" id="com-pago-titulo">Pago de comisión</div>
+      <div class="modal-sub" id="com-pago-sub">—</div>
+      <div class="saldo-display">
+        <div class="label">Comisión a pagar</div>
+        <div class="monto" id="com-pago-monto-display">$0</div>
+      </div>
+      <div style="text-align:center;color:#64748b;font-size:13px;margin-bottom:16px" id="com-pago-ventas-info"></div>
+      <div class="campo"><label>Fecha del pago</label><input type="date" id="com-pago-fecha"></div>
+      <div class="campo"><label>Forma de pago</label>
+        <select id="com-pago-forma"><option value="">Seleccionar</option><option>Efectivo</option><option>T. Credito</option><option>Debito</option><option>QR</option><option>Transferencia</option></select>
+      </div>
+      <div class="campo"><label>Notas (opcional)</label><input type="text" id="com-pago-notas" autocomplete="off"></div>
+      <div class="aviso-gastos">✅ Este pago se registrará automáticamente en Gastos como Costo Admin.</div>
+      <button class="btn-guardar" onclick="guardarPagoComision()">✅ Registrar pago</button>
+      <button class="btn-cancelar" onclick="cerrarModal(&#39;overlay-pago-com&#39;)">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO / EDITAR EMPLEADO -->
+  <div class="overlay" id="overlay-empleado" onclick="cerrarFuera(event,&#39;overlay-empleado&#39;)">
+    <div class="modal">
+      <div class="modal-titulo" id="emp-titulo">Nuevo empleado</div>
+      <input type="hidden" id="emp-id">
+      <div class="campo"><label>Nombre</label><input type="text" id="emp-nombre" placeholder="Ej: Miriam" autocomplete="off"></div>
+      <div class="campo" style="margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:700;color:#475569">
+          <input type="checkbox" id="emp-tiene-sueldo" onchange="toggleSueldoField()" style="width:18px;height:18px;cursor:pointer;accent-color:#1E3A8A">
+          Tiene sueldo quincenal
+        </label>
+      </div>
+      <div class="campo" id="emp-sueldo-campo" style="display:none">
+        <label>Sueldo por quincena $</label>
+        <input type="text" data-miles="true" id="emp-sueldo" placeholder="0" inputmode="numeric" oninput="fmtMiles(this)">
+      </div>
+      <div class="campo">
+        <label>% Comisión</label>
+        <input type="number" id="emp-comision" placeholder="0" inputmode="numeric" step="0.5" value="0">
+        <small style="color:#94a3b8;font-size:12px">Ponelo en 0 si no cobra comisión</small>
+      </div>
+      <button class="btn-guardar" id="emp-btn-guardar" onclick="guardarEmpleado()">✅ Crear empleado</button>
+      <button class="btn-cancelar" onclick="cerrarModal(&#39;overlay-empleado&#39;)">Cancelar</button>
+    </div>
+  </div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const PRODUCTOS_COMISION = ['Recetado','PAMI','Saldo','Sol','Pase','Reposicion C.'];
+
+    let empleados = [];
+
+    async function cargarEmpleados() {
+      const { data } = await db.from('empleados').select('*').order('nombre');
+      empleados = data || [];
+    }
+
+    function getEmpleado(nombre) { return empleados.find(e => e.nombre === nombre); }
+    function getSueldoBase(nombre) { return getEmpleado(nombre)?.sueldo_quincena || 0; }
+    function getComPct(nombre) { return getEmpleado(nombre)?.comision_pct || 0; }
+    function getEmpleadosConSueldo() { return empleados.filter(e => e.tiene_sueldo && e.activo); }
+    function getEmpleadosActivos() { return empleados.filter(e => e.activo); }
+
+    let mesActual = new Date().getMonth(), anioActual = new Date().getFullYear();
+    const _d = new Date(); _d.setDate(1); _d.setMonth(_d.getMonth()-1);
+    let mesComActual = _d.getMonth(), anioComActual = _d.getFullYear();
+    let anioHistorico = new Date().getFullYear();
+    let sueldos = [], pagos = [];
+    let sueldoActivoId = null, pagoActivoEmpleada = null, pagoActivaQuincena = null, pagoActivoPeriodo = null;
+    let nuevaQEmpleada = null, nuevaQNro = null;
+    let comActivaEmpleada = null, comActivaPeriodo = null, comActivaMonto = 0, comActivaVentas = 0, comActivaPorcentaje = 0;
+    let tabActual = 'sueldos';
+
+    function formatPesos(n) { if(!n||isNaN(n))return'$0'; return'$'+Math.round(n).toLocaleString('es-AR'); }
+    function formatFecha(f) { if(!f)return'—'; const[y,m,d]=f.split('-'); return`${d}/${m}/${y}`; }
+    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }
+    function getPeriodo() { return`${anioActual}-${String(mesActual+1).padStart(2,'0')}`; }
+    function getPeriodoLabel() { return`${MESES[mesActual]} ${anioActual}`; }
+    function getPeriodoCom() { return`${anioComActual}-${String(mesComActual+1).padStart(2,'0')}`; }
+    function getPeriodoComLabel() { return`${MESES[mesComActual]} ${anioComActual}`; }
+    function getMesSig(mes,anio) { if(mes===11) return`${anio+1}-01-01`; return`${anio}-${String(mes+2).padStart(2,'0')}-01`; }
+
+    function getSiguiente(periodo, quincena) {
+      if (quincena === 1) return { periodo, quincena: 2 };
+      const [y, m] = periodo.split('-');
+      const next = new Date(parseInt(y), parseInt(m) - 1 + 1, 1);
+      return { periodo: `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}`, quincena: 1 };
+    }
+
+    function getLabelPeriodo(periodo) {
+      const [y, m] = periodo.split('-');
+      return `${MESES[parseInt(m)-1]} ${y}`;
+    }
+
+    function cambiarTab(tab) {
+      tabActual = tab;
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('activo'));
+      document.getElementById('tab-'+tab).classList.add('activo');
+      ['sueldos','comisiones','historico','personal'].forEach(p=>{
+        document.getElementById('panel-'+p).style.display = p===tab ? 'block' : 'none';
+      });
+      if(tab==='comisiones'){document.getElementById('com-mes-nombre').textContent=getPeriodoComLabel();cargarComisiones();}
+      if(tab==='historico'){document.getElementById('anio-nombre').textContent=anioHistorico;cargarHistorico();}
+      if(tab==='personal'){renderPersonal();}
+    }
+
+    function cambiarMes(dir) {
+      mesActual+=dir;
+      if(mesActual>11){mesActual=0;anioActual++;} if(mesActual<0){mesActual=11;anioActual--;}
+      cargar();
+    }
+
+    async function cargar() {
+      const periodo=getPeriodo();
+      document.getElementById('periodo-nombre').textContent=getPeriodoLabel();
+      document.getElementById('nav-sub').textContent=getPeriodoLabel();
+      const cacheKey='sueldos_'+periodo;
+      const cached=OlvisionCache.get(cacheKey);
+      if(cached){sueldos=cached.sueldos;pagos=cached.pagos;renderResumen();renderTodosEmpleados();}
+      const{data:s}=await db.from('sueldos').select('*').eq('periodo',periodo).order('empleada').order('quincena');
+      sueldos=s||[];
+      if(sueldos.length>0){const ids=sueldos.map(x=>x.id);const{data:p}=await db.from('pagos_sueldos').select('*').in('sueldo_id',ids).order('fecha');pagos=p||[];}
+      else pagos=[];
+      OlvisionCache.set(cacheKey,{sueldos,pagos});
+      renderResumen();
+      renderTodosEmpleados();
+    }
+
+    function renderResumen() {
+      document.getElementById('res-total').textContent=formatPesos(sueldos.reduce((s,x)=>s+(parseFloat(x.monto_total)||0),0));
+      document.getElementById('res-pagado').textContent=formatPesos(sueldos.reduce((s,x)=>s+(parseFloat(x.monto_pagado)||0),0));
+      document.getElementById('res-saldo').textContent=formatPesos(sueldos.reduce((s,x)=>s+(parseFloat(x.saldo)||0),0));
+    }
+
+    function renderTodosEmpleados() {
+      const container = document.getElementById('section-empleados');
+      const lista = getEmpleadosConSueldo();
+      if (lista.length === 0) {
+        container.innerHTML = '<div class="empty">No hay empleados con sueldo configurados.<br>Andá a la pestaña 👤 Personal para agregar.</div>';
+        return;
+      }
+      container.innerHTML = lista.map(e => generarHTMLEmpleada(e.nombre, e.sueldo_quincena)).join('');
+    }
+
+    function generarHTMLEmpleada(nombre, sueldoBase) {
+      const qEmp = sueldos.filter(s => s.empleada === nombre);
+      let html = `<div class="empleada-section">
+        <div class="empleada-section-header">
+          <div class="empleada-section-nombre">👤 ${nombre}</div>
+          <button class="btn-config-sueldo" onclick="abrirConfig('${nombre}')">⚙️ Configurar</button>
+        </div>`;
+      [1,2].forEach(q => {
+        const qData = qEmp.find(x => x.quincena === q);
+        const key = `${nombre.toLowerCase().replace(/\s+/g,'-')}-q${q}`;
+        const titulo = q===1 ? 'Quincena 1ra — 1 al 15' : 'Quincena 2da — 16 al fin';
+        if (!qData) {
+          html += `<div class="quin-wrap"><div class="quin-collapsed sin-crear" onclick="abrirModalQuincena('${nombre}',${q},${sueldoBase})">
+            <div><div class="quin-collapse-titulo">${titulo}</div><div class="quin-collapse-sub">${getPeriodoLabel()} · Sin crear</div></div>
+            <div class="quin-collapse-right"><span style="font-size:13px;color:#94a3b8;font-weight:700">+ Crear</span><span style="font-size:20px;color:#94a3b8">›</span></div>
+          </div></div>`;
+          return;
+        }
+        const pDeLaQ = pagos.filter(p => p.sueldo_id === qData.id);
+        const total = parseFloat(qData.monto_total)||0;
+        const pagado = parseFloat(qData.monto_pagado)||0;
+        const saldo = parseFloat(qData.saldo)||0;
+        const pct = total>0 ? Math.min(100,Math.round((pagado/total)*100)) : 0;
+        const estado = saldo<=0 ? 'pagado' : pagado>0 ? 'parcial' : 'pendiente';
+        const colorBorde = estado==='pagado'?'#10b981':estado==='parcial'?'#f59e0b':'#ef4444';
+        const estadoTexto = estado==='pagado'?'✅ Pagado':estado==='parcial'?`🟡 ${formatPesos(saldo)} pendiente`:`🔴 ${formatPesos(saldo)} pendiente`;
+
+        let historialHtml = '';
+        if (pDeLaQ.length > 0) {
+          const items = pDeLaQ.map(p => {
+            const btnComp = p.comprobante_url
+              ? `<button class="btn-ver-comprobante" onclick="event.stopPropagation();verComprobante('${p.comprobante_url}')" title="Ver comprobante">🧾</button>`
+              : '';
+            return `<div class="pago-item">
+              <div><div class="pago-fecha">${formatFecha(p.fecha)}</div><div class="pago-forma">${p.forma_pago||'—'}${p.notas?' · '+p.notas:''}</div></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="pago-monto">+${formatPesos(p.monto)}</div>
+                ${btnComp}
+                <button class="pago-del" onclick="event.stopPropagation();eliminarPago('${p.id}','${qData.id}')">🗑️</button>
+              </div>
+            </div>`;
+          }).join('');
+          historialHtml = `<div class="historial"><div class="historial-titulo">Historial de pagos</div>${items}</div>`;
+        }
+
+        html += `<div class="quin-wrap">
+          <div class="quin-collapsed ${estado}" onclick="toggleQuin('${key}')">
+            <div><div class="quin-collapse-titulo">${titulo}</div><div class="quin-collapse-sub">${getPeriodoLabel()} · ${formatPesos(total)}</div></div>
+            <div class="quin-collapse-right">
+              <span style="font-size:12px;font-weight:800;color:${colorBorde}">${estadoTexto}</span>
+              <button onclick="event.stopPropagation();abrirEditarQuincena('${qData.id}','${nombre}',${q},${total},${pagado})" style="background:#f1f5f9;border:none;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;font-family:'Nunito',sans-serif;flex-shrink:0">✏️</button>
+              <span class="quin-arrow" id="qa-${key}">›</span>
+            </div>
+          </div>
+          <div class="quin-body" id="qb-${key}">
+            <div class="quincena-detail borde-${estado==='pagado'?'verde':estado==='parcial'?'amarillo':'rojo'}">
+              <div class="tres-valores">
+                <div class="valor-box"><div class="vb-label">Total</div><div class="vb-monto">${formatPesos(total)}</div></div>
+                <div class="valor-box pagado-box"><div class="vb-label">Pagado</div><div class="vb-monto">${formatPesos(pagado)}</div></div>
+                <div class="valor-box saldo-box"><div class="vb-label">Saldo</div><div class="vb-monto">${saldo<=0?'✅':formatPesos(saldo)}</div></div>
+              </div>
+              <div class="progreso-wrap">
+                <div class="progreso-label"><span>${pct}% pagado</span><span>${formatPesos(pagado)} / ${formatPesos(total)}</span></div>
+                <div class="progreso-bar"><div class="progreso-fill ${estado==='pagado'?'completo':'parcial'}" style="width:${pct}%"></div></div>
+              </div>
+              ${historialHtml}
+              ${saldo>0?`<button class="btn-pagar-parcial" onclick="event.stopPropagation();abrirModalPago('${qData.id}','${nombre}',${q},'${getPeriodo()}',${saldo})">💰 Registrar pago</button>`:''}
+            </div>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+      return html;
+    }
+
+    function toggleQuin(key) {
+      const body=document.getElementById('qb-'+key);const arrow=document.getElementById('qa-'+key);
+      if(!body)return;
+      const open=body.classList.contains('abierto');
+      body.classList.toggle('abierto',!open);if(arrow)arrow.classList.toggle('abierto',!open);
+    }
+
+    function renderPersonal() {
+      const lista = document.getElementById('lista-empleados');
+      if (empleados.length === 0) { lista.innerHTML = '<div class="empty">No hay empleados aún.</div>'; return; }
+      lista.innerHTML = empleados.map(e => `
+        <div class="emp-card ${e.activo ? '' : 'inactivo'}">
+          <div style="flex:1">
+            <div class="emp-nombre">${e.nombre}</div>
+            <div class="emp-detalle">
+              ${e.tiene_sueldo ? `💰 ${formatPesos(e.sueldo_quincena)}/quincena` : 'Sin sueldo quincenal'}
+              ${e.comision_pct > 0 ? ` · 📊 ${e.comision_pct}% comisión` : ''}
+            </div>
+            <div class="emp-badges">
+              <span class="emp-badge ${e.activo?'verde':'gris'}">${e.activo?'✅ Activo':'⛔ Inactivo'}</span>
+              ${e.tiene_sueldo ? '<span class="emp-badge azul">💰 Sueldo</span>' : ''}
+              ${e.comision_pct > 0 ? `<span class="emp-badge celeste">📊 ${e.comision_pct}%</span>` : ''}
+            </div>
+          </div>
+          <div class="emp-acciones">
+            <button onclick="abrirModalEmpleadoEditar(${e.id})"
+              style="background:#f1f5f9;border:none;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">✏️</button>
+            <button onclick="toggleActivoEmpleado(${e.id},${e.activo})"
+              style="background:${e.activo?'#fef2f2':'#f0fdf4'};border:none;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif"
+              title="${e.activo?'Desactivar':'Activar'}">${e.activo?'⛔':'✅'}</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function abrirModalEmpleadoNuevo() {
+      document.getElementById('emp-titulo').textContent = 'Nuevo empleado';
+      document.getElementById('emp-id').value = '';
+      document.getElementById('emp-nombre').value = '';
+      document.getElementById('emp-tiene-sueldo').checked = false;
+      document.getElementById('emp-sueldo-campo').style.display = 'none';
+      document.getElementById('emp-sueldo').value = '';
+      document.getElementById('emp-comision').value = '0';
+      document.getElementById('emp-btn-guardar').textContent = '✅ Crear empleado';
+      document.getElementById('overlay-empleado').classList.add('visible');
+    }
+
+    function abrirModalEmpleadoEditar(id) {
+      const e = empleados.find(x => x.id === id); if (!e) return;
+      document.getElementById('emp-titulo').textContent = `✏️ Editar — ${e.nombre}`;
+      document.getElementById('emp-id').value = e.id;
+      document.getElementById('emp-nombre').value = e.nombre;
+      document.getElementById('emp-tiene-sueldo').checked = e.tiene_sueldo;
+      document.getElementById('emp-sueldo-campo').style.display = e.tiene_sueldo ? 'block' : 'none';
+      setVal(document.getElementById('emp-sueldo'), e.sueldo_quincena);
+      document.getElementById('emp-comision').value = e.comision_pct;
+      document.getElementById('emp-btn-guardar').textContent = '💾 Guardar cambios';
+      document.getElementById('overlay-empleado').classList.add('visible');
+    }
+
+    function toggleSueldoField() {
+      document.getElementById('emp-sueldo-campo').style.display = document.getElementById('emp-tiene-sueldo').checked ? 'block' : 'none';
+    }
+
+    async function guardarEmpleado() {
+      const id = document.getElementById('emp-id').value;
+      const nombre = document.getElementById('emp-nombre').value.trim();
+      const tiene_sueldo = document.getElementById('emp-tiene-sueldo').checked;
+      const sueldo_quincena = tiene_sueldo ? (getVal(document.getElementById('emp-sueldo')) || 0) : 0;
+      const comision_pct = parseFloat(document.getElementById('emp-comision').value) || 0;
+      if (!nombre) { alert('Ingresá el nombre'); return; }
+      const btn = document.getElementById('emp-btn-guardar');
+      btn.textContent = 'Guardando...'; btn.disabled = true;
+      if (id) {
+        const { error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct }).eq('id', id);
+        if (error) { alert('Error: ' + error.message); btn.textContent='💾 Guardar cambios'; btn.disabled=false; return; }
+      } else {
+        const { error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, activo: true }]);
+        if (error) { alert('Error: ' + error.message); btn.textContent='✅ Crear empleado'; btn.disabled=false; return; }
+      }
+      cerrarModal('overlay-empleado');
+      await cargarEmpleados(); renderPersonal();
+      if (tabActual === 'sueldos') cargar();
+      if (tabActual === 'comisiones') cargarComisiones();
+      btn.textContent = id ? '💾 Guardar cambios' : '✅ Crear empleado'; btn.disabled = false;
+    }
+
+    async function toggleActivoEmpleado(id, activo) {
+      const e = empleados.find(x => x.id === id);
+      if (!confirm(`¿${activo?'Desactivar':'Activar'} a ${e?.nombre}?`)) return;
+      await db.from('empleados').update({ activo: !activo }).eq('id', id);
+      await cargarEmpleados(); renderPersonal();
+      if (tabActual === 'sueldos') cargar();
+      if (tabActual === 'comisiones') cargarComisiones();
+    }
+
+    function verComprobante(url) {
+      document.getElementById('comp-img').src = url;
+      document.getElementById('comp-descarga').href = url;
+      document.getElementById('overlay-comprobante').classList.add('visible');
+    }
+
+    async function subirComprobante(file, pagoId) {
+      try {
+        const ext = file.name.split('.').pop().toLowerCase();
+        const path = `pagos/${pagoId}_${Date.now()}.${ext}`;
+        const { error: upErr } = await db.storage.from('comprobantes').upload(path, file, { upsert: false });
+        if (upErr) { console.warn('Error subiendo comprobante:', upErr.message); return; }
+        const { data: urlData } = db.storage.from('comprobantes').getPublicUrl(path);
+        await db.from('pagos_sueldos').update({ comprobante_url: urlData.publicUrl }).eq('id', pagoId);
+      } catch(e) { console.warn('Error en comprobante:', e); }
+    }
+
+    function cambiarMesCom(dir) {
+      mesComActual+=dir;
+      if(mesComActual>11){mesComActual=0;anioComActual++;} if(mesComActual<0){mesComActual=11;anioComActual--;}
+      document.getElementById('com-mes-nombre').textContent=getPeriodoComLabel(); cargarComisiones();
+    }
+
+    async function cargarComisiones() {
+      document.getElementById('contenido-comisiones').innerHTML=`<div class="loading-comisiones">⏳ Cargando...</div>`;
+      const periodo=getPeriodoCom(); const periodoSig=getMesSig(mesComActual,anioComActual);
+      const[{data:ventas},{data:comExistentes}]=await Promise.all([
+        db.from('registros').select('vendedor,producto,total').gte('fecha',periodo+'-01').lt('fecha',periodoSig).eq('egreso',0).in('producto',PRODUCTOS_COMISION),
+        db.from('comisiones').select('*').eq('periodo',periodo)
+      ]);
+      renderComisiones(ventas||[],comExistentes||[],periodo);
+    }
+
+    function renderComisiones(ventas,comExistentes,periodo) {
+      const[y,m]=periodo.split('-'); const pLabel=`${MESES[parseInt(m)-1]} ${y}`;
+      const porProd={};PRODUCTOS_COMISION.forEach(p=>{porProd[p]=0;});
+      ventas.forEach(v=>{if(porProd[v.producto]!==undefined)porProd[v.producto]+=(parseFloat(v.total)||0);});
+      const totalVentas=Object.values(porProd).reduce((s,v)=>s+v,0);
+      const porVend={};
+      getEmpleadosActivos().forEach(e=>{porVend[e.nombre]=0;});
+      ventas.forEach(v=>{if(porVend[v.vendedor]!==undefined)porVend[v.vendedor]+=(parseFloat(v.total)||0);});
+      let html=`<div class="com-total-card"><div class="com-total-titulo">📊 Ventas comisionables — ${pLabel}</div><div class="com-total-monto">${formatPesos(totalVentas)}</div><div class="com-prod-grid">${PRODUCTOS_COMISION.map(p=>`<div class="com-prod-item"><div class="com-prod-nombre">${p}</div><div class="com-prod-monto">${formatPesos(porProd[p])}</div></div>`).join('')}</div></div><div class="section-title" style="margin-bottom:12px">💰 Comisiones por vendedor</div>`;
+      getEmpleadosActivos().forEach(emp => {
+        const pct=getComPct(emp.nombre); const ventasEmp=porVend[emp.nombre]||0; const montoComision=Math.round(ventasEmp*(pct/100));
+        const comEx=comExistentes.find(c=>c.empleada===emp.nombre); const cls=comEx?'pagada':pct===0?'sin-com':'pendiente-com';
+        html+=`<div class="com-vendor-card ${cls}"><div class="com-vendor-header"><div class="com-vendor-nombre">👤 ${emp.nombre}</div><div style="display:flex;align-items:center;gap:8px"><span class="pct-badge ${pct===0?'cero':''}">${pct}%</span><button class="btn-com-config" onclick="abrirConfig('${emp.nombre}')">⚙️</button></div></div>`;
+        if(comEx){html+=`<div class="com-pagado-info">✅ Pagado el ${formatFecha(comEx.fecha_pago)}<br>${formatPesos(comEx.monto_comision)}${comEx.forma_pago?' · '+comEx.forma_pago:''}${comEx.notas?'<br>'+comEx.notas:''}</div>`;}
+        else if(pct===0){html+=`<div class="com-sin-label">Sin comisión configurada · Tocá ⚙️ para configurar</div>`;}
+        else{html+=`<div class="com-vendor-ventas">Ventas: ${formatPesos(ventasEmp)}</div><div class="com-vendor-monto-label">Comisión a pagar</div><div class="com-vendor-monto-val">${formatPesos(montoComision)}</div>${montoComision>0?`<button class="btn-pagar-parcial" onclick="abrirModalPagoCom('${emp.nombre}','${periodo}',${montoComision},${ventasEmp},${pct})">💰 Registrar pago</button>`:`<div class="com-sin-label">Sin ventas en ${pLabel}</div>`}`;}
+        html+=`</div>`;
+      });
+      document.getElementById('contenido-comisiones').innerHTML=html;
+    }
+
+    function cambiarAnio(dir){anioHistorico+=dir;document.getElementById('anio-nombre').textContent=anioHistorico;cargarHistorico();}
+
+    async function cargarHistorico() {
+      document.getElementById('hist-grid').innerHTML=`<div class="hist-loading" style="grid-column:1/-1">⏳ Cargando...</div>`;
+      const[{data:sD},{data:cD}]=await Promise.all([
+        db.from('sueldos').select('periodo,empleada,quincena,monto_total,monto_pagado,saldo').gte('periodo',`${anioHistorico}-01`).lte('periodo',`${anioHistorico}-12`),
+        db.from('comisiones').select('periodo,empleada,monto_comision,saldo').gte('periodo',`${anioHistorico}-01`).lte('periodo',`${anioHistorico}-12`)
+      ]);
+      const sA=sD||[],cA=cD||[];
+      document.getElementById('hist-pagado').textContent=formatPesos(sA.reduce((s,x)=>s+(parseFloat(x.monto_pagado)||0),0));
+      document.getElementById('hist-pendiente').textContent=formatPesos(sA.reduce((s,x)=>s+(parseFloat(x.saldo)||0),0));
+      document.getElementById('hist-com-pagado').textContent=formatPesos(cA.reduce((s,x)=>s+(parseFloat(x.monto_comision)||0),0));
+      document.getElementById('hist-meses-deuda').textContent=new Set(sA.filter(x=>(parseFloat(x.saldo)||0)>0).map(x=>x.periodo)).size;
+      const stQ=(arr,emp,q)=>{const r=arr.find(s=>s.empleada===emp&&s.quincena===q);if(!r)return'⚪';return(parseFloat(r.saldo)||0)<=0?'✅':(parseFloat(r.monto_pagado)||0)>0?'🟡':'🔴';};
+      const stC=(arr,emp)=>{const r=arr.find(c=>c.empleada===emp);if(!r)return'⚪';return(parseFloat(r.saldo)||0)<=0?'✅':'🔴';};
+      const empConSueldo = getEmpleadosConSueldo();
+      const empConCom = getEmpleadosActivos().filter(e => e.comision_pct > 0);
+      let grid='';
+      for(let m=0;m<12;m++){
+        const p=`${anioHistorico}-${String(m+1).padStart(2,'0')}`;
+        const sM=sA.filter(x=>x.periodo===p),cM=cA.filter(x=>x.periodo===p);
+        const esActual=p===`${anioActual}-${String(mesActual+1).padStart(2,'0')}`;
+        let col='';
+        if(sM.length>0||cM.length>0){const hayP=sM.some(x=>(parseFloat(x.saldo)||0)>0);const hayPar=sM.some(x=>(parseFloat(x.monto_pagado)||0)>0&&(parseFloat(x.saldo)||0)>0);col=hayP?(hayPar?'amarillo':'rojo'):'verde';}
+        const filasEmp=empConSueldo.map(e=>`<div class="hist-fila"><span class="hist-fila-label">👤</span><span>${e.nombre}: Q1 ${stQ(sM,e.nombre,1)} Q2 ${stQ(sM,e.nombre,2)}</span></div>`).join('');
+        const filasCom=empConCom.length>0?`<div class="hist-divider"></div><div class="hist-fila"><span class="hist-fila-label">📊</span><span>${empConCom.map(e=>e.nombre[0]+' '+stC(cM,e.nombre)).join('  ')}</span></div>`:'';
+        grid+=`<div class="hist-mes-card ${col} ${esActual?'activo-hist':''}" onclick="irAMesHistorico('${p}')"><div class="hist-mes-nombre">${MESES[m]}${esActual?' ◀':''}</div>${filasEmp}${filasCom}</div>`;
+      }
+      document.getElementById('hist-grid').innerHTML=grid;
+    }
+
+    function irAMesHistorico(periodo){const[y,m]=periodo.split('-');mesActual=parseInt(m)-1;anioActual=parseInt(y);cambiarTab('sueldos');cargar();window.scrollTo({top:0,behavior:'smooth'});}
+
+    function abrirModalPago(sueldoId, empleada, quincena, periodo, saldo) {
+      sueldoActivoId=sueldoId; pagoActivoEmpleada=empleada; pagoActivaQuincena=quincena; pagoActivoPeriodo=periodo;
+      document.getElementById('pago-titulo').textContent=`Pago — ${empleada}`;
+      document.getElementById('pago-sub').textContent=`Quincena ${quincena===1?'1ra':'2da'} · ${getLabelPeriodo(periodo)}`;
+      document.getElementById('pago-saldo-display').textContent=formatPesos(saldo);
+      document.getElementById('pago-monto').value='';
+      document.getElementById('pago-overflow-preview').style.display='none';
+      document.getElementById('pago-fecha').value=new Date().toISOString().split('T')[0];
+      document.getElementById('pago-forma').selectedIndex=0;
+      document.getElementById('pago-notas').value='';
+      document.getElementById('pago-comprobante').value='';
+      document.getElementById('overlay-pago').classList.add('visible');
+    }
+
+    function actualizarPreviewPago() {
+      const monto=getVal(document.getElementById('pago-monto'))||0;
+      const sueldo=sueldos.find(s=>String(s.id)===String(sueldoActivoId));
+      const saldoActual=sueldo?parseFloat(sueldo.saldo)||0:0;
+      const preview=document.getElementById('pago-overflow-preview');
+      if(monto<=0){preview.style.display='none';return;}
+      const excedente=monto-saldoActual;
+      const sig=getSiguiente(pagoActivoPeriodo,pagoActivaQuincena);
+      const nroSig=sig.quincena===1?'1ra':'2da';
+      const labelSig=`${nroSig} quincena ${getLabelPeriodo(sig.periodo)}`;
+      if(Math.abs(excedente)<1){preview.className='overflow-preview exacto';preview.style.display='block';preview.innerHTML=`✅ Esta quincena queda <strong>completamente saldada</strong>`;}
+      else if(excedente>0){preview.className='overflow-preview excede';preview.style.display='block';preview.innerHTML=`✅ Esta quincena queda saldada (${formatPesos(saldoActual)})<br>➡️ ${formatPesos(excedente)} se aplican a cuenta de la <strong>${labelSig}</strong>`;}
+      else{preview.className='overflow-preview parcial';preview.style.display='block';preview.innerHTML=`💰 Pago parcial · Quedan ${formatPesos(saldoActual-monto)} pendientes`;}
+    }
+
+    function abrirModalQuincena(empleada, quincena, sueldoBase) {
+      nuevaQEmpleada=empleada; nuevaQNro=quincena;
+      document.getElementById('quin-mode').value='crear';
+      document.getElementById('quin-sueldo-id').value='';
+      document.getElementById('quin-titulo').textContent=`Nueva quincena — ${empleada}`;
+      document.getElementById('quin-sub').textContent=`Quincena ${quincena===1?'1ra':'2da'} · ${getPeriodoLabel()}`;
+      document.getElementById('quin-btn-guardar').textContent='✅ Crear quincena';
+      document.getElementById('quin-notas-campo').style.display='block';
+      setVal(document.getElementById('quin-monto'), sueldoBase);
+      document.getElementById('quin-notas').value='';
+      document.getElementById('overlay-quincena').classList.add('visible');
+    }
+
+    function abrirEditarQuincena(sueldoId, empleada, quincena, montoActual, montoPagado) {
+      document.getElementById('quin-mode').value='editar';
+      document.getElementById('quin-sueldo-id').value=sueldoId;
+      document.getElementById('quin-titulo').textContent=`✏️ Editar quincena — ${empleada}`;
+      document.getElementById('quin-sub').textContent=`Quincena ${quincena===1?'1ra':'2da'} · ${getPeriodoLabel()} · Pagado: ${formatPesos(montoPagado)}`;
+      document.getElementById('quin-btn-guardar').textContent='💾 Guardar cambios';
+      document.getElementById('quin-notas-campo').style.display='none';
+      setVal(document.getElementById('quin-monto'), montoActual);
+      document.getElementById('overlay-quincena').classList.add('visible');
+    }
+
+    function abrirConfig(nombre) {
+      const e = getEmpleado(nombre);
+      document.getElementById('config-titulo').textContent=`⚙️ Configurar — ${nombre}`;
+      document.getElementById('config-empleada').value=nombre;
+      document.getElementById('config-sueldo-campo').style.display=e?.tiene_sueldo?'block':'none';
+      if(e?.tiene_sueldo) setVal(document.getElementById('config-monto'), e.sueldo_quincena);
+      document.getElementById('config-comision').value=getComPct(nombre);
+      document.getElementById('overlay-config').classList.add('visible');
+    }
+
+    function abrirModalPagoCom(empleada,periodo,monto,ventas,pct) {
+      comActivaEmpleada=empleada;comActivaPeriodo=periodo;comActivaMonto=monto;comActivaVentas=ventas;comActivaPorcentaje=pct;
+      const[y,m]=periodo.split('-');const label=`${MESES[parseInt(m)-1]} ${y}`;
+      document.getElementById('com-pago-titulo').textContent=`Comisión — ${empleada}`;
+      document.getElementById('com-pago-sub').textContent=`Ventas de ${label} · ${pct}%`;
+      document.getElementById('com-pago-monto-display').textContent=formatPesos(monto);
+      document.getElementById('com-pago-ventas-info').textContent=`Ventas comisionables: ${formatPesos(ventas)}`;
+      document.getElementById('com-pago-fecha').value=new Date().toISOString().split('T')[0];
+      document.getElementById('com-pago-forma').selectedIndex=0;
+      document.getElementById('com-pago-notas').value='';
+      document.getElementById('overlay-pago-com').classList.add('visible');
+    }
+
+    function cerrarModal(id){document.getElementById(id).classList.remove('visible');}
+    function cerrarFuera(e,id){if(e.target===document.getElementById(id))cerrarModal(id);}
+
+    // ── MENSAJE WHATSAPP ─────────────────────────────────────
+    function mostrarMensajeWA(empleada, periodoLabel, sueldosEmpleada, todosPagos, waPayId) {
+      const div = '─────────────────────';
+      let mensaje = `💼 Olvisión — Sueldo ${empleada}\n\n`;
+      mensaje += `${periodoLabel}\n`;
+
+      let totalGeneral = 0, pagadoGeneral = 0;
+
+      [1, 2].forEach(q => {
+        const sd = sueldosEmpleada.find(s => s.quincena === q);
+        if (!sd) return;
+        const total = parseFloat(sd.monto_total) || 0;
+        totalGeneral += total;
+        const qPagos = todosPagos.filter(p => String(p.sueldo_id) === String(sd.id));
+        pagadoGeneral += qPagos.reduce((s, p) => s + (parseFloat(p.monto) || 0), 0);
+        const qTag = q === 1 ? '(1Q)' : '(2Q)';
+        const nroLabel = q === 1 ? '1ra' : '2da';
+        mensaje += `${div}\n`;
+        mensaje += `${nroLabel} quincena · ${formatPesos(total)}\n`;
+        if (qPagos.length === 0) {
+          mensaje += `  Sin pagos registrados\n`;
+        } else {
+          qPagos.forEach(p => {
+            const esHoy = p.id === waPayId;
+            mensaje += `  📅 ${formatFecha(p.fecha)} ${qTag}  ${formatPesos(p.monto)}  ${p.forma_pago || ''}${esHoy ? '  ← hoy' : ''}\n`;
+          });
+        }
+      });
+
+      const saldoGeneral = totalGeneral - pagadoGeneral;
+      mensaje += `${div}\n`;
+      if (saldoGeneral <= 0) {
+        mensaje += `Pagado:  ${formatPesos(pagadoGeneral)}\n`;
+        mensaje += '✅ Mes saldado';
+      } else {
+        mensaje += `Pagado:  ${formatPesos(pagadoGeneral)}\n`;
+        mensaje += `Saldo:   ${formatPesos(saldoGeneral)}`;
+      }
+
+      document.getElementById('wa-texto').textContent = mensaje;
+      document.getElementById('wa-copiado').style.display = 'none';
+      document.getElementById('overlay-wa').classList.add('visible');
+    }
+
+    function copiarMensajeWA() {
+      const texto = document.getElementById('wa-texto').textContent;
+      const mostrarOk = () => {
+        const aviso = document.getElementById('wa-copiado');
+        aviso.style.display = 'block';
+        setTimeout(() => { aviso.style.display = 'none'; }, 2500);
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(texto).then(mostrarOk).catch(() => fallbackCopy(texto, mostrarOk));
+      } else {
+        fallbackCopy(texto, mostrarOk);
+      }
+    }
+
+    function fallbackCopy(texto, cb) {
+      const ta = document.createElement('textarea');
+      ta.value = texto; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); cb(); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+
+    // ── GUARDAR PAGO ─────────────────────────────────────────
+    async function guardarPago() {
+      const monto=getVal(document.getElementById('pago-monto'));
+      const fecha=document.getElementById('pago-fecha').value;
+      const forma_pago=document.getElementById('pago-forma').value;
+      const notas=document.getElementById('pago-notas').value;
+      const archivoComprobante=document.getElementById('pago-comprobante').files[0]||null;
+      if(!monto||monto<=0){alert('Ingresá el monto');return;}
+      if(!fecha){alert('Ingresá la fecha');return;}
+      const btn=document.querySelector('#overlay-pago .btn-guardar');
+      btn.textContent=archivoComprobante?'Subiendo comprobante...':'Guardando...';btn.disabled=true;
+
+      const sueldo=sueldos.find(s=>String(s.id)===String(sueldoActivoId));
+      const saldoActual=parseFloat(sueldo.saldo)||0;
+      const totalQuincena=parseFloat(sueldo.monto_total)||0;
+      const pagoParaEsta=saldoActual>0?Math.min(monto,saldoActual):0;
+      const excedente=monto-pagoParaEsta;
+
+      // Guardar datos WA antes de cerrar el modal
+      const waEmpleada=pagoActivoEmpleada, waNroQ=pagoActivaQuincena;
+      const waPeriodoLabel=getLabelPeriodo(pagoActivoPeriodo);
+      const waSueldoId=sueldoActivoId;
+
+      if(pagoParaEsta>0){
+        const{data:pagoInsertado,error:e1}=await db.from('pagos_sueldos').insert([{sueldo_id:sueldoActivoId,monto:pagoParaEsta,fecha,forma_pago,notas}]).select().single();
+        if(e1){alert('Error: '+e1.message);btn.textContent='✅ Registrar pago';btn.disabled=false;return;}
+        if(archivoComprobante&&pagoInsertado) await subirComprobante(archivoComprobante,pagoInsertado.id);
+        const nuevoMontoPagado=(parseFloat(sueldo.monto_pagado)||0)+pagoParaEsta;
+        const nuevoSaldo=Math.max(0,totalQuincena-nuevoMontoPagado);
+        await db.from('sueldos').update({monto_pagado:nuevoMontoPagado,saldo:nuevoSaldo,fecha_pago:fecha}).eq('id',sueldoActivoId);
+        const nroQ=pagoActivaQuincena===1?'1ra':'2da';
+        await db.from('gastos').insert([{fecha,descripcion:`Sueldo ${pagoActivoEmpleada} - ${nroQ} quincena ${getLabelPeriodo(pagoActivoPeriodo)}`,categoria:'Sueldos',monto:pagoParaEsta,forma_pago,observacion:notas||'',mes:fecha.substring(0,7)}]);
+        OlvisionCache.clear('gastos_'+fecha.substring(0,7));
+
+        if(excedente>0){
+          const sig=getSiguiente(pagoActivoPeriodo,pagoActivaQuincena);
+          const sueldoBase=getSueldoBase(pagoActivoEmpleada);
+          let{data:sigData}=await db.from('sueldos').select('*').eq('empleada',pagoActivoEmpleada).eq('periodo',sig.periodo).eq('quincena',sig.quincena).maybeSingle();
+          if(!sigData){const{data:newQ,error:eNew}=await db.from('sueldos').insert([{empleada:pagoActivoEmpleada,periodo:sig.periodo,quincena:sig.quincena,monto_total:sueldoBase,monto_pagado:0,saldo:sueldoBase,notas:'Creada automáticamente'}]).select().single();if(eNew){alert('Pago registrado, pero error al crear la siguiente quincena: '+eNew.message);}else sigData=newQ;}
+          if(sigData){
+            await db.from('pagos_sueldos').insert([{sueldo_id:sigData.id,monto:excedente,fecha,forma_pago,notas:`A cuenta${notas?' · '+notas:''}`}]);
+            const sigNuevoPagado=(parseFloat(sigData.monto_pagado)||0)+excedente;
+            const sigNuevoSaldo=Math.max(0,(parseFloat(sigData.monto_total)||0)-sigNuevoPagado);
+            await db.from('sueldos').update({monto_pagado:sigNuevoPagado,saldo:sigNuevoSaldo,fecha_pago:fecha}).eq('id',sigData.id);
+            const nroQSig=sig.quincena===1?'1ra':'2da';
+            await db.from('gastos').insert([{fecha,descripcion:`Sueldo ${pagoActivoEmpleada} - ${nroQSig} quincena ${getLabelPeriodo(sig.periodo)}`,categoria:'Sueldos',monto:excedente,forma_pago,observacion:`A cuenta${notas?' · '+notas:''}`,mes:fecha.substring(0,7)}]);
+            OlvisionCache.clear('gastos_'+fecha.substring(0,7));
+            OlvisionCache.clear('sueldos_'+sig.periodo);
+          }
+        }
+
+        OlvisionCache.clear('sueldos_'+getPeriodo());
+        cerrarModal('overlay-pago');
+        await cargar();
+        btn.textContent='✅ Registrar pago'; btn.disabled=false;
+
+        // Mostrar modal WhatsApp con resumen de las 2 quincenas
+        const sueldosEmp = sueldos.filter(s => s.empleada === waEmpleada);
+        mostrarMensajeWA(waEmpleada, waPeriodoLabel, sueldosEmp, pagos, pagoInsertado?.id);
+
+        await verificarMesSaldado();
+      } else {
+        btn.textContent='✅ Registrar pago'; btn.disabled=false;
+      }
+    }
+
+    async function guardarPagoComision() {
+      const fecha=document.getElementById('com-pago-fecha').value;
+      const forma_pago=document.getElementById('com-pago-forma').value;
+      const notas=document.getElementById('com-pago-notas').value;
+      if(!fecha){alert('Ingresá la fecha');return;}
+      const btn=document.querySelector('#overlay-pago-com .btn-guardar');
+      btn.textContent='Guardando...';btn.disabled=true;
+      const[y,m]=comActivaPeriodo.split('-');const pLabel=`${MESES[parseInt(m)-1]} ${y}`;
+      const{error:e1}=await db.from('comisiones').insert([{empleada:comActivaEmpleada,periodo:comActivaPeriodo,porcentaje:comActivaPorcentaje,total_ventas:comActivaVentas,monto_comision:comActivaMonto,monto_pagado:comActivaMonto,saldo:0,fecha_pago:fecha,forma_pago,notas}]);
+      if(e1){alert('Error: '+e1.message);btn.textContent='✅ Registrar pago';btn.disabled=false;return;}
+      await db.from('gastos').insert([{fecha,descripcion:`Comisión ${comActivaEmpleada} - ${pLabel}`,categoria:'Costos Admin.',monto:comActivaMonto,forma_pago,observacion:notas||`${comActivaPorcentaje}% sobre ventas`,mes:fecha.substring(0,7)}]);
+      OlvisionCache.clear('gastos_'+fecha.substring(0,7));
+      cerrarModal('overlay-pago-com');await cargarComisiones();
+      btn.textContent='✅ Registrar pago';btn.disabled=false;
+    }
+
+    async function guardarQuincena() {
+      const monto=getVal(document.getElementById('quin-monto'));
+      if(!monto||monto<=0){alert('Ingresá el monto');return;}
+      const btn=document.getElementById('quin-btn-guardar');
+      const modo=document.getElementById('quin-mode').value;
+      btn.textContent='Guardando...';btn.disabled=true;
+      if(modo==='editar'){
+        const sueldoId=document.getElementById('quin-sueldo-id').value;
+        const sueldo=sueldos.find(s=>String(s.id)===String(sueldoId));
+        const montoPagado=sueldo?parseFloat(sueldo.monto_pagado)||0:0;
+        const nuevoSaldo=Math.max(0,monto-montoPagado);
+        const{error}=await db.from('sueldos').update({monto_total:monto,saldo:nuevoSaldo}).eq('id',sueldoId);
+        if(error){alert('Error: '+error.message);btn.textContent='💾 Guardar cambios';btn.disabled=false;return;}
+        OlvisionCache.clear('sueldos_'+getPeriodo());cerrarModal('overlay-quincena');await cargar();btn.textContent='💾 Guardar cambios';btn.disabled=false;
+      } else {
+        const{error}=await db.from('sueldos').insert([{empleada:nuevaQEmpleada,periodo:getPeriodo(),quincena:nuevaQNro,monto_total:monto,monto_pagado:0,saldo:monto,notas:document.getElementById('quin-notas').value}]);
+        if(error){alert('Error: '+error.message);btn.textContent='✅ Crear quincena';btn.disabled=false;return;}
+        OlvisionCache.clear('sueldos_'+getPeriodo());cerrarModal('overlay-quincena');await cargar();btn.textContent='✅ Crear quincena';btn.disabled=false;
+      }
+    }
+
+    async function guardarConfig() {
+      const nombre=document.getElementById('config-empleada').value;
+      const com=parseFloat(document.getElementById('config-comision').value)||0;
+      const e=getEmpleado(nombre);
+      const btn=document.querySelector('#overlay-config .btn-guardar');
+      btn.textContent='Guardando...';btn.disabled=true;
+      const updates={comision_pct:com};
+      if(e?.tiene_sueldo){
+        const monto=getVal(document.getElementById('config-monto'));
+        if(!monto){alert('Ingresá el monto');btn.textContent='✅ Guardar';btn.disabled=false;return;}
+        updates.sueldo_quincena=monto;
+      }
+      const{error}=await db.from('empleados').update(updates).eq('nombre',nombre);
+      if(error){alert('Error: '+error.message);btn.textContent='✅ Guardar';btn.disabled=false;return;}
+      await cargarEmpleados();
+      cerrarModal('overlay-config');
+      if(tabActual==='sueldos') cargar();
+      if(tabActual==='comisiones') cargarComisiones();
+      if(tabActual==='personal') renderPersonal();
+      btn.textContent='✅ Guardar';btn.disabled=false;
+    }
+
+    async function eliminarPago(pagoId,sueldoId) {
+      if(!confirm('¿Eliminar este pago?\n\nNota: el gasto en Gastos NO se elimina automáticamente.'))return;
+      const pago=pagos.find(p=>p.id===pagoId),sueldo=sueldos.find(s=>s.id===sueldoId);
+      if(!pago||!sueldo)return;
+      await db.from('pagos_sueldos').delete().eq('id',pagoId);
+      const nMP=Math.max(0,(parseFloat(sueldo.monto_pagado)||0)-(parseFloat(pago.monto)||0));
+      const nS=(parseFloat(sueldo.monto_total)||0)-nMP;
+      await db.from('sueldos').update({monto_pagado:nMP,saldo:nS}).eq('id',sueldoId);
+      OlvisionCache.clear('sueldos_'+getPeriodo());await cargar();
+    }
+
+    async function detectarMesConDeuda() {
+      const hoy=new Date();let meses=[];
+      for(let i=3;i>=0;i--){const f=new Date(hoy.getFullYear(),hoy.getMonth()-i,1);meses.push(`${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`);}
+      const{data}=await db.from('sueldos').select('periodo,saldo').in('periodo',meses).gt('saldo',0).order('periodo',{ascending:true});
+      if(data&&data.length>0){const[y,m]=data[0].periodo.split('-');mesActual=parseInt(m)-1;anioActual=parseInt(y);}
+    }
+
+    async function renderAlertaMeses() {
+      const hoy=new Date();let meses=[];
+      for(let i=3;i>=0;i--){const f=new Date(hoy.getFullYear(),hoy.getMonth()-i,1);meses.push(`${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`);}
+      const{data}=await db.from('sueldos').select('periodo,saldo,empleada').in('periodo',meses).gt('saldo',0);
+      if(!data||data.length===0)return;
+      const porP={};data.forEach(s=>{if(!porP[s.periodo])porP[s.periodo]=[];porP[s.periodo].push(s);});
+      const periodoActual=getPeriodo();
+      const mesesDeuda=Object.keys(porP).sort().filter(p=>p!==periodoActual);
+      if(mesesDeuda.length===0)return;
+      const banner=document.createElement('div');
+      banner.id='banner-deuda';
+      banner.style.cssText='background:#fef2f2;border:2px solid #ef4444;border-radius:16px;padding:14px 16px;margin-bottom:16px;';
+      banner.innerHTML=`<div style="font-size:13px;font-weight:800;color:#991b1b;margin-bottom:8px">⚠️ Meses con sueldos pendientes</div><div style="display:flex;flex-wrap:wrap;gap:8px">${mesesDeuda.map(p=>{const[y,m]=p.split('-');const tot=porP[p].reduce((s,x)=>s+(parseFloat(x.saldo)||0),0);return`<button onclick="irAlMes('${p}')" style="background:#ef4444;color:white;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif">${MESES[parseInt(m)-1]} ${y} — $${Math.round(tot).toLocaleString('es-AR')}</button>`;}).join('')}</div>`;
+      const panel=document.getElementById('panel-sueldos');
+      panel.insertBefore(banner,panel.querySelector('.periodo-selector'));
+    }
+
+    function irAlMes(periodo){const[y,m]=periodo.split('-');mesActual=parseInt(m)-1;anioActual=parseInt(y);const b=document.getElementById('banner-deuda');if(b)b.remove();cargar();}
+
+    async function verificarMesSaldado() {
+      const{data}=await db.from('sueldos').select('saldo').eq('periodo',getPeriodo()).gt('saldo',0);
+      if(!data||data.length===0){
+        const hoy=new Date();
+        if(!(mesActual===hoy.getMonth()&&anioActual===hoy.getFullYear())){
+          const ms=mesActual===11?0:mesActual+1,as=mesActual===11?anioActual+1:anioActual;
+          setTimeout(()=>{if(confirm(`✅ ¡${getPeriodoLabel()} está saldado!\n\n¿Abrís ${MESES[ms]} ${as}?`)){mesActual=ms;anioActual=as;cargar();}},400);
+        }
+      }
+    }
+
+    async function init() {
+      await cargarEmpleados();
+      await detectarMesConDeuda();
+      document.getElementById('periodo-nombre').textContent=getPeriodoLabel();
+      document.getElementById('com-mes-nombre').textContent=getPeriodoComLabel();
+      document.getElementById('anio-nombre').textContent=anioHistorico;
+      document.getElementById('nav-sub').textContent=getPeriodoLabel();
+      await cargar();
+      await renderAlertaMeses();
+    }
+    init();
+  </script>
+
+
+</body></html>

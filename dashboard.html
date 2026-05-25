@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<!-- saved from url=(0059)https://4fca45db.control-financiero-au9.pages.dev/dashboard -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Olvisión">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Olvisión — Dashboard</title>
+  <link rel="stylesheet" href="./Olvisión — Dashboard_files/app.css">
+  <link rel="icon" type="image/png" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <link rel="apple-touch-icon" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <script src="./Olvisión — Dashboard_files/supabase-js@2"></script>
+  <script src="./Olvisión — Dashboard_files/config.js"></script>
+  <script src="./Olvisión — Dashboard_files/cache.js"></script>
+  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <style>
+    .greeting { margin-bottom: 20px; }
+    .greeting h2 { font-size: 22px; font-weight: 800; color: #1e293b; }
+    .greeting p  { color: #94a3b8; font-size: 13px; margin-top: 3px; font-weight: 600; }
+    .kpi-main { background: #1E3A8A; border-radius: 20px; padding: 22px 20px; margin-bottom: 12px; color: white; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+    .kpi-main-label { font-size: 12px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .kpi-main-valor { font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+    .kpi-main-sub   { font-size: 13px; color: #93c5fd; margin-top: 5px; }
+    .kpi-hoy { text-align: right; flex-shrink: 0; }
+    .kpi-hoy-label { font-size: 11px; color: #93c5fd; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .kpi-hoy-val   { font-size: 22px; font-weight: 900; }
+    .kpi-hoy-sub   { font-size: 12px; color: #93c5fd; margin-top: 2px; }
+    .kpi-barra { background: white; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 14px 0; display: flex; margin-bottom: 20px; }
+    .kb { flex: 1; text-align: center; }
+    .kb:not(:last-child) { border-right: 1px solid #f1f5f9; }
+    .kb-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .kb-val   { font-size: 17px; font-weight: 900; color: #1e293b; }
+    .kb-val.amber { color: #f59e0b; }
+    .kb-val.red   { color: #ef4444; }
+    .kb-sub   { font-size: 11px; color: #94a3b8; margin-top: 2px; font-weight: 600; }
+    .sec-label { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .alertas-strip { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .alertas-strip::-webkit-scrollbar { display: none; }
+    .alerta-chip { flex-shrink: 0; border-radius: 14px; padding: 13px 14px; border: 2px solid; min-width: 155px; cursor: pointer; transition: transform .1s; }
+    .alerta-chip:active { transform: scale(0.97); }
+    .alerta-chip.urgente { background: #fef2f2; border-color: #fca5a5; }
+    .alerta-chip.proximo { background: #fffbeb; border-color: #fde68a; }
+    .alerta-chip.ok      { background: #f0fdf4; border-color: #86efac; }
+    .ach-badge { font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 20px; display: inline-block; margin-bottom: 7px; }
+    .urgente .ach-badge { background: #ef4444; color: white; }
+    .proximo .ach-badge { background: #f59e0b; color: white; }
+    .ok .ach-badge      { background: #10b981; color: white; }
+    .ach-titulo { font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .ach-sub    { font-size: 11px; color: #94a3b8; font-weight: 600; }
+    .ach-monto  { font-size: 17px; font-weight: 900; color: #1e293b; margin-top: 5px; }
+    .modulos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+    .mod { background: white; border: none; border-radius: 16px; padding: 16px 10px; text-align: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: transform .15s; text-decoration: none; display: block; }
+    .mod:active { transform: scale(0.96); }
+    .mod.accent { background: #1E3A8A; }
+    .mod-icon   { font-size: 24px; margin-bottom: 6px; display: block; }
+    .mod-nombre { font-size: 13px; font-weight: 800; color: #1e293b; display: block; }
+    .mod-desc   { font-size: 11px; color: #94a3b8; display: block; margin-top: 2px; }
+    .mod.accent .mod-nombre { color: white; }
+    .mod.accent .mod-desc   { color: #93c5fd; }
+    .empty { text-align: center; padding: 20px; color: #94a3b8; font-size: 14px; }
+    @media (min-width: 768px) {
+      .kpi-main-valor { font-size: 42px; }
+      .modulos { grid-template-columns: repeat(6, 1fr); }
+    }
+  </style>
+<link rel="stylesheet" href="./Olvisión — Dashboard_files/estetica.css"></head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="./Olvisión — Dashboard_files/logo_app.png" alt="Olvisión"></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button>
+      </div>
+    </aside>
+
+    <div class="app-content">
+      <nav class="nav">
+        <div class="nav-left">
+          <img src="./Olvisión — Dashboard_files/logo_app.png" alt="Olvisión" style="height:32px;object-fit:contain">
+          <span class="nav-title">Olvisión</span>
+        </div>
+        <a class="nav-salir" onclick="salir()">Salir</a>
+      </nav>
+
+      <main class="main">
+        <div class="greeting">
+          <h2 id="saludo">Buenas noches, Andres 👋</h2>
+          <p id="fecha-hoy">Miércoles 20 de mayo de 2026</p>
+        </div>
+        <div class="kpi-main">
+          <div>
+            <div class="kpi-main-label">Ventas del mes</div>
+            <div class="kpi-main-valor" id="kpi-ventas">$4.617.000</div>
+            <div class="kpi-main-sub" id="kpi-ventas-sub">74 ventas · mayo de 2026</div>
+          </div>
+          <div class="kpi-hoy">
+            <div class="kpi-hoy-label">Hoy</div>
+            <div class="kpi-hoy-val" id="kpi-hoy">$0</div>
+            <div class="kpi-hoy-sub" id="kpi-hoy-sub">0 ops</div>
+          </div>
+        </div>
+        <div class="kpi-barra">
+          <div class="kb"><div class="kb-label">Gastos mes</div><div class="kb-val amber" id="kpi-gastos">$2.208.462</div><div class="kb-sub">este mes</div></div>
+          <div class="kb"><div class="kb-label">Cheques pend.</div><div class="kb-val" id="kpi-cheques">$3.193.355</div><div class="kb-sub" id="kpi-cheques-sub">4 cheques</div></div>
+          <div class="kb"><div class="kb-label">Sueldos pend.</div><div class="kb-val red" id="kpi-sueldos">$115.000</div><div class="kb-sub">por pagar</div></div>
+        </div>
+        <div class="sec-label">⚠️ Alertas</div>
+        <div class="alertas-strip" id="alertas-strip"><div class="alerta-chip urgente" onclick="window.location.href=&#39;cheques.html&#39;"><span class="ach-badge">⚡ ¡Hoy!</span><div class="ach-titulo">Cheque · Paseo Shopping S.A.</div><div class="ach-sub">Fecha cobro 20/05</div><div class="ach-monto">$547.000</div></div><div class="alerta-chip proximo" onclick="window.location.href=&#39;sueldos.html&#39;"><span class="ach-badge">Sueldo</span><div class="ach-titulo">Sandra Q2</div><div class="ach-sub">2026-04</div><div class="ach-monto">$50.000</div></div><div class="alerta-chip proximo" onclick="window.location.href=&#39;sueldos.html&#39;"><span class="ach-badge">Sueldo</span><div class="ach-titulo">Valentina Q2</div><div class="ach-sub">2026-04</div><div class="ach-monto">$65.000</div></div></div>
+        <div class="sec-label">📂 Módulos</div>
+        <div class="modulos">
+          <a class="mod accent" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="mod-icon">🧾</span><span class="mod-nombre">Caja</span><span class="mod-desc">Registrar ventas</span></a>
+          <a class="mod" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="mod-icon">💸</span><span class="mod-nombre">Gastos</span><span class="mod-desc">Del mes</span></a>
+          <a class="mod" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="mod-icon">🏦</span><span class="mod-nombre">Cheques</span><span class="mod-desc">Emitidos</span></a>
+          <a class="mod" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="mod-icon">👥</span><span class="mod-nombre">Sueldos</span><span class="mod-desc">Empleados</span></a>
+          <a class="mod" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="mod-icon">🔖</span><span class="mod-nombre">Saldos</span><span class="mod-desc">Pendientes</span></a>
+          <a class="mod" href="https://4fca45db.control-financiero-au9.pages.dev/importar.html"><span class="mod-icon">📥</span><span class="mod-nombre">Importar</span><span class="mod-desc">Históricos</span></a>
+        </div>
+      </main>
+
+      <nav class="bottom-nav">
+        <a class="bnav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="bnav-icon">👥</span><span class="bnav-label">Sueldos</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function formatPesos(n) { if (!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }
+    function getMesActual() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+    function getFechaHoy() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }
+
+    function setSaludo() {
+      const h=new Date().getHours();
+      const s=h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+      const nombre = sessionStorage.getItem('userName') || 'Andres';
+      document.getElementById('saludo').textContent=`${s}, ${nombre} 👋`;
+      const d=new Date();
+      const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+      const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      document.getElementById('fecha-hoy').textContent=`${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+    }
+
+    async function fetchKPIs() {
+      const mes=getMesActual(), hoy=getFechaHoy();
+      const [y,m]=mes.split('-');
+      const mesSig=parseInt(m)===12?`${parseInt(y)+1}-01`:`${y}-${String(parseInt(m)+1).padStart(2,'0')}`;
+      const [{data:ventasMes},{data:ventasHoy},{data:gastosMes},{data:chequesPend},{data:sueldosPend}] = await Promise.all([
+        db.from('registros').select('total,a_cuenta').gte('fecha',mes+'-01').lt('fecha',mesSig+'-01').eq('egreso',0).gt('total',0),
+        db.from('registros').select('total,a_cuenta').eq('fecha',hoy).eq('egreso',0).gt('total',0),
+        db.from('gastos').select('monto').gte('fecha',mes+'-01').lt('fecha',mesSig+'-01'),
+        db.from('cheques').select('monto').eq('estado','PENDIENTE'),
+        db.from('sueldos').select('saldo').gt('saldo',0)
+      ]);
+      const totalVentasMes=ventasMes?.reduce((s,r)=>s+(parseFloat(r.a_cuenta)>0?parseFloat(r.a_cuenta):parseFloat(r.total)||0),0)||0;
+      document.getElementById('kpi-ventas').textContent=formatPesos(totalVentasMes);
+      document.getElementById('kpi-ventas-sub').textContent=`${ventasMes?.length||0} ventas · ${new Date().toLocaleDateString('es-AR',{month:'long',year:'numeric'})}`;
+      const totalHoy=ventasHoy?.reduce((s,r)=>s+(parseFloat(r.a_cuenta)>0?parseFloat(r.a_cuenta):parseFloat(r.total)||0),0)||0;
+      document.getElementById('kpi-hoy').textContent=formatPesos(totalHoy);
+      document.getElementById('kpi-hoy-sub').textContent=`${ventasHoy?.length||0} op${ventasHoy?.length!==1?'s':''}`;
+      document.getElementById('kpi-gastos').textContent=formatPesos(gastosMes?.reduce((s,g)=>s+(parseFloat(g.monto)||0),0)||0);
+      const totalCheques=chequesPend?.reduce((s,c)=>s+(parseFloat(c.monto)||0),0)||0;
+      document.getElementById('kpi-cheques').textContent=formatPesos(totalCheques);
+      document.getElementById('kpi-cheques-sub').textContent=`${chequesPend?.length||0} cheque${chequesPend?.length!==1?'s':''}`;
+      document.getElementById('kpi-sueldos').textContent=formatPesos(sueldosPend?.reduce((s,x)=>s+(parseFloat(x.saldo)||0),0)||0);
+    }
+
+    async function cargarAlertas() {
+      const strip = document.getElementById('alertas-strip');
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      const en7 = new Date(hoy); en7.setDate(hoy.getDate()+7);
+      const en7Str = en7.toISOString().split('T')[0];
+      const alertas = [];
+
+      const [{data:cheques},{data:sueldos}] = await Promise.all([
+        db.from('cheques').select('*').eq('estado','PENDIENTE').lte('fecha_cobro',en7Str).order('fecha_cobro'),
+        db.from('sueldos').select('*').gt('saldo',0)
+      ]);
+
+      cheques?.forEach(c => {
+        const dias = Math.round((new Date(c.fecha_cobro+'T00:00:00') - hoy) / 86400000);
+        let clase, badge, orden;
+        if (dias < 0)        { clase='urgente'; badge=`🚨 Venció hace ${Math.abs(dias)}d`; orden=dias; }
+        else if (dias === 0) { clase='urgente'; badge='⚡ ¡Hoy!'; orden=0; }
+        else if (dias <= 3)  { clase='urgente'; badge=`En ${dias}d`; orden=dias; }
+        else                 { clase='proximo'; badge=`En ${dias}d`; orden=dias; }
+        alertas.push({orden, tipo:clase, badge, titulo:`Cheque · ${c.a_quien}`, sub:`Fecha cobro ${formatFechaCorta(c.fecha_cobro)}`, monto:formatPesos(c.monto), link:'cheques.html'});
+      });
+
+      sueldos?.forEach(s => {
+        alertas.push({orden:999, tipo:'proximo', badge:'Sueldo', titulo:`${s.empleada} Q${s.quincena}`, sub:s.periodo, monto:formatPesos(s.saldo), link:'sueldos.html'});
+      });
+
+      if (alertas.length === 0) {
+        strip.innerHTML = `<div class="alerta-chip ok"><span class="ach-badge">✅ Al día</span><div class="ach-titulo">Todo en orden</div><div class="ach-sub">Sin alertas pendientes</div></div>`;
+        return;
+      }
+
+      // Ordenar: vencidos primero (dias negativos), luego por proximidad
+      alertas.sort((a,b) => a.orden - b.orden);
+      strip.innerHTML = alertas.map(a => `<div class="alerta-chip ${a.tipo}" onclick="window.location.href='${a.link}'"><span class="ach-badge">${a.badge}</span><div class="ach-titulo">${a.titulo}</div><div class="ach-sub">${a.sub}</div><div class="ach-monto">${a.monto}</div></div>`).join('');
+    }
+
+    function formatFechaCorta(f) { if(!f) return '—'; const[,m,d]=f.split('-'); return`${d}/${m}`; }
+
+    setSaludo(); fetchKPIs(); cargarAlertas();
+  </script>
+
+
+</body></html>

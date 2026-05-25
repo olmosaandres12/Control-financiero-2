@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<!-- saved from url=(0056)https://4fca45db.control-financiero-au9.pages.dev/saldos -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Olvisión — Saldos Pendientes</title>
+  <link rel="stylesheet" href="./Olvisión — Saldos Pendientes_files/app.css">
+  <link rel="icon" type="image/png" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <link rel="apple-touch-icon" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
+  <script src="./Olvisión — Saldos Pendientes_files/supabase-js@2"></script>
+  <script src="./Olvisión — Saldos Pendientes_files/config.js"></script>
+  <script src="./Olvisión — Saldos Pendientes_files/cache.js"></script>
+  <script src="./Olvisión — Saldos Pendientes_files/utils.js"></script>
+  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
+  <link rel="stylesheet" href="./Olvisión — Saldos Pendientes_files/estetica.css">
+  <style>
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: white; border-radius: 16px; padding: 16px 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .stat-val { font-size: 18px; font-weight: 900; color: #1E3A8A; line-height: 1.2; }
+    .stat-val.rojo { color: #ef4444; }
+    .stat-lbl { font-size: 11px; color: #94a3b8; margin-top: 3px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .search-row input {
+      flex: 1; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; color: #1e293b;
+      background: white; outline: none; transition: border .2s;
+    }
+    .search-row input:focus { border-color: #1E3A8A; }
+    .search-row select {
+      padding: 10px 10px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+      background: white; color: #64748b; outline: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center; padding-right: 26px;
+    }
+
+    .sort-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+    .sort-lbl { font-size: 12px; color: #94a3b8; font-weight: 700; }
+    .sort-btn { background: white; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 5px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; transition: all .15s; }
+    .sort-btn.activo { background: #1E3A8A; color: white; border-color: #1E3A8A; }
+
+    .saldo-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #1E3A8A; }
+    .saldo-card.urgente { border-left-color: #ef4444; }
+    .saldo-card.reciente { border-left-color: #10b981; }
+
+    .sc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .sc-cliente { font-size: 15px; font-weight: 800; color: #1e293b; }
+    .sc-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: #f1f5f9; color: #64748b; }
+    .sc-badge.urgente { background: #fee2e2; color: #ef4444; }
+    .sc-badge.reciente { background: #d1fae5; color: #065f46; }
+
+    .sc-producto { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+    .sc-producto .tag { display: inline-block; background: #eff6ff; color: #1E3A8A; border-radius: 6px; padding: 1px 8px; font-weight: 700; font-size: 11px; margin-right: 4px; }
+
+    .sc-montos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .monto-item { background: #f8fafc; border-radius: 10px; padding: 10px 8px; text-align: center; }
+    .monto-item .m-val { font-size: 14px; font-weight: 900; color: #1e293b; }
+    .monto-item.pendiente .m-val { color: #ef4444; }
+    .monto-item .m-lbl { font-size: 10px; color: #94a3b8; margin-top: 2px; font-weight: 700; text-transform: uppercase; }
+
+    .sc-footer { display: flex; justify-content: space-between; align-items: center; }
+    .sc-meta { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+    .btn-cobrar { background: #1E3A8A; color: white; border: none; border-radius: 12px; padding: 10px 20px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .btn-cobrar:hover { background: #163069; }
+
+    .empty { text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 14px; }
+    .empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* Modal */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
+    .overlay.visible { display: flex; }
+    .modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }
+    .modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 4px; text-align: center; }
+    .modal-sub { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 20px; font-weight: 600; }
+
+    .monto-destacado { background: #fef2f2; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 20px; }
+    .monto-destacado .md-lbl { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .monto-destacado .md-val { font-size: 32px; font-weight: 900; color: #ef4444; margin-top: 4px; }
+
+    .modal-info { background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; font-size: 13px; color: #475569; line-height: 1.8; }
+    .modal-info strong { color: #1E3A8A; }
+
+    @media (min-width: 768px) {
+      .overlay { align-items: center; }
+      .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
+    }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; z-index: 1100; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; }
+    .toast.error { background: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="./Olvisión — Saldos Pendientes_files/logo_app.png" alt="Olvisión"></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+        <a class="snav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
+        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
+    </aside>
+
+    <div class="app-content">
+      <nav class="nav">
+        <div class="nav-left">
+          <a class="nav-back" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html">‹</a>
+          <div>
+            <div class="nav-title">🔖 Saldos Pendientes</div>
+            <div class="nav-sub" id="nav-sub">24 ordenes pendientes</div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main">
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-val rojo" id="stat-total">$1.953.750</div>
+            <div class="stat-lbl">Total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-cantidad">21</div>
+            <div class="stat-lbl">Clientes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-antiguos">17</div>
+            <div class="stat-lbl">+30 días</div>
+          </div>
+        </div>
+
+        <!-- Buscador + filtro -->
+        <div class="search-row">
+          <input type="text" id="buscador" placeholder="🔍 Buscar cliente..." oninput="filtrar()">
+          <select id="filtro-vendedor" onchange="filtrar()">
+            <option value="">Todos</option>
+          <option value="Andres">Andres</option><option value="Luis">Luis</option><option value="Sandra">Sandra</option><option value="Valentina">Valentina</option></select>
+        </div>
+
+        <!-- Ordenar -->
+        <div class="sort-row">
+          <span class="sort-lbl">Ordenar:</span>
+          <button class="sort-btn activo" id="sort-fecha" onclick="setSortMode(&#39;fecha&#39;)">Más antiguos</button>
+          <button class="sort-btn" id="sort-monto" onclick="setSortMode(&#39;monto&#39;)">Mayor monto</button>
+        </div>
+
+        <!-- Lista -->
+        <div id="lista-saldos"><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">peralta yessica</div>
+            <div class="sc-badge urgente">⏱ 75d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1119 · 👤 Luis
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$50.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 06/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(2974dd22-11fd-4af9-8e92-aae74d667b77)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">yaradi yaqueline</div>
+            <div class="sc-badge urgente">⏱ 70d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Reposicion C.</span>
+            Orden #1122 · 👤 Sandra
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$40.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$10.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 11/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(04ab47bf-e50e-4e47-b197-e1029edc2298)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">marquez maria lucia</div>
+            <div class="sc-badge urgente">⏱ 68d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Reposicion C.</span>
+            Orden #1124 · 👤 Valentina
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$50.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 13/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(362b4f8d-e9c8-4775-8f6d-553cd8e5cd2b)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">adriana carrazano</div>
+            <div class="sc-badge urgente">⏱ 67d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Reposicion C.</span>
+            Orden #1128 · 👤 Sandra
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$65.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$9.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$56.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 14/03/2026
+               · Transferencia
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(eba399a4-b9d6-4e2f-8d2b-8c982b5c1553)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">adriana carrazano</div>
+            <div class="sc-badge urgente">⏱ 67d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Saldo</span>
+            Orden #1128 · 👤 Sandra
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$56.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$5.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$51.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 14/03/2026
+               · Debito
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(11775458-9f88-4b7f-8e15-8c2e9a8d7154)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">adriana carrazano</div>
+            <div class="sc-badge urgente">⏱ 65d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Saldo</span>
+            Orden #1128 · 👤 Sandra
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$51.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$42.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$9.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 16/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(2e3b9298-cf47-4385-a1de-73a4469293a1)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">sierra maria cecilia</div>
+            <div class="sc-badge urgente">⏱ 63d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1140 · 👤 Sandra
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$70.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$30.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$40.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 18/03/2026
+               · Transferencia
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(3bc6eb7d-0ff8-422d-85e1-4c546e270e08)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">Julio ambrosio</div>
+            <div class="sc-badge urgente">⏱ 63d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1142 · 👤 Valentina
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$127.500</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$60.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$67.500</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 18/03/2026
+               · Transferencia
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(bb9ae46c-0739-45fa-89c8-11bfc39251be)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">cordoba camila</div>
+            <div class="sc-badge urgente">⏱ 63d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1137 · 👤 Andres
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$135.500</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$35.500</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 18/03/2026
+               · QR
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(6926cbd8-ded8-4d23-b7c6-ff7a71f6fc3d)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">moyano paz elena</div>
+            <div class="sc-badge urgente">⏱ 62d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Reposicion C.</span>
+            Orden #1144 · 👤 Andres
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$25.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$10.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$15.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 19/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(5d2be51f-97a8-4ec7-b881-44332f81931b)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">teran octavio</div>
+            <div class="sc-badge urgente">⏱ 60d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1145 · 👤 Valentina
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$140.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$10.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$130.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 21/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(95ced026-fb45-4ce3-8767-b3c6d36876de)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">jose castagnaro</div>
+            <div class="sc-badge urgente">⏱ 57d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1148 · 👤 Valentina
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$322.500</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$222.500</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 24/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(864abe90-f9c3-47f4-bd44-a40661a0b43a)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">Carizzo cristina</div>
+            <div class="sc-badge urgente">⏱ 54d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1153 · 👤 Andres
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$225.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$80.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$145.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 27/03/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(639c8ac4-eb5b-43bf-b596-81b858a469d1)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">Karen barthabur</div>
+            <div class="sc-badge urgente">⏱ 42d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1167 · 👤 Luis
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$125.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$75.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 08/04/2026
+               · Efectivo
+              <br>📝 Armazon genérico + poli con AR.
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(a4e8bd41-d9e0-4d2c-b652-2c0596087d46)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">Remis maria eugenia</div>
+            <div class="sc-badge urgente">⏱ 41d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1168 · 👤 Andres
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$175.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$75.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$100.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 09/04/2026
+               · Transferencia
+              <br>📝 Onoff + teñido polarizado con aumento
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(64485cc0-d4e9-4205-827b-aed12169e7bc)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card urgente">
+          <div class="sc-header">
+            <div class="sc-cliente">Karen barthabur</div>
+            <div class="sc-badge urgente">⏱ 40d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Saldo</span>
+            Orden #1167 · 👤 Luis
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$75.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$25.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 10/04/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(ee740f4c-56ae-46a1-98e6-f4cbadb9b95a)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card ">
+          <div class="sc-header">
+            <div class="sc-cliente">Área isabel</div>
+            <div class="sc-badge ">⏱ 30d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1182 · 👤 Valentina
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$255.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$105.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$150.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 20/04/2026
+               · Transferencia
+              <br>📝 Karina rabolini (Rx-1439) + HD
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(c4838c22-bef1-4d76-8ea1-7b5eec7b4bb6)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card ">
+          <div class="sc-header">
+            <div class="sc-cliente">maria mercedez flugel</div>
+            <div class="sc-badge ">⏱ 29d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1183 · 👤 Andres
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$176.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$40.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$136.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 21/04/2026
+               · Transferencia
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(aa445cca-4c02-46da-9e6b-16abd4f71b84)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card ">
+          <div class="sc-header">
+            <div class="sc-cliente">montengero sebastian</div>
+            <div class="sc-badge ">⏱ 28d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Reposicion C.</span>
+            Orden #1185 · 👤 Sandra
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$90.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$20.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$70.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 22/04/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(700b879b-db49-4cec-af58-ec8b467e62fe)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card ">
+          <div class="sc-header">
+            <div class="sc-cliente">Lobo cecilia</div>
+            <div class="sc-badge ">⏱ 23d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1191 · 👤 Luis
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$178.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$60.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$118.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 27/04/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(4fa42fd4-ff2c-4c7b-8728-a82355d774d8)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card ">
+          <div class="sc-header">
+            <div class="sc-cliente">Ledesma Pilar</div>
+            <div class="sc-badge ">⏱ 20d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1194 · 👤 Valentina
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$208.250</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$108.250</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 30/04/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(fe07c313-9517-4724-ba83-874ad586f708)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card ">
+          <div class="sc-header">
+            <div class="sc-cliente">Melia Maria Sofia</div>
+            <div class="sc-badge ">⏱ 18d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1197 · 👤 Valentina
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$145.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$65.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$80.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 02/05/2026
+               · T. Credito
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(71d1a8d4-da2b-496b-971e-b973d209f448)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card ">
+          <div class="sc-header">
+            <div class="sc-cliente">Gamalero Leiza</div>
+            <div class="sc-badge ">⏱ 18d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Recetado</span>
+            Orden #1199 · 👤 Andres
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$185.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$30.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$155.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 02/05/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(0b69d716-c15e-498e-b3c8-8527e92613c6)">Cobrar</button>
+          </div>
+        </div><div class="saldo-card reciente">
+          <div class="sc-header">
+            <div class="sc-cliente">Otero Ana maria</div>
+            <div class="sc-badge reciente">⏱ 6d</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">Reposicion C.</span>
+            Orden #— · 👤 Sandra
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">$95.000</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">$40.000</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">$55.000</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 14/05/2026
+               · Efectivo
+              
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(e073d2b9-f5a3-47f8-b3c4-a89d174044be)">Cobrar</button>
+          </div>
+        </div></div>
+
+      </main>
+
+      <nav class="bottom-nav">
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
+        <a class="bnav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="bnav-icon">🔖</span><span class="bnav-label">Saldos</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- MODAL COBRAR -->
+  <div class="overlay" id="overlay-cobrar" onclick="cerrarModalFuera(event)">
+    <div class="modal">
+      <div class="modal-titulo">💰 Registrar cobro</div>
+      <div class="modal-sub" id="modal-cliente"></div>
+
+      <div class="modal-info" id="modal-info"></div>
+
+      <div class="monto-destacado">
+        <div class="md-lbl">Saldo a cobrar</div>
+        <div class="md-val" id="modal-monto">$0</div>
+      </div>
+
+      <div class="campo">
+        <label>Forma de pago</label>
+        <select id="modal-forma">
+          <option>Efectivo</option><option>T. Credito</option><option>Debito</option><option>QR</option><option>Transferencia</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Fecha de cobro</label>
+        <input type="date" id="modal-fecha">
+      </div>
+      <div class="campo">
+        <label>Observación (opcional)</label>
+        <textarea id="modal-obs" placeholder="Notas adicionales..."></textarea>
+      </div>
+
+      <button class="btn-guardar" id="btn-confirmar" onclick="confirmarCobro()">✅ Confirmar cobro</button>
+      <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) location.href = 'index.html';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let todosLosSaldos = [], saldosFiltrados = [], sortMode = 'fecha', registroActual = null;
+    let empleados = [];
+
+    // Fecha hoy para el input
+    const _hoy = new Date();
+    const _fechaHoy = `${_hoy.getFullYear()}-${String(_hoy.getMonth()+1).padStart(2,'0')}-${String(_hoy.getDate()).padStart(2,'0')}`;
+
+    function salir() { sessionStorage.clear(); location.href = 'index.html'; }
+    function formatPesos(n) { if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }
+    function formatFecha(f) { if(!f) return '—'; const [y,m,d] = f.split('-'); return `${d}/${m}/${y}`; }
+
+    async function cargarEmpleados() {
+      const { data } = await db.from('empleados').select('nombre').eq('activo', true).order('nombre');
+      empleados = (data || []).map(e => e.nombre);
+      const sel = document.getElementById('filtro-vendedor');
+      empleados.forEach(n => {
+        const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
+      });
+    }
+
+    async function cargarSaldos() {
+      const cacheKey = 'saldos_pendientes';
+      const cached = OlvisionCache.get(cacheKey);
+      let data;
+      if (cached) {
+        data = cached;
+      } else {
+        const { data: rows, error } = await db
+          .from('registros').select('*').gt('saldo', 0)
+          .or('egreso.is.null,egreso.eq.0').order('fecha', { ascending: true });
+        if (error) {
+          document.getElementById('lista-saldos').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>Error: ${error.message}</div>`;
+          return;
+        }
+        data = rows || [];
+        OlvisionCache.set(cacheKey, data);
+      }
+      todosLosSaldos = data;
+      actualizarStats();
+      filtrar();
+    }
+
+    function actualizarStats() {
+      const total = todosLosSaldos.reduce((s,r) => s+(r.saldo||0), 0);
+      const clientes = new Set(todosLosSaldos.map(r => r.nombre_cliente)).size;
+      const hoy = new Date();
+      const antiguos = todosLosSaldos.filter(r => {
+        if (!r.fecha) return false;
+        return (hoy - new Date(r.fecha+'T12:00:00')) / 86400000 > 30;
+      }).length;
+      document.getElementById('stat-total').textContent = formatPesos(total);
+      document.getElementById('stat-cantidad').textContent = clientes;
+      document.getElementById('stat-antiguos').textContent = antiguos;
+      document.getElementById('nav-sub').textContent = `${todosLosSaldos.length} orden${todosLosSaldos.length!==1?'es':''} pendiente${todosLosSaldos.length!==1?'s':''}`;
+    }
+
+    function filtrar() {
+      const busq = document.getElementById('buscador').value.toLowerCase();
+      const vendedor = document.getElementById('filtro-vendedor').value;
+      saldosFiltrados = todosLosSaldos.filter(r => {
+        const matchB = !busq || (r.nombre_cliente||'').toLowerCase().includes(busq);
+        const matchV = !vendedor || r.vendedor === vendedor;
+        return matchB && matchV;
+      });
+      ordenar(); renderizar();
+    }
+
+    function setSortMode(mode) {
+      sortMode = mode;
+      document.getElementById('sort-fecha').classList.toggle('activo', mode==='fecha');
+      document.getElementById('sort-monto').classList.toggle('activo', mode==='monto');
+      ordenar(); renderizar();
+    }
+
+    function ordenar() {
+      if (sortMode === 'fecha') saldosFiltrados.sort((a,b) => new Date(a.fecha+'T12:00:00') - new Date(b.fecha+'T12:00:00'));
+      else saldosFiltrados.sort((a,b) => (b.saldo||0) - (a.saldo||0));
+    }
+
+    function renderizar() {
+      const lista = document.getElementById('lista-saldos');
+      if (saldosFiltrados.length === 0) {
+        lista.innerHTML = `<div class="empty"><div class="empty-icon">${todosLosSaldos.length===0?'🎉':'🔍'}</div><p>${todosLosSaldos.length===0?'¡Todo cobrado! No hay saldos pendientes':'Sin resultados para esa búsqueda'}</p></div>`;
+        return;
+      }
+      const hoy = new Date();
+      lista.innerHTML = saldosFiltrados.map(r => {
+        const dias = r.fecha ? Math.floor((hoy - new Date(r.fecha+'T12:00:00')) / 86400000) : null;
+        let cardClass = '', badgeClass = '', badgeLabel = '';
+        if (dias !== null) {
+          badgeLabel = `⏱ ${dias}d`;
+          if (dias > 30) { cardClass='urgente'; badgeClass='urgente'; }
+          else if (dias <= 7) { cardClass='reciente'; badgeClass='reciente'; }
+        }
+        return `<div class="saldo-card ${cardClass}">
+          <div class="sc-header">
+            <div class="sc-cliente">${r.nombre_cliente||'Sin nombre'}</div>
+            <div class="sc-badge ${badgeClass}">${badgeLabel}</div>
+          </div>
+          <div class="sc-producto">
+            <span class="tag">${r.producto||'—'}</span>
+            Orden #${r.numero_orden||'—'}${r.vendedor?` · 👤 ${r.vendedor}`:''}
+          </div>
+          <div class="sc-montos">
+            <div class="monto-item"><div class="m-val">${formatPesos(r.total||0)}</div><div class="m-lbl">Total</div></div>
+            <div class="monto-item"><div class="m-val">${formatPesos(r.a_cuenta||0)}</div><div class="m-lbl">A cuenta</div></div>
+            <div class="monto-item pendiente"><div class="m-val">${formatPesos(r.saldo||0)}</div><div class="m-lbl">Resta cobrar</div></div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-meta">
+              📅 ${formatFecha(r.fecha)}
+              ${r.forma_pago?` · ${r.forma_pago}`:''}
+              ${r.observacion?`<br>📝 ${r.observacion}`:''}
+            </div>
+            <button class="btn-cobrar" onclick="abrirModal(${r.id})">Cobrar</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function abrirModal(id) {
+      registroActual = saldosFiltrados.find(r => r.id === id);
+      if (!registroActual) return;
+      document.getElementById('modal-cliente').textContent = registroActual.nombre_cliente || 'Sin nombre';
+      document.getElementById('modal-info').innerHTML = `
+        <strong>Producto:</strong> ${registroActual.producto||'—'}<br>
+        <strong>Orden:</strong> #${registroActual.numero_orden||'—'}<br>
+        <strong>Total original:</strong> ${formatPesos(registroActual.total||0)}<br>
+        <strong>Ya pagó:</strong> ${formatPesos(registroActual.a_cuenta||0)}`;
+      document.getElementById('modal-monto').textContent = formatPesos(registroActual.saldo||0);
+      document.getElementById('modal-obs').value = '';
+      document.getElementById('modal-forma').value = 'Efectivo';
+      document.getElementById('modal-fecha').value = _fechaHoy;
+      document.getElementById('btn-confirmar').disabled = false;
+      document.getElementById('btn-confirmar').textContent = '✅ Confirmar cobro';
+      document.getElementById('overlay-cobrar').classList.add('visible');
+    }
+
+    function cerrarModal() { document.getElementById('overlay-cobrar').classList.remove('visible'); registroActual = null; }
+    function cerrarModalFuera(e) { if(e.target===document.getElementById('overlay-cobrar')) cerrarModal(); }
+
+    async function confirmarCobro() {
+      if (!registroActual) return;
+      const btn = document.getElementById('btn-confirmar');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+
+      const formaPago = document.getElementById('modal-forma').value;
+      const obs = document.getElementById('modal-obs').value.trim();
+      const fechaInput = document.getElementById('modal-fecha').value;
+      const [yyyy, mm] = fechaInput.split('-');
+      const mes = `${yyyy}-${mm}`;
+
+      const nuevoReg = {
+        fecha: fechaInput, nombre_cliente: registroActual.nombre_cliente,
+        numero_orden: registroActual.numero_orden, producto: 'Saldo',
+        total: registroActual.saldo, a_cuenta: 0, saldo: 0,
+        forma_pago: formaPago, observacion: obs || `Cobro saldo orden #${registroActual.numero_orden}`,
+        egreso: 0, vendedor: registroActual.vendedor, mes
+      };
+
+      const { error: errInsert } = await db.from('registros').insert(nuevoReg);
+      if (errInsert) {
+        mostrarToast('Error: ' + errInsert.message, true);
+        btn.disabled = false; btn.textContent = '✅ Confirmar cobro'; return;
+      }
+
+      await db.from('registros').update({ saldo: 0 }).eq('id', registroActual.id);
+
+      OlvisionCache.clear('saldos_pendientes');
+      OlvisionCache.clear('caja_' + fechaInput);
+      OlvisionCache.clear('hist_' + mes);
+
+      mostrarToast('✅ Cobro registrado');
+      cerrarModal();
+      await cargarSaldos();
+    }
+
+    function mostrarToast(msg, error = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (error ? ' error' : '');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    async function init() {
+      await cargarEmpleados();
+      await cargarSaldos();
+    }
+    init();
+  </script>
+
+
+</body></html>
