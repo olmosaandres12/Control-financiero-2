@@ -1,0 +1,2289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; color: #0000e9; -webkit-text-stroke: #0000e9}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    span.s1 {font-kerning: none}
+    span.s2 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9}
+    span.s3 {font-kerning: none; color: #000000; -webkit-text-stroke: 0px #000000}
+    span.s4 {text-decoration: underline ; font-kerning: none; -webkit-text-stroke: 0px #0000e9}
+    span.s5 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
+    span.s6 {font: 12.0px 'Zapf Dingbats'; font-kerning: none}
+    span.s7 {font: 12.0px 'Lucida Grande'; font-kerning: none}
+    td.td1 {width: 1156.4px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
+  </style>
+</head>
+<body>
+<table cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;html lang="es"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta charset="UTF-8" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-capable" content="yes" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-title" content="Olvisión" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="mobile-web-app-capable" content="yes" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;title&gt;Olvisión — Cheques&lt;/title&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="stylesheet" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/app.css"><span class="s2">app.css</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="icon" type="image/png" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="apple-touch-icon" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p2"><span class="s3">&lt;script src="<a href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><span class="s4">https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/config.js"><span class="s2">config.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/cache.js"><span class="s2">cache.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/utils.js"><span class="s2">utils.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="manifest" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json"><span class="s2">manifest.json</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script&gt;if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.proximos-titulo { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.proximos-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.proximos-strip::-webkit-scrollbar { display: none; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card { flex-shrink: 0; width: 148px; border-radius: 16px; padding: 13px 14px; border: 2px solid; cursor: pointer; transition: transform .1s; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card:active { transform: scale(0.97); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card.hot { background: #fef2f2; border-color: #fca5a5; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card.warm { background: #fffbeb; border-color: #fde68a; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card.ok { background: #f0fdf4; border-color: #86efac; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-badge { font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 20px; display: inline-block; margin-bottom: 7px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card.hot .chip-badge { background: #ef4444; color: white; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card.warm .chip-badge { background: #f59e0b; color: white; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-card.ok .chip-badge { background: #10b981; color: white; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-name { font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-monto { font-size: 17px; font-weight: 900; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-fecha { font-size: 11px; color: #94a3b8; margin-top: 2px; font-weight: 600; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-empty { flex-shrink: 0; border-radius: 16px; padding: 16px 18px; background: #f0fdf4; border: 2px solid #86efac; display: flex; align-items: center; gap: 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.chip-empty-txt { font-size: 13px; font-weight: 800; color: #065f46; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.resumen-bar { background: #1E3A8A; border-radius: 16px; padding: 14px 0; display: flex; margin-bottom: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.rb-item { flex: 1; text-align: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.rb-item:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.15); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.rb-label { font-size: 11px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.rb-valor { font-size: 18px; font-weight: 900; color: white; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.rb-valor.danger { color: #fca5a5; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.meses-titulo { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.meses-lista { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-card { background: white; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); overflow: hidden; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-header { width: 100%; background: none; border: none; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: 'Nunito', sans-serif; text-align: left; gap: 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-header:active { background: #f8fafc; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-izq { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-arrow { font-size: 11px; color: #94a3b8; transition: transform .22s; flex-shrink: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-arrow.abierto { transform: rotate(90deg); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-label { font-size: 15px; font-weight: 800; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-pendiente-header { font-size: 15px; font-weight: 900; white-space: nowrap; flex-shrink: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-body { overflow: hidden; max-height: 0; transition: max-height .25s ease; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-body-inner { padding: 12px 16px 14px; border-top: 1px solid #f1f5f9; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; margin-bottom: 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-stat { text-align: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-stat-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-stat-val { font-size: 13px; font-weight: 800; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-stat:not(:last-child) { border-right: 1px solid #f1f5f9; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-barra-wrap { height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-top: 4px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.mes-barra-fill { height: 100%; background: #10b981; border-radius: 3px; transition: width .3s; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.filtros-section { margin-bottom: 14px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.estado-pills { display: flex; gap: 6px; margin-bottom: 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.estado-pill { flex: 1; padding: 9px 4px; border-radius: 12px; border: none; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; background: white; color: #94a3b8; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all .15s; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.estado-pill.activo { background: #1E3A8A; color: white; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.filtros-row { display: flex; gap: 7px; align-items: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.filtro-sel { flex: 1; padding: 9px 8px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; background: white; cursor: pointer; min-width: 0; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.filtro-sel.activo { border-color: #1E3A8A; color: #1E3A8A; background-color: #eff6ff; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-limpiar-f { background: #f1f5f9; color: #94a3b8; border: none; border-radius: 12px; padding: 9px 11px; font-size: 14px; font-weight: 900; cursor: pointer; flex-shrink: 0; line-height: 1; font-family: 'Nunito', sans-serif; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-limpiar-f.activo { background: #fee2e2; color: #dc2626; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.filtro-resultado { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px; padding: 7px 12px; background: #f8fafc; border-radius: 10px; display: none; text-align: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.filtro-resultado.visible { display: block; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.filtro-resultado span { color: #1E3A8A; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cheques-lista { display: flex; flex-direction: column; gap: 6px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cheque-row { background: white; border-radius: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; transition: box-shadow .15s, transform .1s; border-left: 4px solid transparent; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cheque-row:active { transform: scale(0.99); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cheque-row.vencido { border-left-color: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cheque-row.urgente { border-left-color: #f97316; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cheque-row.pendiente { border-left-color: #fde68a; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cheque-row.pagado { border-left-color: #10b981; opacity: 0.7; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-dot.hot { background: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-dot.warm { background: #f59e0b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-dot.ok { background: #86efac; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-dot.paid { background: #10b981; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-info { flex: 1; min-width: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-nombre { font-size: 14px; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-sub { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-der { text-align: right; flex-shrink: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-monto { font-size: 15px; font-weight: 900; color: #1e293b; white-space: nowrap; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; margin-top: 3px; display: inline-block; white-space: nowrap; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-badge.hot { background: #fee2e2; color: #b91c1c; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-badge.warm { background: #fef9c3; color: #854f0b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-badge.ok { background: #d1fae5; color: #065f46; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-badge.paid { background: #d1fae5; color: #065f46; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.cr-chevron { font-size: 18px; color: #cbd5e1; flex-shrink: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-header { background: #1E3A8A; margin: -24px -20px 20px; padding: 28px 20px 22px; border-radius: 24px 24px 0 0; color: white; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-badge { font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-quien { font-size: 22px; font-weight: 900; margin-bottom: 6px; line-height: 1.2; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-monto { font-size: 40px; font-weight: 900; letter-spacing: -1px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-campos { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-fila { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; background: #f8fafc; border-radius: 12px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-label { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-valor { font-size: 14px; font-weight: 800; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-copy { background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; white-space: nowrap; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-copy.copiado { background: #d1fae5; color: #065f46; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.det-acciones { display: flex; flex-direction: column; gap: 8px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-pagar-det { background: #10b981; color: white; border: none; border-radius: 14px; padding: 14px; width: 100%; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-del-det { background: #fef2f2; color: #dc2626; border: none; border-radius: 14px; padding: 12px; width: 100%; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contactos-grid { display: flex; flex-direction: column; gap: 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contacto-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contacto-nombre { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contacto-fila { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 6px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contacto-fila:last-child { margin-bottom: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contacto-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contacto-valor { font-size: 14px; font-weight: 700; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contacto-valor.vacio { color: #cbd5e1; font-style: italic; font-weight: 400; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-copiar { background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; white-space: nowrap; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-copiar.copiado { background: #d1fae5; color: #065f46; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-editar-cont { background: #f1f5f9; color: #64748b; border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.input-wrapper { position: relative; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sugerencias { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #1E3A8A; border-radius: 14px; z-index: 300; max-height: 220px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: none; margin-top: 4px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sugerencia-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sugerencia-item:last-child { border-bottom: none; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sugerencia-item:active { background: #f1f5f9; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sugerencia-nombre { font-size: 15px; font-weight: 700; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sugerencia-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.datos-autocompletados { background: #f0fdf4; border: 2px solid #86efac; border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; display: none; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.datos-autocompletados .titulo { font-size: 12px; font-weight: 800; color: #065f46; margin-bottom: 8px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.datos-fila { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.datos-label { font-size: 12px; color: #64748b; font-weight: 600; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.datos-val { font-size: 13px; font-weight: 800; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zona-comprobante { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 20px 16px; text-align: center; cursor: pointer; margin-bottom: 20px; transition: all .2s; background: #f8fafc; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zona-comprobante:active { background: #f1f5f9; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zona-comprobante.cargando { border-color: #1E3A8A; background: #eff6ff; cursor: default; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zona-comprobante.ok { border-color: #10b981; background: #f0fdf4; cursor: default; border-style: solid; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zona-comprobante.error-ocr { border-color: #ef4444; background: #fef2f2; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-icono { font-size: 32px; margin-bottom: 8px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-titulo { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-sub { font-size: 12px; color: #94a3b8; font-weight: 600; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-spinner { width: 32px; height: 32px; border: 3px solid #dbeafe; border-top-color: #1E3A8A; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 10px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">@keyframes spin { to { transform: rotate(360deg); } }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-resultado { background: #f0fdf4; border-radius: 12px; padding: 10px 12px; margin-top: 10px; text-align: left; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-resultado-fila { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-resultado-fila:last-child { margin-bottom: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-resultado-label { color: #64748b; font-weight: 700; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-resultado-val { color: #1e293b; font-weight: 800; max-width: 60%; text-align: right; word-break: break-word; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.zc-cambiar { font-size: 12px; color: #1E3A8A; font-weight: 800; text-decoration: underline; cursor: pointer; display: inline-block; margin-top: 8px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.divisor-ocr { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; color: #94a3b8; font-size: 12px; font-weight: 700; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.divisor-ocr::before, .divisor-ocr::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">#input-comprobante { display: none; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.empty { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay.visible { display: flex; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; text-align: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">@media (min-width: 768px) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay { align-items: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal { border-radius: 24px; max-height: 85vh; margin: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.contactos-grid { display: grid; grid-template-columns: 1fr 1fr; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="stylesheet" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/estetica.css"><span class="s2">estetica.css</span></a>" /&gt;&lt;/head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-layout"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;aside class="sidebar"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-brand"&gt;&lt;img src="<a href="https://4fca45db.control-financiero-au9.pages.dev/logo_app.png"><span class="s2">logo_app.png</span></a>" alt="Olvisión" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="sidebar-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🏠</span><span class="s1">&lt;/span&gt; Inicio&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🧾</span><span class="s1">&lt;/span&gt; Caja Diaria&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">💸</span><span class="s1">&lt;/span&gt; Gastos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🏦</span><span class="s1">&lt;/span&gt; Cheques&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="s2">sueldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">👥</span><span class="s1">&lt;/span&gt; Sueldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="s2">saldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🔖</span><span class="s1">&lt;/span&gt; Saldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="s2">configuracion.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">⚙️</span><span class="s1">&lt;/span&gt; Config.&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-footer"&gt;&lt;button class="btn-salir-sidebar" onclick="salir()"&gt;</span><span class="s5">🚪</span><span class="s1"> Salir&lt;/button&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/aside&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-content"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-left"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="nav-back" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;‹&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div&gt;&lt;div class="nav-title"&gt;</span><span class="s5">🏦</span><span class="s1"> Cheques&lt;/div&gt;&lt;div class="nav-sub" id="nav-sub"&gt;Cargando...&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;main class="main"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="proximos-titulo"&gt;</span><span class="s5">⏰</span><span class="s1"> Próximos a cobrar&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="proximos-strip" id="proximos-strip"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="resumen-bar"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="rb-item"&gt;&lt;div class="rb-label"&gt;Total pend.&lt;/div&gt;&lt;div class="rb-valor" id="res-total"&gt;$0&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="rb-item"&gt;&lt;div class="rb-label"&gt;Cheques&lt;/div&gt;&lt;div class="rb-valor" id="res-cant"&gt;0&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="rb-item"&gt;&lt;div class="rb-label"&gt;Vencidos&lt;/div&gt;&lt;div class="rb-valor danger" id="res-vencidos"&gt;0&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="meses-titulo"&gt;</span><span class="s5">📅</span><span class="s1"> Compromiso por mes&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="meses-lista" id="meses-lista"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-primario" onclick="abrirModalCheque()" style="margin-bottom:18px"&gt;+ Nuevo cheque&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="filtros-section"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="estado-pills"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="estado-pill activo" id="pill-todos" onclick="setEstado('todos')"&gt;Todos&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="estado-pill" id="pill-pendiente" onclick="setEstado('pendiente')"&gt;</span><span class="s5">🟡</span><span class="s1"> Pend.&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="estado-pill" id="pill-pagado" onclick="setEstado('pagado')"&gt;</span><span class="s5">✅</span><span class="s1"> Pag.&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="estado-pill" id="pill-agenda" onclick="setEstado('agenda')"&gt;</span><span class="s5">📋</span><span class="s1"> Agenda&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="filtros-row" id="filtros-extra"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;select class="filtro-sel" id="f-mes" onchange="aplicarFiltros()"&gt;&lt;option value=""&gt;Mes&lt;/option&gt;&lt;/select&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;select class="filtro-sel" id="f-contacto" onchange="aplicarFiltros()"&gt;&lt;option value=""&gt;Contacto&lt;/option&gt;&lt;/select&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-limpiar-f" id="btn-limpiar" onclick="limpiarFiltros()"&gt;</span><span class="s6">✕</span><span class="s1">&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="filtro-resultado" id="filtro-res"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div id="panel-cheques"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="cheques-lista" id="lista-cheques"&gt;&lt;p class="empty"&gt;Cargando...&lt;/p&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div id="panel-agenda" style="display:none"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-primario" onclick="abrirModalContacto(null)" style="margin-bottom:16px"&gt;+ Nuevo contacto&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="contactos-grid" id="lista-contactos"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/main&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="bottom-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">🏠</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Inicio&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">🧾</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Caja&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">💸</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Gastos&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">🏦</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Cheques&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="s2">sueldos.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">👥</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Sueldos&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="overlay" id="overlay-detalle" onclick="cerrarFuera(event,'overlay-detalle')"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal" id="modal-detalle-inner"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="overlay" id="overlay-cheque" onclick="cerrarFuera(event,'overlay-cheque')"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal-titulo"&gt;Nuevo cheque&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="file" id="input-comprobante" accept="application/pdf,image/*" onchange="procesarComprobante(event)" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="zona-comprobante" id="zona-comp" onclick="document.getElementById('input-comprobante').click()"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div id="zc-content"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="zc-icono"&gt;</span><span class="s5">📎</span><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="zc-titulo"&gt;Subir comprobante&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="zc-sub"&gt;PDF o imagen · La IA completa los datos&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="divisor-ocr"&gt;O CARGÁ MANUALMENTE&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;A quién&lt;/label&gt;&lt;div class="input-wrapper"&gt;&lt;input type="text" id="f-quien" placeholder="Escribí el nombre..." autocomplete="off" oninput="filtrarSugerencias()" onfocus="filtrarSugerencias()" /&gt;&lt;div class="sugerencias" id="sugerencias"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="datos-autocompletados" id="datos-auto"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="titulo"&gt;</span><span class="s5">✅</span><span class="s1"> Datos cargados automáticamente&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="datos-fila"&gt;&lt;span class="datos-label"&gt;CUIT&lt;/span&gt;&lt;span class="datos-val" id="auto-cuit"&gt;—&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="datos-fila"&gt;&lt;span class="datos-label"&gt;CBU&lt;/span&gt;&lt;span class="datos-val" id="auto-cbu"&gt;—&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="datos-fila"&gt;&lt;span class="datos-label"&gt;Banco&lt;/span&gt;&lt;span class="datos-val" id="auto-banco"&gt;—&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;N° de cheque&lt;/label&gt;&lt;input type="text" id="f-numero" placeholder="Ej: 00012345" autocomplete="off" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;CUIT&lt;/label&gt;&lt;input type="text" id="f-cuit" placeholder="Se completa automático" autocomplete="off" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;CBU&lt;/label&gt;&lt;input type="text" id="f-cbu" placeholder="Se completa automático" autocomplete="off" inputmode="numeric" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campos-grid"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;Monto $&lt;/label&gt;&lt;input type="text" data-miles="true" id="f-monto" placeholder="0" inputmode="numeric" oninput="fmtMiles(this)" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;Fecha emisión&lt;/label&gt;&lt;input type="date" id="f-emision" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;Fecha de cobro&lt;/label&gt;&lt;input type="date" id="f-cobro" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-guardar" onclick="guardarCheque()"&gt;</span><span class="s5">✅</span><span class="s1"> Guardar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-cancelar" onclick="cerrarModal('overlay-cheque')"&gt;Cancelar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="overlay" id="overlay-contacto" onclick="cerrarFuera(event,'overlay-contacto')"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal-titulo" id="titulo-contacto"&gt;Nuevo contacto&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="hidden" id="fc-id" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;Nombre&lt;/label&gt;&lt;input type="text" id="fc-nombre" placeholder="Ej: Pablo Marín" autocomplete="off" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;CUIT&lt;/label&gt;&lt;input type="text" id="fc-cuit" placeholder="Ej: 20-12345678-9" autocomplete="off" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;CBU&lt;/label&gt;&lt;input type="text" id="fc-cbu" placeholder="22 dígitos" autocomplete="off" inputmode="numeric" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;&lt;label&gt;Banco&lt;/label&gt;&lt;input type="text" id="fc-banco" placeholder="Ej: Banco Macro" autocomplete="off" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-guardar" onclick="guardarContacto()"&gt;</span><span class="s5">✅</span><span class="s1"> Guardar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-cancelar" onclick="cerrarModal('overlay-contacto')"&gt;Cancelar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { createClient } = supabase;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let cheques = [], destinatarios = [];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const mesAbierto = {};</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let filtroEstado = 'todos', filtroMes = '', filtroContacto = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function formatPesos(n) { if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function formatFecha(f) { if(!f) return '—'; const[y,m,d]=f.split('-'); return`${d}/${m}/${y}`; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function diasHasta(f) { const h=new Date(); h.setHours(0,0,0,0); return Math.round((new Date(f+'T00:00:00')-h)/86400000); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function chipClase(dias) { if(dias&lt;=5) return 'hot'; if(dias&lt;=15) return 'warm'; return 'ok'; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function badgeTexto(dias) { if(dias&lt;0) return `Venció hace ${Math.abs(dias)}d`; if(dias===0) return '¡Cobra HOY!'; if(dias&lt;=5) return `En ${dias} día${dias!==1?'s':''}`; return `En ${dias} días`; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function mesLabel(ym) { const[y,m]=ym.split('-'); return MESES_ES[parseInt(m,10)-1]+' '+y; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function cargar() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const cachedC=OlvisionCache.get('cheques_data'), cachedD=OlvisionCache.get('destinatarios_data');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(cachedC&amp;&amp;cachedD){cheques=cachedC;destinatarios=cachedD;afterCargar();}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const [{data:c},{data:d}]=await Promise.all([db.from('cheques').select('*').order('fecha_cobro',{ascending:true}),db.from('destinatarios').select('*').order('nombre')]);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cheques=c||[]; destinatarios=d||[];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">OlvisionCache.set('cheques_data',cheques); OlvisionCache.set('destinatarios_data',destinatarios);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">afterCargar();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function afterCargar() { renderStrip(); renderResumen(); renderMeses(); poblarFiltrosMes(); poblarFiltrosContacto(); renderLista(); renderAgenda(); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderStrip() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const strip=document.getElementById('proximos-strip');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const pend=cheques.filter(c=&gt;c.estado==='PENDIENTE');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(!pend.length){strip.innerHTML=`&lt;div class="chip-empty"&gt;&lt;span style="font-size:20px"&gt;</span><span class="s5">✅</span><span class="s1">&lt;/span&gt;&lt;span class="chip-empty-txt"&gt;Sin pendientes&lt;/span&gt;&lt;/div&gt;`;return;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">strip.innerHTML=pend.map(c=&gt;{</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const dias=diasHasta(c.fecha_cobro), cls=chipClase(dias), txt=badgeTexto(dias);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const [,mm,dd]=c.fecha_cobro.split('-');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return `&lt;div class="chip-card ${cls}" onclick="abrirDetalle('${c.id}')"&gt;&lt;span class="chip-badge"&gt;${txt}&lt;/span&gt;&lt;div class="chip-name"&gt;${c.a_quien}&lt;/div&gt;&lt;div class="chip-monto"&gt;${formatPesos(c.monto)}&lt;/div&gt;&lt;div class="chip-fecha"&gt;${dd}/${mm}&lt;/div&gt;&lt;/div&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}).join('');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderResumen() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const pend=cheques.filter(c=&gt;c.estado==='PENDIENTE'), venc=pend.filter(c=&gt;diasHasta(c.fecha_cobro)&lt;0);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('res-total').textContent=formatPesos(pend.reduce((s,c)=&gt;s+(parseFloat(c.monto)||0),0));</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('res-cant').textContent=pend.length;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('res-vencidos').textContent=venc.length;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('nav-sub').textContent=`${pend.length} pendiente${pend.length!==1?'s':''}`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderMeses() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const lista=document.getElementById('meses-lista');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(!cheques.length){lista.innerHTML='';return;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const grupos={};</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cheques.forEach(c=&gt;{</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(!c.fecha_cobro) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const ym=c.fecha_cobro.slice(0,7);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(!grupos[ym]) grupos[ym]={comprometido:0,pagado:0,pendiente:0,cantPend:0,cantVencidos:0};</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const m=parseFloat(c.monto)||0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">grupos[ym].comprometido+=m;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(c.estado==='PAGADO') grupos[ym].pagado+=m;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else{grupos[ym].pendiente+=m;grupos[ym].cantPend++;if(diasHasta(c.fecha_cobro)&lt;0)grupos[ym].cantVencidos++;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">});</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const keys=Object.keys(grupos).sort();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(!Object.keys(mesAbierto).length){const p=keys.find(k=&gt;grupos[k].pendiente&gt;0);if(p||keys[0])mesAbierto[p||keys[0]]=true;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">lista.innerHTML=keys.map(ym=&gt;{</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const g=grupos[ym], pct=g.comprometido&gt;0?Math.round(g.pagado/g.comprometido*100):0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const abierto=!!mesAbierto[ym], todoPagado=g.pendiente===0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let bColor,bTColor,bText;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(g.cantVencidos&gt;0){bColor='#fef2f2';bTColor='#b91c1c';bText=`${g.cantVencidos} vencido${g.cantVencidos!==1?'s':''}`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(todoPagado){bColor='#f0fdf4';bTColor='#166534';bText='Todo pagado';}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else{bColor='#eff6ff';bTColor='#1d4ed8';bText=`${g.cantPend} pendiente${g.cantPend!==1?'s':''}`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const cPend=g.cantVencidos&gt;0?'#b91c1c':todoPagado?'#10b981':'#1e293b';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return `&lt;div class="mes-card"&gt;&lt;button class="mes-header" onclick="toggleMes('${ym}')"&gt;&lt;div class="mes-izq"&gt;&lt;span class="mes-arrow ${abierto?'abierto':''}" id="arrow-${ym}"&gt;</span><span class="s7">▶</span><span class="s1">&lt;/span&gt;&lt;span class="mes-label"&gt;${mesLabel(ym)}&lt;/span&gt;&lt;span class="mes-badge" style="background:${bColor};color:${bTColor}"&gt;${bText}&lt;/span&gt;&lt;/div&gt;&lt;span class="mes-pendiente-header" style="color:${cPend}"&gt;${formatPesos(g.pendiente)}&lt;/span&gt;&lt;/button&gt;&lt;div class="mes-body" id="mb-${ym}" style="max-height:${abierto?'170px':'0'}"&gt;&lt;div class="mes-body-inner"&gt;&lt;div class="mes-stats"&gt;&lt;div class="mes-stat"&gt;&lt;div class="mes-stat-label"&gt;Comprometido&lt;/div&gt;&lt;div class="mes-stat-val"&gt;${formatPesos(g.comprometido)}&lt;/div&gt;&lt;/div&gt;&lt;div class="mes-stat"&gt;&lt;div class="mes-stat-label"&gt;Pagado&lt;/div&gt;&lt;div class="mes-stat-val" style="color:#10b981"&gt;${formatPesos(g.pagado)}&lt;/div&gt;&lt;/div&gt;&lt;div class="mes-stat"&gt;&lt;div class="mes-stat-label"&gt;Pendiente&lt;/div&gt;&lt;div class="mes-stat-val" style="color:${cPend}"&gt;${formatPesos(g.pendiente)}&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="mes-barra-wrap"&gt;&lt;div class="mes-barra-fill" style="width:${pct}%"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div style="text-align:right;font-size:11px;color:#94a3b8;margin-top:4px;font-weight:700"&gt;${pct}% cobrado&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}).join('');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function toggleMes(ym){mesAbierto[ym]=!mesAbierto[ym];document.getElementById('mb-'+ym).style.maxHeight=mesAbierto[ym]?'170px':'0';document.getElementById('arrow-'+ym).classList.toggle('abierto',mesAbierto[ym]);}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function poblarFiltrosMes(){const sel=document.getElementById('f-mes');const meses=[...new Set(cheques.filter(c=&gt;c.fecha_cobro).map(c=&gt;c.fecha_cobro.slice(0,7)))].sort();const prev=sel.value;sel.innerHTML='&lt;option value=""&gt;Mes&lt;/option&gt;'+meses.map(ym=&gt;`&lt;option value="${ym}"${ym===prev?' selected':''}&gt;${mesLabel(ym)}&lt;/option&gt;`).join('');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function poblarFiltrosContacto(){const sel=document.getElementById('f-contacto');const nombres=[...new Set(cheques.map(c=&gt;c.a_quien).filter(Boolean))].sort();const prev=sel.value;sel.innerHTML='&lt;option value=""&gt;Contacto&lt;/option&gt;'+nombres.map(n=&gt;`&lt;option value="${n}"${n===prev?' selected':''}&gt;${n}&lt;/option&gt;`).join('');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function setEstado(estado){</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">filtroEstado=estado;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.querySelectorAll('.estado-pill').forEach(p=&gt;p.classList.remove('activo'));</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('pill-'+estado).classList.add('activo');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const esAgenda=estado==='agenda';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('panel-cheques').style.display=esAgenda?'none':'block';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('panel-agenda').style.display=esAgenda?'block':'none';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('filtros-extra').style.display=esAgenda?'none':'flex';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('filtro-res').classList.remove('visible');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(!esAgenda) renderLista();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function aplicarFiltros(){</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">filtroMes=document.getElementById('f-mes').value;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">filtroContacto=document.getElementById('f-contacto').value;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('f-mes').className='filtro-sel'+(filtroMes?' activo':'');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('f-contacto').className='filtro-sel'+(filtroContacto?' activo':'');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('btn-limpiar').className='btn-limpiar-f'+(filtroMes||filtroContacto?' activo':'');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">renderLista();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function limpiarFiltros(){filtroMes=filtroContacto='';document.getElementById('f-mes').selectedIndex=0;document.getElementById('f-contacto').selectedIndex=0;document.getElementById('f-mes').className='filtro-sel';document.getElementById('f-contacto').className='filtro-sel';document.getElementById('btn-limpiar').className='btn-limpiar-f';document.getElementById('filtro-res').classList.remove('visible');renderLista();}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function getChequesVista(){let items=cheques;if(filtroEstado==='pendiente')items=items.filter(c=&gt;c.estado==='PENDIENTE');else if(filtroEstado==='pagado')items=items.filter(c=&gt;c.estado==='PAGADO');if(filtroMes)items=items.filter(c=&gt;c.fecha_cobro&amp;&amp;c.fecha_cobro.slice(0,7)===filtroMes);if(filtroContacto)items=items.filter(c=&gt;c.a_quien===filtroContacto);return items;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderLista(){</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const lista=document.getElementById('lista-cheques');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const items=getChequesVista();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const hayFiltro=filtroEstado!=='todos'||filtroMes||filtroContacto;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const resDiv=document.getElementById('filtro-res');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(filtroMes||filtroContacto){const partes=[];if(filtroMes)partes.push(mesLabel(filtroMes));if(filtroContacto)partes.push(filtroContacto);resDiv.innerHTML=`Mostrando &lt;span&gt;${items.length}&lt;/span&gt; cheque${items.length!==1?'s':''} · ${partes.join(' · ')}`;resDiv.classList.add('visible');}else{resDiv.classList.remove('visible');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(!items.length){lista.innerHTML=`&lt;div class="empty"&gt;${hayFiltro?'</span><span class="s5">🔍</span><span class="s1"> Sin resultados':'Sin cheques'}&lt;/div&gt;`;return;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">lista.innerHTML=items.map(c=&gt;{</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const dias=diasHasta(c.fecha_cobro);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let rowCls,dotCls,badgeCls,bTxt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(c.estado==='PAGADO'){rowCls='pagado';dotCls='paid';badgeCls='paid';bTxt='</span><span class="s5">✅</span><span class="s1"> Pagado';}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(dias&lt;0){rowCls='vencido';dotCls='hot';badgeCls='hot';bTxt=badgeTexto(dias);}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(dias&lt;=5){rowCls='urgente';dotCls='hot';badgeCls='hot';bTxt=badgeTexto(dias);}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(dias&lt;=15){rowCls='pendiente';dotCls='warm';badgeCls='warm';bTxt=badgeTexto(dias);}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else{rowCls='pendiente';dotCls='ok';badgeCls='ok';bTxt=badgeTexto(dias);}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const sub=[`</span><span class="s5">📅</span><span class="s1"> ${formatFecha(c.fecha_cobro)}`,c.numero_cheque?`#${c.numero_cheque}`:null].filter(Boolean).join(' · ');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return `&lt;div class="cheque-row ${rowCls}" onclick="abrirDetalle('${c.id}')"&gt;&lt;div class="cr-dot ${dotCls}"&gt;&lt;/div&gt;&lt;div class="cr-info"&gt;&lt;div class="cr-nombre"&gt;${c.a_quien}&lt;/div&gt;&lt;div class="cr-sub"&gt;${sub}&lt;/div&gt;&lt;/div&gt;&lt;div class="cr-der"&gt;&lt;div class="cr-monto"&gt;${formatPesos(c.monto)}&lt;/div&gt;&lt;span class="cr-badge ${badgeCls}"&gt;${bTxt}&lt;/span&gt;&lt;/div&gt;&lt;span class="cr-chevron"&gt;›&lt;/span&gt;&lt;/div&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}).join('');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function abrirDetalle(id){</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const c=cheques.find(x=&gt;x.id===id);if(!c)return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const dias=diasHasta(c.fecha_cobro);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let bStyle,bTxt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if(c.estado==='PAGADO'){bStyle='background:#d1fae5;color:#065f46';bTxt='</span><span class="s5">✅</span><span class="s1"> Pagado';}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(dias&lt;0){bStyle='background:#fee2e2;color:#b91c1c';bTxt=`</span><span class="s5">⚠️</span><span class="s1"> Venció hace ${Math.abs(dias)}d`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(dias===0){bStyle='background:#fee2e2;color:#b91c1c';bTxt='</span><span class="s5">🔥</span><span class="s1"> ¡Cobra HOY!';}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(dias&lt;=5){bStyle='background:#fee2e2;color:#b91c1c';bTxt=`</span><span class="s5">⏰</span><span class="s1"> En ${dias} día${dias!==1?'s':''}`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if(dias&lt;=15){bStyle='background:#fef9c3;color:#854f0b';bTxt=`</span><span class="s5">📅</span><span class="s1"> En ${dias} días`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else{bStyle='background:#d1fae5;color:#065f46';bTxt=`</span><span class="s5">📅</span><span class="s1"> En ${dias} días`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const dest=destinatarios.find(d=&gt;d.nombre?.toLowerCase()===c.a_quien?.toLowerCase());</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const cbuM=dest?.cbu||null, bancoM=dest?.banco||null;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const filas=[fDet('Fecha cobro',formatFecha(c.fecha_cobro),null),fDet('Fecha emisión',formatFecha(c.fecha_emision),null),c.numero_cheque?fDet('N° cheque',c.numero_cheque,null):'',c.cuit_cuenta?fDet('CUIT',c.cuit_cuenta,c.cuit_cuenta):'',cbuM?fDet('CBU',cbuM,cbuM):'',bancoM?fDet('Banco',bancoM,null):''].filter(Boolean).join('');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const acciones=c.estado==='PENDIENTE'?`&lt;button class="btn-pagar-det" onclick="marcarPagado('${c.id}')"&gt;</span><span class="s5">✅</span><span class="s1"> Marcar como pagado&lt;/button&gt;&lt;button class="btn-del-det" onclick="eliminarCheque('${c.id}')"&gt;</span><span class="s5">🗑️</span><span class="s1"> Eliminar cheque&lt;/button&gt;`:`&lt;button class="btn-del-det" onclick="eliminarCheque('${c.id}')"&gt;</span><span class="s5">🗑️</span><span class="s1"> Eliminar cheque&lt;/button&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('modal-detalle-inner').innerHTML=`&lt;div class="det-header"&gt;&lt;span class="det-badge" style="${bStyle}"&gt;${bTxt}&lt;/span&gt;&lt;div class="det-quien"&gt;${c.a_quien}&lt;/div&gt;&lt;div class="det-monto"&gt;${formatPesos(c.monto)}&lt;/div&gt;&lt;/div&gt;&lt;div class="det-campos"&gt;${filas}&lt;/div&gt;&lt;div class="det-acciones"&gt;${acciones}&lt;/div&gt;&lt;button class="btn-cancelar" style="margin-top:8px" onclick="cerrarModal('overlay-detalle')"&gt;Cerrar&lt;/button&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('overlay-detalle').classList.add('visible');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function fDet(label,valor,copiable){return `&lt;div class="det-fila"&gt;&lt;span class="det-label"&gt;${label}&lt;/span&gt;&lt;div style="display:flex;align-items:center;gap:8px"&gt;&lt;span class="det-valor"&gt;${valor}&lt;/span&gt;${copiable?`&lt;button class="det-copy" onclick="copiarDet(this,'${copiable}')"&gt;</span><span class="s5">📋</span><span class="s1"> Copiar&lt;/button&gt;`:''}&lt;/div&gt;&lt;/div&gt;`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function copiarDet(btn,txt){navigator.clipboard.writeText(txt).then(()=&gt;{const o=btn.textContent;btn.textContent='</span><span class="s5">✅</span><span class="s1">';btn.classList.add('copiado');setTimeout(()=&gt;{btn.textContent=o;btn.classList.remove('copiado');},2000);});}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderAgenda(){const grid=document.getElementById('lista-contactos');if(!destinatarios.length){grid.innerHTML=`&lt;div class="empty"&gt;No hay contactos&lt;br&gt;Tocá + para agregar&lt;/div&gt;`;return;}grid.innerHTML=destinatarios.map(d=&gt;`&lt;div class="contacto-card"&gt;&lt;div class="contacto-nombre"&gt;&lt;span&gt;</span><span class="s5">👤</span><span class="s1"> ${d.nombre}&lt;/span&gt;&lt;button class="btn-editar-cont" onclick="abrirModalContacto('${d.id}')"&gt;</span><span class="s5">✏️</span><span class="s1"> Editar&lt;/button&gt;&lt;/div&gt;&lt;div class="contacto-fila"&gt;&lt;div&gt;&lt;div class="contacto-label"&gt;CUIT&lt;/div&gt;&lt;div class="contacto-valor ${!d.cuit?'vacio':''}"&gt;${d.cuit||'Sin datos'}&lt;/div&gt;&lt;/div&gt;${d.cuit?`&lt;button class="btn-copiar" onclick="copiar(this,'${d.cuit}')"&gt;</span><span class="s5">📋</span><span class="s1"> Copiar&lt;/button&gt;`:''}&lt;/div&gt;&lt;div class="contacto-fila"&gt;&lt;div&gt;&lt;div class="contacto-label"&gt;CBU&lt;/div&gt;&lt;div class="contacto-valor ${!d.cbu?'vacio':''}"&gt;${d.cbu||'Sin datos'}&lt;/div&gt;&lt;/div&gt;${d.cbu?`&lt;button class="btn-copiar" onclick="copiar(this,'${d.cbu}')"&gt;</span><span class="s5">📋</span><span class="s1"> Copiar&lt;/button&gt;`:''}&lt;/div&gt;${d.banco?`&lt;div class="contacto-fila"&gt;&lt;div&gt;&lt;div class="contacto-label"&gt;Banco&lt;/div&gt;&lt;div class="contacto-valor"&gt;${d.banco}&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`:''}&lt;/div&gt;`).join('');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function copiar(btn,txt){navigator.clipboard.writeText(txt).then(()=&gt;{const o=btn.textContent;btn.textContent='</span><span class="s5">✅</span><span class="s1"> Copiado';btn.classList.add('copiado');setTimeout(()=&gt;{btn.textContent=o;btn.classList.remove('copiado');},2000);});}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function cerrarModal(id){document.getElementById(id).classList.remove('visible');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function cerrarFuera(e,id){if(e.target===document.getElementById(id))cerrarModal(id);}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function abrirModalCheque(){document.getElementById('f-emision').value=new Date().toISOString().split('T')[0];document.getElementById('datos-auto').style.display='none';['f-quien','f-numero','f-cuit','f-cbu','f-cobro'].forEach(id=&gt;document.getElementById(id).value='');document.getElementById('f-monto').value='';resetComprobante();document.getElementById('overlay-cheque').classList.add('visible');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function abrirModalContacto(id){const d=id?destinatarios.find(x=&gt;x.id===id):null;document.getElementById('titulo-contacto').textContent=d?'Editar contacto':'Nuevo contacto';document.getElementById('fc-id').value=d?d.id:'';document.getElementById('fc-nombre').value=d?d.nombre:'';document.getElementById('fc-cuit').value=d?(d.cuit||''):'';document.getElementById('fc-cbu').value=d?(d.cbu||''):'';document.getElementById('fc-banco').value=d?(d.banco||''):'';document.getElementById('overlay-contacto').classList.add('visible');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function guardarCheque(){const quien=document.getElementById('f-quien').value,monto=getVal(document.getElementById('f-monto')),cobro=document.getElementById('f-cobro').value;if(!quien){alert('Ingresá a quién va el cheque');return;}if(!monto){alert('Ingresá el monto');return;}if(!cobro){alert('Ingresá la fecha de cobro');return;}const btn=document.querySelector('#overlay-cheque .btn-guardar');btn.textContent='Guardando...';btn.disabled=true;const{error}=await db.from('cheques').insert([{a_quien:quien,numero_cheque:document.getElementById('f-numero').value,cuit_cuenta:document.getElementById('f-cuit').value,monto,fecha_emision:document.getElementById('f-emision').value,fecha_cobro:cobro,estado:'PENDIENTE'}]);if(error){alert('Error: '+error.message);btn.textContent='</span><span class="s5">✅</span><span class="s1"> Guardar';btn.disabled=false;return;}OlvisionCache.clear('cheques_data');cerrarModal('overlay-cheque');await cargar();btn.textContent='</span><span class="s5">✅</span><span class="s1"> Guardar';btn.disabled=false;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function guardarContacto(){const nombre=document.getElementById('fc-nombre').value;if(!nombre){alert('Ingresá el nombre');return;}const btn=document.querySelector('#overlay-contacto .btn-guardar');btn.textContent='Guardando...';btn.disabled=true;const id=document.getElementById('fc-id').value;const datos={nombre,cuit:document.getElementById('fc-cuit').value,cbu:document.getElementById('fc-cbu').value,banco:document.getElementById('fc-banco').value};const{error}=id?await db.from('destinatarios').update(datos).eq('id',id):await db.from('destinatarios').insert([datos]);if(error){alert('Error: '+error.message);btn.textContent='</span><span class="s5">✅</span><span class="s1"> Guardar';btn.disabled=false;return;}OlvisionCache.clear('destinatarios_data');cerrarModal('overlay-contacto');await cargar();btn.textContent='</span><span class="s5">✅</span><span class="s1"> Guardar';btn.disabled=false;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function marcarPagado(id){if(!confirm('¿Marcar como PAGADO?'))return;await db.from('cheques').update({estado:'PAGADO'}).eq('id',id);OlvisionCache.clear('cheques_data');cerrarModal('overlay-detalle');await cargar();}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function eliminarCheque(id){if(!confirm('¿Eliminar este cheque?'))return;await db.from('cheques').delete().eq('id',id);OlvisionCache.clear('cheques_data');cerrarModal('overlay-detalle');await cargar();}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function filtrarSugerencias(){const val=document.getElementById('f-quien').value.toLowerCase().trim();const cont=document.getElementById('sugerencias');if(!val){cont.style.display='none';return;}const filtrados=destinatarios.filter(d=&gt;d.nombre.toLowerCase().includes(val));if(!filtrados.length){cont.style.display='none';return;}cont.style.display='block';cont.innerHTML=filtrados.map(d=&gt;`&lt;div class="sugerencia-item" onclick="seleccionar('${d.id}')"&gt;&lt;div class="sugerencia-nombre"&gt;${d.nombre}&lt;/div&gt;&lt;div class="sugerencia-sub"&gt;${[d.cuit,d.banco].filter(Boolean).join(' · ')||'Sin datos'}&lt;/div&gt;&lt;/div&gt;`).join('');}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function seleccionar(id){const d=destinatarios.find(x=&gt;x.id===id);if(!d)return;document.getElementById('f-quien').value=d.nombre;document.getElementById('f-cuit').value=d.cuit||'';document.getElementById('f-cbu').value=d.cbu||'';document.getElementById('sugerencias').style.display='none';const auto=document.getElementById('datos-auto');if(d.cuit||d.cbu||d.banco){document.getElementById('auto-cuit').textContent=d.cuit||'—';document.getElementById('auto-cbu').textContent=d.cbu||'—';document.getElementById('auto-banco').textContent=d.banco||'—';auto.style.display='block';}else auto.style.display='none';}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.addEventListener('click',e=&gt;{if(!e.target.closest('.input-wrapper'))document.getElementById('sugerencias').style.display='none';});</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function procesarComprobante(event){const file=event.target.files[0];if(!file)return;const zona=document.getElementById('zona-comp'),content=document.getElementById('zc-content');zona.className='zona-comprobante cargando';zona.onclick=null;content.innerHTML=`&lt;div class="zc-spinner"&gt;&lt;/div&gt;&lt;div class="zc-titulo" style="color:#1E3A8A"&gt;Analizando comprobante...&lt;/div&gt;&lt;div class="zc-sub"&gt;Esto tarda unos segundos&lt;/div&gt;`;try{const base64=await new Promise((res,rej)=&gt;{const r=new FileReader();r.onload=()=&gt;res(r.result.split(',')[1]);r.onerror=()=&gt;rej(new Error('No se pudo leer'));r.readAsDataURL(file);});const esPDF=file.type==='application/pdf';const fileContent=esPDF?{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64}}:{type:'image',source:{type:'base64',media_type:file.type,data:base64}};const response=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`Sos un asistente especializado en leer comprobantes de cheques argentinos. Extraé los datos y respondé ÚNICAMENTE con un objeto JSON sin markdown. Formato: {"a_quien":"...","numero_cheque":"...","monto":12345.67,"fecha_emision":"YYYY-MM-DD","fecha_cobro":"YYYY-MM-DD","cuit":"...o null","cbu":"...o null","banco":"...o null"}`,messages:[{role:'user',content:[fileContent,{type:'text',text:'Extraé los datos de este comprobante de cheque.'}]}]})});if(!response.ok)throw new Error('Error en la API: '+response.status);const data=await response.json();const campos=JSON.parse(data.content.map(b=&gt;b.text||'').join('').trim().replace(/```json|```/g,'').trim());if(campos.a_quien)document.getElementById('f-quien').value=campos.a_quien;if(campos.numero_cheque)document.getElementById('f-numero').value=campos.numero_cheque;if(campos.cuit)document.getElementById('f-cuit').value=campos.cuit;if(campos.cbu)document.getElementById('f-cbu').value=campos.cbu;if(campos.fecha_emision)document.getElementById('f-emision').value=campos.fecha_emision;if(campos.fecha_cobro)document.getElementById('f-cobro').value=campos.fecha_cobro;if(campos.monto){const input=document.getElementById('f-monto');input.value=Math.round(parseFloat(campos.monto)).toLocaleString('es-AR');input.dataset.rawValue=parseFloat(campos.monto);}if(campos.a_quien){const match=destinatarios.find(d=&gt;d.nombre.toLowerCase().includes(campos.a_quien.toLowerCase())||campos.a_quien.toLowerCase().includes(d.nombre.toLowerCase()));if(match)seleccionar(match.id);}const filas=[['A quién',campos.a_quien],['N° cheque',campos.numero_cheque],['Monto',campos.monto?'$'+parseFloat(campos.monto).toLocaleString('es-AR'):null],['Fecha emisión',campos.fecha_emision?formatFecha(campos.fecha_emision):null],['Fecha cobro',campos.fecha_cobro?formatFecha(campos.fecha_cobro):null],['CUIT',campos.cuit]].filter(([,v])=&gt;v);zona.className='zona-comprobante ok';content.innerHTML=`&lt;div style="font-size:13px;font-weight:800;color:#065f46;margin-bottom:8px"&gt;</span><span class="s5">✅</span><span class="s1"> Datos detectados — revisá y corregí&lt;/div&gt;&lt;div class="zc-resultado"&gt;${filas.map(([l,v])=&gt;`&lt;div class="zc-resultado-fila"&gt;&lt;span class="zc-resultado-label"&gt;${l}&lt;/span&gt;&lt;span class="zc-resultado-val"&gt;${v}&lt;/span&gt;&lt;/div&gt;`).join('')}&lt;/div&gt;&lt;span class="zc-cambiar" onclick="resetComprobante()"&gt;</span><span class="s5">📎</span><span class="s1"> Cambiar comprobante&lt;/span&gt;`;}catch(err){zona.className='zona-comprobante error-ocr';content.innerHTML=`&lt;div class="zc-icono"&gt;</span><span class="s5">⚠️</span><span class="s1">&lt;/div&gt;&lt;div class="zc-titulo" style="color:#b91c1c"&gt;No se pudo leer&lt;/div&gt;&lt;div class="zc-sub" style="color:#ef4444"&gt;${err.message}&lt;/div&gt;&lt;span class="zc-cambiar" onclick="resetComprobante()"&gt;</span><span class="s5">🔄</span><span class="s1"> Intentar de nuevo&lt;/span&gt;`;}event.target.value='';}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function resetComprobante(){const zona=document.getElementById('zona-comp'),content=document.getElementById('zc-content');zona.className='zona-comprobante';zona.onclick=()=&gt;document.getElementById('input-comprobante').click();content.innerHTML=`&lt;div class="zc-icono"&gt;</span><span class="s5">📎</span><span class="s1">&lt;/div&gt;&lt;div class="zc-titulo"&gt;Subir comprobante&lt;/div&gt;&lt;div class="zc-sub"&gt;PDF o imagen · La IA completa los datos&lt;/div&gt;`;}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cargar();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
