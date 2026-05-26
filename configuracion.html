@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olvisión — Configuración</title>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="icon" type="image/png" href="finanzas_logo.png" />
+  <link rel="apple-touch-icon" href="finanzas_logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cache.js"></script>
+  <script src="utils.js"></script>
+  <link rel="manifest" href="manifest.json" />
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <style>
+    .config-section { margin-bottom: 32px; }
+    .config-section-titulo {
+      font-size: 13px; font-weight: 800; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 12px; padding: 0 2px;
+    }
+    .emp-card {
+      background: white; border-radius: 16px; padding: 16px;
+      margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+      transition: opacity 0.2s;
+    }
+    .emp-card.inactivo { opacity: 0.5; }
+    .emp-nombre { font-size: 16px; font-weight: 900; color: #1e293b; }
+    .emp-detalle { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.6; }
+    .emp-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .emp-badge { padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .emp-badge.verde   { background: #d1fae5; color: #065f46; }
+    .emp-badge.gris    { background: #f1f5f9; color: #94a3b8; }
+    .emp-badge.azul    { background: #dbeafe; color: #1e40af; }
+    .emp-badge.celeste { background: #ecfdf5; color: #059669; }
+    .emp-acciones { display: flex; gap: 6px; flex-shrink: 0; margin-top: 2px; }
+    .emp-btn { border: none; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+    .btn-agregar {
+      width: 100%; background: white; color: #1E3A8A;
+      border: 2px dashed #bfdbfe; border-radius: 16px;
+      padding: 16px; font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      margin-bottom: 10px; transition: background 0.15s;
+    }
+    .btn-agregar:hover { background: #eff6ff; }
+    /* ── Botón ir a ajustes ── */
+    .btn-ir-ajustes {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; background: white; border: none;
+      border-radius: 16px; padding: 18px 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      font-family: 'Nunito', sans-serif; cursor: pointer;
+      text-decoration: none; color: inherit;
+      transition: box-shadow 0.15s;
+      margin-bottom: 10px;
+    }
+    .btn-ir-ajustes:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn-ir-ajustes .ajustes-left { display: flex; align-items: center; gap: 12px; }
+    .btn-ir-ajustes .ajustes-icon { font-size: 28px; }
+    .btn-ir-ajustes .ajustes-texto { text-align: left; }
+    .btn-ir-ajustes .ajustes-titulo { font-size: 15px; font-weight: 800; color: #1e293b; }
+    .btn-ir-ajustes .ajustes-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .btn-ir-ajustes .ajustes-arrow { font-size: 22px; color: #94a3b8; }
+    .campo-check {
+      display: flex; align-items: center; gap: 12px;
+      background: #f8fafc; border-radius: 14px;
+      padding: 14px 16px; margin-bottom: 14px; cursor: pointer;
+    }
+    .campo-check input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #1E3A8A; flex-shrink: 0; }
+    .campo-check-label { font-size: 14px; font-weight: 700; color: #475569; }
+    .campo-check-sub   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .aviso-info { background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 12px; padding: 10px 14px; margin: 12px 0; font-size: 13px; color: #1e40af; font-weight: 700; }
+    .empty { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
+    .overlay.visible { display: flex; }
+    .modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }
+    .modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; text-align: center; }
+    @media (min-width: 768px) {
+      .overlay { align-items: center; }
+      .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="logo_app.png" alt="Olvisión" /></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item" href="dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item" href="sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+        <a class="snav-item" href="saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
+        <a class="snav-item activo" href="configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
+    </aside>
+
+    <div class="app-content">
+      <nav class="nav">
+        <div class="nav-left">
+          <a class="nav-back" href="dashboard.html">‹</a>
+          <div>
+            <div class="nav-title">⚙️ Configuración</div>
+            <div class="nav-sub">Olvisión</div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main">
+
+        <!-- EMPLEADOS -->
+        <div class="config-section">
+          <div class="config-section-titulo">👤 Empleados</div>
+          <button class="btn-agregar" onclick="abrirNuevo()">+ Agregar empleado</button>
+          <div id="lista-empleados"><div class="empty">Cargando...</div></div>
+        </div>
+
+        <!-- PRODUCTOS -->
+        <div class="config-section">
+          <div class="config-section-titulo">📦 Productos</div>
+          <a class="btn-ir-ajustes" href="ajustes.html">
+            <div class="ajustes-left">
+              <span class="ajustes-icon">🏷️</span>
+              <div class="ajustes-texto">
+                <div class="ajustes-titulo">Marcas y Tratamientos</div>
+                <div class="ajustes-sub">Marcas de armazón · Lentes de contacto · Tratamientos por tipo</div>
+              </div>
+            </div>
+            <span class="ajustes-arrow">›</span>
+          </a>
+        </div>
+
+      </main>
+
+      <nav class="bottom-nav">
+        <a class="bnav-item" href="dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item" href="cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
+        <a class="bnav-item activo" href="configuracion.html"><span class="bnav-icon">⚙️</span><span class="bnav-label">Config.</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- MODAL EMPLEADO -->
+  <div class="overlay" id="overlay-empleado" onclick="cerrarFuera(event)">
+    <div class="modal">
+      <div class="modal-titulo" id="emp-titulo">Nuevo empleado</div>
+      <input type="hidden" id="emp-id" />
+
+      <div class="campo">
+        <label>Nombre</label>
+        <input type="text" id="emp-nombre" placeholder="Ej: Miriam" autocomplete="off" />
+      </div>
+
+      <label class="campo-check" onclick="toggleCheck()">
+        <input type="checkbox" id="emp-tiene-sueldo" onclick="event.stopPropagation();toggleSueldoField()" />
+        <div>
+          <div class="campo-check-label">💰 Tiene sueldo quincenal</div>
+          <div class="campo-check-sub">Se muestra en el módulo Sueldos</div>
+        </div>
+      </label>
+
+      <div class="campo" id="emp-sueldo-campo" style="display:none">
+        <label>Sueldo por quincena $</label>
+        <input type="text" data-miles="true" id="emp-sueldo" placeholder="0" inputmode="numeric" oninput="fmtMiles(this)" />
+      </div>
+
+      <div class="campo">
+        <label>% Comisión sobre ventas</label>
+        <input type="number" id="emp-comision" placeholder="0" inputmode="numeric" step="0.5" value="0" />
+        <small style="color:#94a3b8;font-size:12px">Dejalo en 0 si no cobra comisión</small>
+      </div>
+
+      <div class="aviso-info">ℹ️ Aparece automáticamente como vendedor en Caja y en Comisiones.</div>
+
+      <button class="btn-guardar" id="emp-btn-guardar" onclick="guardarEmpleado()">✅ Crear empleado</button>
+      <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let empleados = [];
+
+    function formatPesos(n) { if(!n||isNaN(n))return'$0'; return'$'+Math.round(n).toLocaleString('es-AR'); }
+    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }
+
+    async function cargarEmpleados() {
+      const { data } = await db.from('empleados').select('*').order('nombre');
+      empleados = data || [];
+      renderLista();
+    }
+
+    function renderLista() {
+      const lista = document.getElementById('lista-empleados');
+      if (empleados.length === 0) {
+        lista.innerHTML = '<div class="empty">No hay empleados todavía.<br>Usá el botón de arriba para agregar.</div>';
+        return;
+      }
+      lista.innerHTML = empleados.map(e => `
+        <div class="emp-card ${e.activo ? '' : 'inactivo'}">
+          <div style="flex:1">
+            <div class="emp-nombre">${e.nombre}</div>
+            <div class="emp-detalle">
+              ${e.tiene_sueldo ? `💰 ${formatPesos(e.sueldo_quincena)}/quincena` : 'Sin sueldo quincenal'}
+              ${e.comision_pct > 0 ? `<br>📊 Comisión: ${e.comision_pct}%` : ''}
+            </div>
+            <div class="emp-badges">
+              <span class="emp-badge ${e.activo ? 'verde' : 'gris'}">${e.activo ? '✅ Activo' : '⛔ Inactivo'}</span>
+              ${e.tiene_sueldo ? '<span class="emp-badge azul">💰 Sueldo</span>' : ''}
+              ${e.comision_pct > 0 ? `<span class="emp-badge celeste">📊 ${e.comision_pct}%</span>` : ''}
+            </div>
+          </div>
+          <div class="emp-acciones">
+            <button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(${e.id})">✏️</button>
+            <button class="emp-btn" style="background:${e.activo?'#fef2f2':'#f0fdf4'};color:${e.activo?'#dc2626':'#059669'}"
+              onclick="toggleActivo(${e.id},${e.activo})">${e.activo?'⛔':'✅'}</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function abrirNuevo() {
+      document.getElementById('emp-titulo').textContent = 'Nuevo empleado';
+      document.getElementById('emp-id').value = '';
+      document.getElementById('emp-nombre').value = '';
+      document.getElementById('emp-tiene-sueldo').checked = false;
+      document.getElementById('emp-sueldo-campo').style.display = 'none';
+      document.getElementById('emp-sueldo').value = '';
+      document.getElementById('emp-comision').value = '0';
+      document.getElementById('emp-btn-guardar').textContent = '✅ Crear empleado';
+      document.getElementById('overlay-empleado').classList.add('visible');
+      setTimeout(() => document.getElementById('emp-nombre').focus(), 200);
+    }
+
+    function abrirEditar(id) {
+      const e = empleados.find(x => x.id === id);
+      if (!e) return;
+      document.getElementById('emp-titulo').textContent = `✏️ Editar — ${e.nombre}`;
+      document.getElementById('emp-id').value = e.id;
+      document.getElementById('emp-nombre').value = e.nombre;
+      document.getElementById('emp-tiene-sueldo').checked = e.tiene_sueldo;
+      document.getElementById('emp-sueldo-campo').style.display = e.tiene_sueldo ? 'block' : 'none';
+      setVal(document.getElementById('emp-sueldo'), e.sueldo_quincena);
+      document.getElementById('emp-comision').value = e.comision_pct;
+      document.getElementById('emp-btn-guardar').textContent = '💾 Guardar cambios';
+      document.getElementById('overlay-empleado').classList.add('visible');
+    }
+
+    function cerrarModal() { document.getElementById('overlay-empleado').classList.remove('visible'); }
+    function cerrarFuera(e) { if (e.target === document.getElementById('overlay-empleado')) cerrarModal(); }
+    function toggleSueldoField() {
+      document.getElementById('emp-sueldo-campo').style.display =
+        document.getElementById('emp-tiene-sueldo').checked ? 'block' : 'none';
+    }
+    function toggleCheck() {
+      const cb = document.getElementById('emp-tiene-sueldo');
+      cb.checked = !cb.checked; toggleSueldoField();
+    }
+
+    async function guardarEmpleado() {
+      const id = document.getElementById('emp-id').value;
+      const nombre = document.getElementById('emp-nombre').value.trim();
+      const tiene_sueldo = document.getElementById('emp-tiene-sueldo').checked;
+      const sueldo_quincena = tiene_sueldo ? (getVal(document.getElementById('emp-sueldo')) || 0) : 0;
+      const comision_pct = parseFloat(document.getElementById('emp-comision').value) || 0;
+      if (!nombre) { alert('Ingresá el nombre'); return; }
+      const btn = document.getElementById('emp-btn-guardar');
+      btn.textContent = 'Guardando...'; btn.disabled = true;
+      let error;
+      if (id) {
+        ({ error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct }).eq('id', id));
+      } else {
+        ({ error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, activo: true }]));
+      }
+      if (error) { alert('Error: ' + error.message); btn.textContent = id ? '💾 Guardar cambios' : '✅ Crear empleado'; btn.disabled = false; return; }
+      cerrarModal();
+      await cargarEmpleados();
+      btn.textContent = id ? '💾 Guardar cambios' : '✅ Crear empleado';
+      btn.disabled = false;
+    }
+
+    async function toggleActivo(id, activo) {
+      const e = empleados.find(x => x.id === id);
+      const accion = activo ? 'desactivar' : 'activar';
+      if (!confirm(`¿${accion.charAt(0).toUpperCase()+accion.slice(1)} a ${e?.nombre}?\n\n${activo ? 'Desaparece de toda la app.' : 'Vuelve a aparecer en toda la app.'}`)) return;
+      await db.from('empleados').update({ activo: !activo }).eq('id', id);
+      await cargarEmpleados();
+    }
+
+    cargarEmpleados();
+  </script>
+</body>
+</html>

@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olvisión — Ajustes</title>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="icon" type="image/png" href="finanzas_logo.png" />
+  <link rel="apple-touch-icon" href="finanzas_logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cache.js"></script>
+  <script src="utils.js"></script>
+  <link rel="manifest" href="manifest.json" />
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <style>
+    /* ── Tabs ── */
+    .ajustes-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .ajustes-tab {
+      flex: 1;
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: white;
+      color: #94a3b8;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: all .2s;
+    }
+    .ajustes-tab.activo {
+      background: #1E3A8A;
+      color: white;
+    }
+
+    /* ── Sección card ── */
+    .seccion-card {
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .seccion-titulo {
+      font-size: 13px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .seccion-count {
+      background: #eff6ff;
+      color: #1E3A8A;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 20px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    /* ── Tags ── */
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      min-height: 28px;
+    }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f1f5f9;
+      border: 1.5px solid #e2e8f0;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: background .15s;
+    }
+    .tag-chip .remove-tag {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 0 0 2px;
+      display: flex;
+      align-items: center;
+      transition: color .15s;
+      font-family: 'Nunito', sans-serif;
+    }
+    .tag-chip .remove-tag:hover { color: #ef4444; }
+    .empty-tags {
+      color: #cbd5e1;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* ── Add row ── */
+    .add-row {
+      display: flex;
+      gap: 8px;
+    }
+    .add-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      outline: none;
+      transition: border-color .2s;
+      background: #f8fafc;
+    }
+    .add-row input:focus {
+      border-color: #1E3A8A;
+      background: white;
+    }
+    .add-row input::placeholder { color: #94a3b8; font-weight: 500; }
+    .btn-add {
+      background: #1E3A8A;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .btn-add:hover { background: #1e40af; }
+    .btn-add:active { transform: scale(.97); }
+
+    /* ── Separador entre secciones de tratamientos ── */
+    .seccion-sep {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 16px 0;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1E3A8A;
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0;
+      transition: all .3s;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(30,58,138,.3);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="logo_app.png" alt="Olvisión" /></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item" href="dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item" href="sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+        <a class="snav-item" href="saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
+        <a class="snav-item activo" href="configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
+    </aside>
+
+    <div class="app-content">
+
+      <!-- TOP NAV -->
+      <nav class="nav">
+        <div class="nav-left">
+          <a class="nav-back" href="configuracion.html">‹</a>
+          <div>
+            <div class="nav-title">🏷️ Ajustes de productos</div>
+            <div class="nav-sub">Marcas · Tratamientos</div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main">
+
+        <!-- TABS -->
+        <div class="ajustes-tabs">
+          <button class="ajustes-tab activo" id="tab-btn-marcas" onclick="switchTab('marcas')">🏷️ Marcas</button>
+          <button class="ajustes-tab" id="tab-btn-tratamientos" onclick="switchTab('tratamientos')">🔬 Tratamientos</button>
+        </div>
+
+        <!-- ══ PANEL MARCAS ══ -->
+        <div id="panel-marcas">
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">
+              👓 Marcas de Armazón
+              <span class="seccion-count" id="count-armazon">0</span>
+            </div>
+            <div class="tags-wrap" id="tags-armazon">
+              <span class="empty-tags">Cargando…</span>
+            </div>
+            <div class="add-row">
+              <input type="text" id="input-armazon" placeholder="Nueva marca…" maxlength="60"
+                     onkeydown="if(event.key==='Enter') agregarItem('marcas_armazon','armazon')" />
+              <button class="btn-add" onclick="agregarItem('marcas_armazon','armazon')">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">
+              👁️ Marcas Lentes de Contacto
+              <span class="seccion-count" id="count-contacto">0</span>
+            </div>
+            <div class="tags-wrap" id="tags-contacto">
+              <span class="empty-tags">Cargando…</span>
+            </div>
+            <div class="add-row">
+              <input type="text" id="input-contacto" placeholder="Nueva marca…" maxlength="60"
+                     onkeydown="if(event.key==='Enter') agregarItem('marcas_lentes_contacto','contacto')" />
+              <button class="btn-add" onclick="agregarItem('marcas_lentes_contacto','contacto')">+ Agregar</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ══ PANEL TRATAMIENTOS ══ -->
+        <div id="panel-tratamientos" style="display:none">
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">👓 Monofocal</div>
+            <div class="tags-wrap" id="tags-monofocal"><span class="empty-tags">Cargando…</span></div>
+            <div class="add-row">
+              <input type="text" id="input-monofocal" placeholder="Nuevo tratamiento…" maxlength="80"
+                     onkeydown="if(event.key==='Enter') agregarItem('tratamientos_monofocal','monofocal')" />
+              <button class="btn-add" onclick="agregarItem('tratamientos_monofocal','monofocal')">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">👴 Bifocal</div>
+            <div class="tags-wrap" id="tags-bifocal"><span class="empty-tags">Cargando…</span></div>
+            <div class="add-row">
+              <input type="text" id="input-bifocal" placeholder="Nuevo tratamiento…" maxlength="80"
+                     onkeydown="if(event.key==='Enter') agregarItem('tratamientos_bifocal','bifocal')" />
+              <button class="btn-add" onclick="agregarItem('tratamientos_bifocal','bifocal')">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">💻 Ocupacional</div>
+            <div class="tags-wrap" id="tags-ocupacional"><span class="empty-tags">Cargando…</span></div>
+            <div class="add-row">
+              <input type="text" id="input-ocupacional" placeholder="Nuevo tratamiento…" maxlength="80"
+                     onkeydown="if(event.key==='Enter') agregarItem('tratamientos_ocupacional','ocupacional')" />
+              <button class="btn-add" onclick="agregarItem('tratamientos_ocupacional','ocupacional')">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">👑 Progresivo / Multifocal</div>
+            <div class="tags-wrap" id="tags-progresivo"><span class="empty-tags">Cargando…</span></div>
+            <div class="add-row">
+              <input type="text" id="input-progresivo" placeholder="Nuevo tratamiento…" maxlength="80"
+                     onkeydown="if(event.key==='Enter') agregarItem('tratamientos_progresivo','progresivo')" />
+              <button class="btn-add" onclick="agregarItem('tratamientos_progresivo','progresivo')">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="seccion-card">
+            <div class="seccion-titulo">🕶️ Solares y Teñidos</div>
+            <div class="tags-wrap" id="tags-tenido"><span class="empty-tags">Cargando…</span></div>
+            <div class="add-row">
+              <input type="text" id="input-tenido" placeholder="Nuevo tratamiento…" maxlength="80"
+                     onkeydown="if(event.key==='Enter') agregarItem('tratamientos_tenido','tenido')" />
+              <button class="btn-add" onclick="agregarItem('tratamientos_tenido','tenido')">+ Agregar</button>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+      <!-- BOTTOM NAV -->
+      <nav class="bottom-nav">
+        <a class="bnav-item" href="dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item" href="cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
+        <a class="bnav-item activo" href="configuracion.html"><span class="bnav-icon">⚙️</span><span class="bnav-label">Config.</span></a>
+      </nav>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
+    const { createClient } = supabase;
+    const _sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href = 'index.html'; }
+
+    // ── Estado ────────────────────────────────────────────────
+    const estado = {
+      marcas_armazon:           [],
+      marcas_lentes_contacto:   [],
+      tratamientos_monofocal:   [],
+      tratamientos_bifocal:     [],
+      tratamientos_ocupacional: [],
+      tratamientos_progresivo:  [],
+      tratamientos_tenido:      []
+    };
+
+    const mapaUI = {
+      marcas_armazon:           { tags: 'tags-armazon',     count: 'count-armazon'  },
+      marcas_lentes_contacto:   { tags: 'tags-contacto',    count: 'count-contacto' },
+      tratamientos_monofocal:   { tags: 'tags-monofocal',   count: null },
+      tratamientos_bifocal:     { tags: 'tags-bifocal',     count: null },
+      tratamientos_ocupacional: { tags: 'tags-ocupacional',  count: null },
+      tratamientos_progresivo:  { tags: 'tags-progresivo',  count: null },
+      tratamientos_tenido:      { tags: 'tags-tenido',      count: null }
+    };
+
+    // ── Carga ─────────────────────────────────────────────────
+    async function cargarTodo() {
+      const { data, error } = await _sb
+        .from('configuracion')
+        .select('clave,valor')
+        .in('clave', Object.keys(estado));
+      if (error) { mostrarToast('❌ Error al cargar'); return; }
+      data.forEach(row => {
+        try { estado[row.clave] = JSON.parse(row.valor) || []; }
+        catch { estado[row.clave] = []; }
+        renderTags(row.clave);
+      });
+    }
+
+    // ── Render tags ───────────────────────────────────────────
+    function renderTags(clave) {
+      const ui = mapaUI[clave];
+      if (!ui) return;
+      const container = document.getElementById(ui.tags);
+      const arr = estado[clave];
+      const viewer = isViewer();
+      container.innerHTML = arr.length === 0
+        ? '<span class="empty-tags">Sin opciones todavía</span>'
+        : arr.map((item, i) => `
+            <span class="tag-chip">
+              ${escH(item)}
+              ${viewer ? '' : `<button class="remove-tag" onclick="eliminarItem('${clave}',${i})">×</button>`}
+            </span>`).join('');
+      if (ui.count) document.getElementById(ui.count).textContent = arr.length;
+    }
+
+    // ── Agregar ───────────────────────────────────────────────
+    async function agregarItem(clave, inputSuffix) {
+      if (isViewer()) return;
+      const input = document.getElementById('input-' + inputSuffix);
+      const valor = input.value.trim();
+      if (!valor) return;
+      if (estado[clave].some(v => v.toLowerCase() === valor.toLowerCase())) {
+        mostrarToast('⚠️ Ya existe esa opción');
+        input.value = '';
+        return;
+      }
+      estado[clave].push(valor);
+      renderTags(clave);
+      input.value = '';
+      input.focus();
+      await guardar(clave);
+    }
+
+    // ── Eliminar ──────────────────────────────────────────────
+    async function eliminarItem(clave, index) {
+      if (isViewer()) return;
+      if (!confirm(`¿Eliminar "${estado[clave][index]}"?`)) return;
+      estado[clave].splice(index, 1);
+      renderTags(clave);
+      await guardar(clave);
+    }
+
+    // ── Guardar ───────────────────────────────────────────────
+    async function guardar(clave) {
+      const { error } = await _sb
+        .from('configuracion')
+        .upsert({ clave, valor: JSON.stringify(estado[clave]) }, { onConflict: 'clave' });
+      mostrarToast(error ? '❌ Error al guardar' : '✅ Guardado');
+      if (error) console.error(error);
+    }
+
+    // ── Tabs ──────────────────────────────────────────────────
+    function switchTab(nombre) {
+      document.getElementById('panel-marcas').style.display       = nombre === 'marcas'       ? 'block' : 'none';
+      document.getElementById('panel-tratamientos').style.display = nombre === 'tratamientos' ? 'block' : 'none';
+      document.getElementById('tab-btn-marcas').className       = 'ajustes-tab' + (nombre === 'marcas'       ? ' activo' : '');
+      document.getElementById('tab-btn-tratamientos').className = 'ajustes-tab' + (nombre === 'tratamientos' ? ' activo' : '');
+    }
+
+    // ── Helpers ───────────────────────────────────────────────
+    function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    let toastTimer;
+    function mostrarToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    cargarTodo();
+  </script>
+</body>
+</html>

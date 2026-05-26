@@ -1,0 +1,508 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olvisión — Importar Históricos</title>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="icon" type="image/png" href="finanzas_logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <style>
+    .import-card {
+      background: white; border-radius: 20px; padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px;
+    }
+    .import-titulo { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+    .import-sub { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed #cbd5e1; border-radius: 16px;
+      padding: 40px 20px; text-align: center;
+      cursor: pointer; transition: all 0.2s;
+      background: #f8fafc;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #1E3A8A; background: #eff6ff; }
+    .drop-zone.tiene-archivo { border-color: #10b981; background: #f0fdf4; border-style: solid; }
+    .dz-icon { font-size: 40px; margin-bottom: 12px; }
+    .dz-texto { font-size: 15px; font-weight: 700; color: #475569; }
+    .dz-sub { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+    #file-input { display: none; }
+
+    /* Año selector */
+    .anio-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+    .anio-row label { font-size: 13px; font-weight: 700; color: #475569; white-space: nowrap; }
+    .anio-row select {
+      padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 12px;
+      font-size: 15px; font-family: 'Nunito', sans-serif; font-weight: 700;
+      color: #1e293b; background: white; outline: none; flex: 1;
+    }
+    .anio-row select:focus { border-color: #1E3A8A; }
+
+    /* Preview */
+    .preview-mes {
+      background: #f8fafc; border-radius: 14px; padding: 14px 16px;
+      margin-bottom: 8px; display: flex; justify-content: space-between;
+      align-items: center; border-left: 4px solid #1E3A8A;
+    }
+    .preview-mes.tiene-datos { border-left-color: #10b981; background: #f0fdf4; }
+    .preview-mes.sin-datos { border-left-color: #e2e8f0; opacity: 0.5; }
+    .preview-mes-nombre { font-size: 14px; font-weight: 800; color: #1e293b; }
+    .preview-mes-count { font-size: 13px; color: #64748b; }
+    .preview-mes-monto { font-size: 16px; font-weight: 900; color: #1E3A8A; }
+
+    /* Progress */
+    .progreso-wrap { margin: 16px 0; }
+    .progreso-texto { font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .progreso-bar { background: #f1f5f9; border-radius: 20px; height: 12px; overflow: hidden; }
+    .progreso-fill { height: 100%; background: #1E3A8A; border-radius: 20px; transition: width 0.3s; }
+
+    /* Alerta duplicados */
+    .alerta-dup {
+      background: #fffbeb; border: 2px solid #f9f4ab; border-radius: 14px;
+      padding: 14px 16px; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: #92400e;
+    }
+
+    /* Resultados */
+    .resultado-ok { background: #f0fdf4; border: 2px solid #86efac; border-radius: 14px; padding: 16px; text-align: center; }
+    .resultado-ok .num { font-size: 36px; font-weight: 900; color: #15803d; }
+    .resultado-ok .label { font-size: 14px; color: #166534; font-weight: 700; margin-top: 4px; }
+    .resultado-error { background: #fef2f2; border: 2px solid #fca5a5; border-radius: 14px; padding: 14px; font-size: 13px; color: #991b1b; font-weight: 600; margin-top: 12px; }
+
+    .btn-importar {
+      background: #1E3A8A; color: white; border: none; border-radius: 16px;
+      padding: 16px; width: 100%; font-size: 16px; font-weight: 800;
+      cursor: pointer; font-family: 'Nunito', sans-serif; margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+    .btn-importar:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-importar.listo { background: #10b981; }
+
+    .step { display: none; }
+    .step.visible { display: block; }
+
+    .tag-mes {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 800;
+      background: #dbeafe; color: #1e40af; margin-right: 4px;
+    }
+
+    .log-box {
+      background: #1e293b; border-radius: 12px; padding: 14px;
+      font-family: monospace; font-size: 11px; color: #94a3b8;
+      max-height: 160px; overflow-y: auto; margin-top: 12px;
+    }
+    .log-ok { color: #4ade80; }
+    .log-err { color: #f87171; }
+    .log-info { color: #93c5fd; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="logo_app.png" alt="Olvisión" /></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item" href="dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item" href="sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
+    </aside>
+
+    <div class="app-content">
+      <nav class="nav">
+        <div class="nav-left">
+          <a class="nav-back" href="dashboard.html">‹</a>
+          <div>
+            <div class="nav-title">📥 Importar Históricos</div>
+            <div class="nav-sub">Desde Excel de Olvisión</div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main">
+
+        <!-- PASO 1: Subir archivo -->
+        <div class="step visible" id="step-1">
+          <div class="import-card">
+            <div class="import-titulo">📂 Paso 1 — Subí tu Excel</div>
+            <div class="import-sub">El archivo debe ser el Excel de Olvisión con las hojas de meses (ENE, FEB, MAR...)</div>
+
+            <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+              <div class="dz-icon" id="dz-icon">📊</div>
+              <div class="dz-texto" id="dz-texto">Tocá para elegir el archivo</div>
+              <div class="dz-sub" id="dz-sub">o arrastralo acá · .xlsx, .xls</div>
+            </div>
+            <input type="file" id="file-input" accept=".xlsx,.xls" onchange="leerArchivo(this)" />
+
+            <div class="anio-row">
+              <label>Año del archivo:</label>
+              <select id="sel-anio">
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025" selected>2025</option>
+                <option value="2026">2026</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-importar" id="btn-preview" disabled onclick="generarPreview()">
+            Ver preview →
+          </button>
+        </div>
+
+        <!-- PASO 2: Preview -->
+        <div class="step" id="step-2">
+          <div class="import-card">
+            <div class="import-titulo">📋 Paso 2 — Revisá los datos</div>
+            <div class="import-sub" id="preview-sub">—</div>
+            <div id="preview-lista"></div>
+          </div>
+          <div class="alerta-dup" id="alerta-dup" style="display:none"></div>
+          <button class="btn-importar listo" id="btn-importar" onclick="importar()">
+            ✅ Importar a Supabase
+          </button>
+          <button class="btn-cancelar" style="margin-top:8px" onclick="resetear()">← Volver</button>
+        </div>
+
+        <!-- PASO 3: Progreso -->
+        <div class="step" id="step-3">
+          <div class="import-card">
+            <div class="import-titulo">⏳ Importando...</div>
+            <div class="progreso-wrap">
+              <div class="progreso-texto">
+                <span id="prog-texto">Iniciando...</span>
+                <span id="prog-pct">0%</span>
+              </div>
+              <div class="progreso-bar">
+                <div class="progreso-fill" id="prog-fill" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="log-box" id="log-box"></div>
+          </div>
+        </div>
+
+        <!-- PASO 4: Resultado -->
+        <div class="step" id="step-4">
+          <div class="import-card">
+            <div class="import-titulo">🎉 Importación completada</div>
+            <div class="resultado-ok">
+              <div class="num" id="res-num">0</div>
+              <div class="label">operaciones importadas</div>
+            </div>
+            <div id="res-errores"></div>
+          </div>
+          <a class="btn-importar listo" href="caja.html" style="display:block;text-align:center;text-decoration:none;padding:16px;border-radius:16px;font-size:16px;font-weight:800;margin-top:8px">
+            → Ir a Caja Diaria
+          </a>
+          <button class="btn-cancelar" style="margin-top:8px" onclick="resetear()">Importar otro archivo</button>
+        </div>
+
+      </main>
+
+      <nav class="bottom-nav">
+        <a class="bnav-item" href="dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item" href="cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
+        <a class="bnav-item" href="sueldos.html"><span class="bnav-icon">👥</span><span class="bnav-label">Sueldos</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }
+
+    // ── Mapeo de meses ───────────────────────────────────────
+    const MESES_MAP = {
+      'ENE':'01','FEB':'02','MAR':'03','ABR':'04','MAY':'05','JUN':'06',
+      'JUL':'07','AGO':'08','SET':'09','SEP':'09','OCT':'10','NOV':'11','DIC':'12'
+    };
+    const MESES_LABEL = {
+      '01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio',
+      '07':'Julio','08':'Agosto','09':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'
+    };
+
+    let workbook = null;
+    let datosParaImportar = []; // array de registros listos para Supabase
+
+    // ── Drag and drop ────────────────────────────────────────
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) procesarArchivo(file);
+    });
+
+    function leerArchivo(input) {
+      if (input.files[0]) procesarArchivo(input.files[0]);
+    }
+
+    function procesarArchivo(file) {
+      if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        alert('Solo se aceptan archivos .xlsx o .xls');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          workbook = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+          dropZone.classList.add('tiene-archivo');
+          document.getElementById('dz-icon').textContent = '✅';
+          document.getElementById('dz-texto').textContent = file.name;
+          document.getElementById('dz-sub').textContent = 'Archivo listo · ' + (file.size/1024).toFixed(0) + ' KB';
+          document.getElementById('btn-preview').disabled = false;
+        } catch(err) {
+          alert('Error al leer el archivo: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ── Generar preview ──────────────────────────────────────
+    function generarPreview() {
+      if (!workbook) return;
+      const anio = document.getElementById('sel-anio').value;
+      datosParaImportar = [];
+
+      const sheetNames = workbook.SheetNames;
+      const mesesEncontrados = sheetNames.filter(n => MESES_MAP[n.toUpperCase()]);
+      
+      if (mesesEncontrados.length === 0) {
+        alert('No encontré hojas de meses (ENE, FEB, MAR...) en el archivo.');
+        return;
+      }
+
+      let totalOps = 0;
+      let totalMonto = 0;
+      const resumenMeses = [];
+
+      mesesEncontrados.forEach(nombreHoja => {
+        const mesNum = MESES_MAP[nombreHoja.toUpperCase()];
+        const mesClave = `${anio}-${mesNum}`;
+        const ws = workbook.Sheets[nombreHoja];
+        const filas = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+        // Buscar fila de encabezado (primera con "FECHA" o "NOMBRE")
+        let filaHeader = 0;
+        for (let i = 0; i < Math.min(5, filas.length); i++) {
+          const row = filas[i].map(c => String(c).toUpperCase().trim());
+          if (row.includes('FECHA') || row.includes('NOMBRE')) {
+            filaHeader = i;
+            break;
+          }
+        }
+
+        const registrosMes = [];
+
+        for (let i = filaHeader + 1; i < filas.length; i++) {
+          const row = filas[i];
+          if (!row || row.length < 5) continue;
+
+          const fechaVal = row[0];
+          const nombreVal = String(row[1] || '').trim();
+          const ordenVal = String(row[2] || '').trim();
+          const productoVal = String(row[3] || '').trim();
+          const totalVal = parseFloat(row[4]) || 0;
+          const aCuentaVal = parseFloat(row[5]) || 0;
+          const saldoVal = parseFloat(row[6]) || 0;
+          const formaPagoVal = String(row[7] || '').trim();
+          const observacionVal = String(row[8] || '').trim();
+          const egresoVal = parseFloat(row[9]) || 0;
+          const vendedorVal = String(row[10] || '').trim();
+
+          // Ignorar filas de cierre (🏁) o vacías
+          const fechaStr = String(fechaVal);
+          if (fechaStr.includes('🏁') || fechaStr.includes('CIERRE')) continue;
+          if (!fechaVal && totalVal === 0 && egresoVal === 0) continue;
+          if (totalVal === 0 && egresoVal === 0) continue;
+
+          // Parsear fecha
+          let fechaISO = null;
+          if (fechaVal instanceof Date) {
+            fechaISO = fechaVal.toISOString().split('T')[0];
+          } else if (typeof fechaVal === 'number') {
+            // Excel serial date
+            const d = XLSX.SSF.parse_date_code(fechaVal);
+            if (d) {
+              fechaISO = `${anio}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+            }
+          } else if (typeof fechaVal === 'string' && fechaVal.trim()) {
+            // Formato dd/MM o dd/MM/yyyy
+            const partes = fechaVal.trim().split('/');
+            if (partes.length >= 2) {
+              const dd = partes[0].padStart(2,'0');
+              const mm = partes[1].padStart(2,'0');
+              const yyyy = partes.length >= 3 ? partes[2] : anio;
+              fechaISO = `${yyyy}-${mm}-${dd}`;
+            }
+          }
+
+          if (!fechaISO) continue;
+          // Validar que el mes del ISO coincide con la hoja
+          const mesFecha = fechaISO.substring(5,7);
+          if (mesFecha !== mesNum) continue;
+
+          registrosMes.push({
+            fecha: fechaISO,
+            nombre_cliente: nombreVal || null,
+            numero_orden: ordenVal || null,
+            producto: productoVal || null,
+            total: totalVal,
+            a_cuenta: aCuentaVal,
+            saldo: saldoVal,
+            forma_pago: formaPagoVal || null,
+            observacion: observacionVal || null,
+            egreso: egresoVal,
+            vendedor: vendedorVal || null,
+            mes: mesClave,
+          });
+        }
+
+        const montoMes = registrosMes.reduce((s,r) => s + (r.egreso > 0 ? 0 : (r.a_cuenta > 0 ? r.a_cuenta : r.total)), 0);
+        resumenMeses.push({ nombre: nombreHoja, mes: mesClave, cant: registrosMes.length, monto: montoMes });
+        totalOps += registrosMes.length;
+        totalMonto += montoMes;
+        datosParaImportar.push(...registrosMes);
+      });
+
+      if (totalOps === 0) {
+        alert('No se encontraron operaciones válidas en el archivo.');
+        return;
+      }
+
+      // Renderizar preview
+      document.getElementById('preview-sub').textContent =
+        `${totalOps} operaciones en ${mesesEncontrados.length} meses — Total: $${Math.round(totalMonto).toLocaleString('es-AR')}`;
+
+      const lista = document.getElementById('preview-lista');
+      lista.innerHTML = resumenMeses.map(m => `
+        <div class="preview-mes ${m.cant > 0 ? 'tiene-datos' : 'sin-datos'}">
+          <div>
+            <div class="preview-mes-nombre">${MESES_LABEL[m.mes.split('-')[1]] || m.nombre} ${anio}</div>
+            <div class="preview-mes-count">${m.cant} operaciones</div>
+          </div>
+          <div class="preview-mes-monto">${m.cant > 0 ? '$' + Math.round(m.monto).toLocaleString('es-AR') : '—'}</div>
+        </div>
+      `).join('');
+
+      // Verificar si ya hay datos de estos meses en Supabase
+      verificarDuplicados(resumenMeses.filter(m => m.cant > 0).map(m => m.mes));
+
+      mostrarStep('step-2');
+    }
+
+    async function verificarDuplicados(meses) {
+      const alertaDiv = document.getElementById('alerta-dup');
+      try {
+        const { data } = await db.from('registros')
+          .select('mes')
+          .in('mes', meses)
+          .limit(1);
+        
+        if (data && data.length > 0) {
+          alertaDiv.style.display = 'block';
+          alertaDiv.textContent = '⚠️ Ya existen registros de algunos de estos meses en la base de datos. Si importás, pueden aparecer duplicados. Verificá antes de continuar.';
+        } else {
+          alertaDiv.style.display = 'none';
+        }
+      } catch(e) { alertaDiv.style.display = 'none'; }
+    }
+
+    // ── Importar ─────────────────────────────────────────────
+    async function importar() {
+      if (datosParaImportar.length === 0) return;
+      mostrarStep('step-3');
+
+      const log = document.getElementById('log-box');
+      const progFill = document.getElementById('prog-fill');
+      const progTexto = document.getElementById('prog-texto');
+      const progPct = document.getElementById('prog-pct');
+
+      let importados = 0;
+      let errores = [];
+      const BATCH = 50; // insertar de a 50 registros
+      const total = datosParaImportar.length;
+
+      agregarLog(log, 'info', `Iniciando importación de ${total} registros...`);
+
+      for (let i = 0; i < datosParaImportar.length; i += BATCH) {
+        const lote = datosParaImportar.slice(i, i + BATCH);
+        const mesActual = lote[0].mes;
+
+        try {
+          const { error } = await db.from('registros').insert(lote);
+          if (error) {
+            errores.push(`Lote ${Math.floor(i/BATCH)+1}: ${error.message}`);
+            agregarLog(log, 'err', `❌ Error en lote (${mesActual}): ${error.message}`);
+          } else {
+            importados += lote.length;
+            agregarLog(log, 'ok', `✅ ${lote.length} registros de ${mesActual} importados`);
+          }
+        } catch(e) {
+          errores.push(e.message);
+          agregarLog(log, 'err', `❌ ${e.message}`);
+        }
+
+        const pct = Math.round(((i + lote.length) / total) * 100);
+        progFill.style.width = pct + '%';
+        progPct.textContent = pct + '%';
+        progTexto.textContent = `Importando ${mesActual}...`;
+
+        // Pequeña pausa para no saturar Supabase
+        await new Promise(r => setTimeout(r, 100));
+      }
+
+      agregarLog(log, 'info', `Finalizado: ${importados} importados, ${errores.length} errores`);
+
+      // Mostrar resultado
+      document.getElementById('res-num').textContent = importados;
+      if (errores.length > 0) {
+        document.getElementById('res-errores').innerHTML =
+          `<div class="resultado-error">⚠️ ${errores.length} error(es):<br>${errores.join('<br>')}</div>`;
+      }
+
+      mostrarStep('step-4');
+    }
+
+    function agregarLog(logBox, tipo, texto) {
+      const div = document.createElement('div');
+      div.className = tipo === 'ok' ? 'log-ok' : tipo === 'err' ? 'log-err' : 'log-info';
+      div.textContent = texto;
+      logBox.appendChild(div);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function mostrarStep(id) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('visible'));
+      document.getElementById(id).classList.add('visible');
+    }
+
+    function resetear() {
+      workbook = null;
+      datosParaImportar = [];
+      document.getElementById('file-input').value = '';
+      document.getElementById('dz-icon').textContent = '📊';
+      document.getElementById('dz-texto').textContent = 'Tocá para elegir el archivo';
+      document.getElementById('dz-sub').textContent = 'o arrastralo acá · .xlsx, .xls';
+      document.getElementById('drop-zone').classList.remove('tiene-archivo');
+      document.getElementById('btn-preview').disabled = true;
+      document.getElementById('prog-fill').style.width = '0%';
+      document.getElementById('log-box').innerHTML = '';
+      document.getElementById('res-errores').innerHTML = '';
+      mostrarStep('step-1');
+    }
+  </script>
+</body>
+</html>
