@@ -1,392 +1,1538 @@
-<!DOCTYPE html>
-<!-- saved from url=(0063)https://4fca45db.control-financiero-au9.pages.dev/configuracion -->
-<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Olvisión — Configuración</title>
-  <link rel="stylesheet" href="./Olvisión — Configuración_files/app.css">
-  <link rel="icon" type="image/png" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
-  <link rel="apple-touch-icon" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
-  <script src="./Olvisión — Configuración_files/supabase-js@2"></script>
-  <script src="./Olvisión — Configuración_files/config.js"></script>
-  <script src="./Olvisión — Configuración_files/cache.js"></script>
-  <script src="./Olvisión — Configuración_files/utils.js"></script>
-  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
-  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
-  <style>
-    .config-section { margin-bottom: 32px; }
-    .config-section-titulo {
-      font-size: 13px; font-weight: 800; color: #94a3b8;
-      text-transform: uppercase; letter-spacing: 1px;
-      margin-bottom: 12px; padding: 0 2px;
-    }
-    .emp-card {
-      background: white; border-radius: 16px; padding: 16px;
-      margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-      transition: opacity 0.2s;
-    }
-    .emp-card.inactivo { opacity: 0.5; }
-    .emp-nombre { font-size: 16px; font-weight: 900; color: #1e293b; }
-    .emp-detalle { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.6; }
-    .emp-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-    .emp-badge { padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; }
-    .emp-badge.verde   { background: #d1fae5; color: #065f46; }
-    .emp-badge.gris    { background: #f1f5f9; color: #94a3b8; }
-    .emp-badge.azul    { background: #dbeafe; color: #1e40af; }
-    .emp-badge.celeste { background: #ecfdf5; color: #059669; }
-    .emp-acciones { display: flex; gap: 6px; flex-shrink: 0; margin-top: 2px; }
-    .emp-btn { border: none; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
-    .btn-agregar {
-      width: 100%; background: white; color: #1E3A8A;
-      border: 2px dashed #bfdbfe; border-radius: 16px;
-      padding: 16px; font-family: 'Nunito', sans-serif;
-      font-size: 14px; font-weight: 800; cursor: pointer;
-      margin-bottom: 10px; transition: background 0.15s;
-    }
-    .btn-agregar:hover { background: #eff6ff; }
-    /* ── Botón ir a ajustes ── */
-    .btn-ir-ajustes {
-      display: flex; align-items: center; justify-content: space-between;
-      width: 100%; background: white; border: none;
-      border-radius: 16px; padding: 18px 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      font-family: 'Nunito', sans-serif; cursor: pointer;
-      text-decoration: none; color: inherit;
-      transition: box-shadow 0.15s;
-      margin-bottom: 10px;
-    }
-    .btn-ir-ajustes:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .btn-ir-ajustes .ajustes-left { display: flex; align-items: center; gap: 12px; }
-    .btn-ir-ajustes .ajustes-icon { font-size: 28px; }
-    .btn-ir-ajustes .ajustes-texto { text-align: left; }
-    .btn-ir-ajustes .ajustes-titulo { font-size: 15px; font-weight: 800; color: #1e293b; }
-    .btn-ir-ajustes .ajustes-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
-    .btn-ir-ajustes .ajustes-arrow { font-size: 22px; color: #94a3b8; }
-    .campo-check {
-      display: flex; align-items: center; gap: 12px;
-      background: #f8fafc; border-radius: 14px;
-      padding: 14px 16px; margin-bottom: 14px; cursor: pointer;
-    }
-    .campo-check input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #1E3A8A; flex-shrink: 0; }
-    .campo-check-label { font-size: 14px; font-weight: 700; color: #475569; }
-    .campo-check-sub   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
-    .aviso-info { background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 12px; padding: 10px 14px; margin: 12px 0; font-size: 13px; color: #1e40af; font-weight: 700; }
-    .empty { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
-    .overlay.visible { display: flex; }
-    .modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }
-    .modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; text-align: center; }
-    @media (min-width: 768px) {
-      .overlay { align-items: center; }
-      .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
-    }
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; color: #0000e9; -webkit-text-stroke: #0000e9}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    span.s1 {font-kerning: none}
+    span.s2 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9}
+    span.s3 {font-kerning: none; color: #000000; -webkit-text-stroke: 0px #000000}
+    span.s4 {text-decoration: underline ; font-kerning: none; -webkit-text-stroke: 0px #0000e9}
+    span.s5 {font: 12.0px 'Times New Roman'; font-kerning: none}
+    span.s6 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
+    td.td1 {width: 764.0px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
   </style>
 </head>
 <body>
-  <div class="app-layout">
-    <aside class="sidebar">
-      <div class="sidebar-brand"><img src="./Olvisión — Configuración_files/logo_app.png" alt="Olvisión"></div>
-      <nav class="sidebar-nav">
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="snav-icon">💸</span> Gastos</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
-        <a class="snav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
-      </nav>
-      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
-    </aside>
-
-    <div class="app-content">
-      <nav class="nav">
-        <div class="nav-left">
-          <a class="nav-back" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html">‹</a>
-          <div>
-            <div class="nav-title">⚙️ Configuración</div>
-            <div class="nav-sub">Olvisión</div>
-          </div>
-        </div>
-      </nav>
-
-      <main class="main">
-
-        <!-- EMPLEADOS -->
-        <div class="config-section">
-          <div class="config-section-titulo">👤 Empleados</div>
-          <button class="btn-agregar" onclick="abrirNuevo()">+ Agregar empleado</button>
-          <div id="lista-empleados">
-        <div class="emp-card ">
-          <div style="flex:1">
-            <div class="emp-nombre">Andres</div>
-            <div class="emp-detalle">
-              Sin sueldo quincenal
-              <br>📊 Comisión: 4%
-            </div>
-            <div class="emp-badges">
-              <span class="emp-badge verde">✅ Activo</span>
-              
-              <span class="emp-badge celeste">📊 4%</span>
-            </div>
-          </div>
-          <div class="emp-acciones">
-            <button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(3)">✏️</button>
-            <button class="emp-btn" style="background:#fef2f2;color:#dc2626" onclick="toggleActivo(3,true)">⛔</button>
-          </div>
-        </div>
-        <div class="emp-card ">
-          <div style="flex:1">
-            <div class="emp-nombre">Luis</div>
-            <div class="emp-detalle">
-              Sin sueldo quincenal
-              <br>📊 Comisión: 4%
-            </div>
-            <div class="emp-badges">
-              <span class="emp-badge verde">✅ Activo</span>
-              
-              <span class="emp-badge celeste">📊 4%</span>
-            </div>
-          </div>
-          <div class="emp-acciones">
-            <button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(4)">✏️</button>
-            <button class="emp-btn" style="background:#fef2f2;color:#dc2626" onclick="toggleActivo(4,true)">⛔</button>
-          </div>
-        </div>
-        <div class="emp-card inactivo">
-          <div style="flex:1">
-            <div class="emp-nombre">Miriam</div>
-            <div class="emp-detalle">
-              💰 $0/quincena
-              <br>📊 Comisión: 2%
-            </div>
-            <div class="emp-badges">
-              <span class="emp-badge gris">⛔ Inactivo</span>
-              <span class="emp-badge azul">💰 Sueldo</span>
-              <span class="emp-badge celeste">📊 2%</span>
-            </div>
-          </div>
-          <div class="emp-acciones">
-            <button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(5)">✏️</button>
-            <button class="emp-btn" style="background:#f0fdf4;color:#059669" onclick="toggleActivo(5,false)">✅</button>
-          </div>
-        </div>
-        <div class="emp-card ">
-          <div style="flex:1">
-            <div class="emp-nombre">Sandra</div>
-            <div class="emp-detalle">
-              💰 $350.000/quincena
-              <br>📊 Comisión: 4%
-            </div>
-            <div class="emp-badges">
-              <span class="emp-badge verde">✅ Activo</span>
-              <span class="emp-badge azul">💰 Sueldo</span>
-              <span class="emp-badge celeste">📊 4%</span>
-            </div>
-          </div>
-          <div class="emp-acciones">
-            <button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(1)">✏️</button>
-            <button class="emp-btn" style="background:#fef2f2;color:#dc2626" onclick="toggleActivo(1,true)">⛔</button>
-          </div>
-        </div>
-        <div class="emp-card ">
-          <div style="flex:1">
-            <div class="emp-nombre">Valentina</div>
-            <div class="emp-detalle">
-              💰 $225.000/quincena
-              <br>📊 Comisión: 2%
-            </div>
-            <div class="emp-badges">
-              <span class="emp-badge verde">✅ Activo</span>
-              <span class="emp-badge azul">💰 Sueldo</span>
-              <span class="emp-badge celeste">📊 2%</span>
-            </div>
-          </div>
-          <div class="emp-acciones">
-            <button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(2)">✏️</button>
-            <button class="emp-btn" style="background:#fef2f2;color:#dc2626" onclick="toggleActivo(2,true)">⛔</button>
-          </div>
-        </div></div>
-        </div>
-
-        <!-- PRODUCTOS -->
-        <div class="config-section">
-          <div class="config-section-titulo">📦 Productos</div>
-          <a class="btn-ir-ajustes" href="https://4fca45db.control-financiero-au9.pages.dev/ajustes.html">
-            <div class="ajustes-left">
-              <span class="ajustes-icon">🏷️</span>
-              <div class="ajustes-texto">
-                <div class="ajustes-titulo">Marcas y Tratamientos</div>
-                <div class="ajustes-sub">Marcas de armazón · Lentes de contacto · Tratamientos por tipo</div>
-              </div>
-            </div>
-            <span class="ajustes-arrow">›</span>
-          </a>
-        </div>
-
-      </main>
-
-      <nav class="bottom-nav">
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
-        <a class="bnav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="bnav-icon">⚙️</span><span class="bnav-label">Config.</span></a>
-      </nav>
-    </div>
-  </div>
-
-  <!-- MODAL EMPLEADO -->
-  <div class="overlay" id="overlay-empleado" onclick="cerrarFuera(event)">
-    <div class="modal">
-      <div class="modal-titulo" id="emp-titulo">Nuevo empleado</div>
-      <input type="hidden" id="emp-id">
-
-      <div class="campo">
-        <label>Nombre</label>
-        <input type="text" id="emp-nombre" placeholder="Ej: Miriam" autocomplete="off">
-      </div>
-
-      <label class="campo-check" onclick="toggleCheck()">
-        <input type="checkbox" id="emp-tiene-sueldo" onclick="event.stopPropagation();toggleSueldoField()">
-        <div>
-          <div class="campo-check-label">💰 Tiene sueldo quincenal</div>
-          <div class="campo-check-sub">Se muestra en el módulo Sueldos</div>
-        </div>
-      </label>
-
-      <div class="campo" id="emp-sueldo-campo" style="display:none">
-        <label>Sueldo por quincena $</label>
-        <input type="text" data-miles="true" id="emp-sueldo" placeholder="0" inputmode="numeric" oninput="fmtMiles(this)">
-      </div>
-
-      <div class="campo">
-        <label>% Comisión sobre ventas</label>
-        <input type="number" id="emp-comision" placeholder="0" inputmode="numeric" step="0.5" value="0">
-        <small style="color:#94a3b8;font-size:12px">Dejalo en 0 si no cobra comisión</small>
-      </div>
-
-      <div class="aviso-info">ℹ️ Aparece automáticamente como vendedor en Caja y en Comisiones.</div>
-
-      <button class="btn-guardar" id="emp-btn-guardar" onclick="guardarEmpleado()">✅ Crear empleado</button>
-      <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-    </div>
-  </div>
-
-  <script>
-    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let empleados = [];
-
-    function formatPesos(n) { if(!n||isNaN(n))return'$0'; return'$'+Math.round(n).toLocaleString('es-AR'); }
-    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }
-
-    async function cargarEmpleados() {
-      const { data } = await db.from('empleados').select('*').order('nombre');
-      empleados = data || [];
-      renderLista();
-    }
-
-    function renderLista() {
-      const lista = document.getElementById('lista-empleados');
-      if (empleados.length === 0) {
-        lista.innerHTML = '<div class="empty">No hay empleados todavía.<br>Usá el botón de arriba para agregar.</div>';
-        return;
-      }
-      lista.innerHTML = empleados.map(e => `
-        <div class="emp-card ${e.activo ? '' : 'inactivo'}">
-          <div style="flex:1">
-            <div class="emp-nombre">${e.nombre}</div>
-            <div class="emp-detalle">
-              ${e.tiene_sueldo ? `💰 ${formatPesos(e.sueldo_quincena)}/quincena` : 'Sin sueldo quincenal'}
-              ${e.comision_pct > 0 ? `<br>📊 Comisión: ${e.comision_pct}%` : ''}
-            </div>
-            <div class="emp-badges">
-              <span class="emp-badge ${e.activo ? 'verde' : 'gris'}">${e.activo ? '✅ Activo' : '⛔ Inactivo'}</span>
-              ${e.tiene_sueldo ? '<span class="emp-badge azul">💰 Sueldo</span>' : ''}
-              ${e.comision_pct > 0 ? `<span class="emp-badge celeste">📊 ${e.comision_pct}%</span>` : ''}
-            </div>
-          </div>
-          <div class="emp-acciones">
-            <button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(${e.id})">✏️</button>
-            <button class="emp-btn" style="background:${e.activo?'#fef2f2':'#f0fdf4'};color:${e.activo?'#dc2626':'#059669'}"
-              onclick="toggleActivo(${e.id},${e.activo})">${e.activo?'⛔':'✅'}</button>
-          </div>
-        </div>`).join('');
-    }
-
-    function abrirNuevo() {
-      document.getElementById('emp-titulo').textContent = 'Nuevo empleado';
-      document.getElementById('emp-id').value = '';
-      document.getElementById('emp-nombre').value = '';
-      document.getElementById('emp-tiene-sueldo').checked = false;
-      document.getElementById('emp-sueldo-campo').style.display = 'none';
-      document.getElementById('emp-sueldo').value = '';
-      document.getElementById('emp-comision').value = '0';
-      document.getElementById('emp-btn-guardar').textContent = '✅ Crear empleado';
-      document.getElementById('overlay-empleado').classList.add('visible');
-      setTimeout(() => document.getElementById('emp-nombre').focus(), 200);
-    }
-
-    function abrirEditar(id) {
-      const e = empleados.find(x => x.id === id);
-      if (!e) return;
-      document.getElementById('emp-titulo').textContent = `✏️ Editar — ${e.nombre}`;
-      document.getElementById('emp-id').value = e.id;
-      document.getElementById('emp-nombre').value = e.nombre;
-      document.getElementById('emp-tiene-sueldo').checked = e.tiene_sueldo;
-      document.getElementById('emp-sueldo-campo').style.display = e.tiene_sueldo ? 'block' : 'none';
-      setVal(document.getElementById('emp-sueldo'), e.sueldo_quincena);
-      document.getElementById('emp-comision').value = e.comision_pct;
-      document.getElementById('emp-btn-guardar').textContent = '💾 Guardar cambios';
-      document.getElementById('overlay-empleado').classList.add('visible');
-    }
-
-    function cerrarModal() { document.getElementById('overlay-empleado').classList.remove('visible'); }
-    function cerrarFuera(e) { if (e.target === document.getElementById('overlay-empleado')) cerrarModal(); }
-    function toggleSueldoField() {
-      document.getElementById('emp-sueldo-campo').style.display =
-        document.getElementById('emp-tiene-sueldo').checked ? 'block' : 'none';
-    }
-    function toggleCheck() {
-      const cb = document.getElementById('emp-tiene-sueldo');
-      cb.checked = !cb.checked; toggleSueldoField();
-    }
-
-    async function guardarEmpleado() {
-      const id = document.getElementById('emp-id').value;
-      const nombre = document.getElementById('emp-nombre').value.trim();
-      const tiene_sueldo = document.getElementById('emp-tiene-sueldo').checked;
-      const sueldo_quincena = tiene_sueldo ? (getVal(document.getElementById('emp-sueldo')) || 0) : 0;
-      const comision_pct = parseFloat(document.getElementById('emp-comision').value) || 0;
-      if (!nombre) { alert('Ingresá el nombre'); return; }
-      const btn = document.getElementById('emp-btn-guardar');
-      btn.textContent = 'Guardando...'; btn.disabled = true;
-      let error;
-      if (id) {
-        ({ error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct }).eq('id', id));
-      } else {
-        ({ error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, activo: true }]));
-      }
-      if (error) { alert('Error: ' + error.message); btn.textContent = id ? '💾 Guardar cambios' : '✅ Crear empleado'; btn.disabled = false; return; }
-      cerrarModal();
-      await cargarEmpleados();
-      btn.textContent = id ? '💾 Guardar cambios' : '✅ Crear empleado';
-      btn.disabled = false;
-    }
-
-    async function toggleActivo(id, activo) {
-      const e = empleados.find(x => x.id === id);
-      const accion = activo ? 'desactivar' : 'activar';
-      if (!confirm(`¿${accion.charAt(0).toUpperCase()+accion.slice(1)} a ${e?.nombre}?\n\n${activo ? 'Desaparece de toda la app.' : 'Vuelve a aparecer en toda la app.'}`)) return;
-      await db.from('empleados').update({ activo: !activo }).eq('id', id);
-      await cargarEmpleados();
-    }
-
-    cargarEmpleados();
-  </script>
-
-
-</body></html>
+<table cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;html lang="es"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta charset="UTF-8" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;title&gt;Olvisión — Configuración&lt;/title&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="stylesheet" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/app.css"><span class="s2">app.css</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="icon" type="image/png" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="apple-touch-icon" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p2"><span class="s3">&lt;script src="<a href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><span class="s4">https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/config.js"><span class="s2">config.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/cache.js"><span class="s2">cache.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/utils.js"><span class="s2">utils.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="manifest" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json"><span class="s2">manifest.json</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script&gt;if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.config-section { margin-bottom: 32px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.config-section-titulo {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 13px; font-weight: 800; color: #94a3b8;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">text-transform: uppercase; letter-spacing: 1px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 12px; padding: 0 2px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-card {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: white; border-radius: 16px; padding: 16px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: opacity 0.2s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-card.inactivo { opacity: 0.5; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-nombre { font-size: 16px; font-weight: 900; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-detalle { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.6; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-badge { padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-badge.verde { background: #d1fae5; color: #065f46; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-badge.gris { background: #f1f5f9; color: #94a3b8; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-badge.azul { background: #dbeafe; color: #1e40af; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-badge.celeste { background: #ecfdf5; color: #059669; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-acciones { display: flex; gap: 6px; flex-shrink: 0; margin-top: 2px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.emp-btn { border: none; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-agregar {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">width: 100%; background: white; color: #1E3A8A;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border: 2px dashed #bfdbfe; border-radius: 16px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 16px; font-family: 'Nunito', sans-serif;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 14px; font-weight: 800; cursor: pointer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 10px; transition: background 0.15s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-agregar:hover { background: #eff6ff; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* </span><span class="s5">──</span><span class="s1"> Botón ir a ajustes </span><span class="s5">──</span><span class="s1"> */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex; align-items: center; justify-content: space-between;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">width: 100%; background: white; border: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 16px; padding: 18px 20px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">box-shadow: 0 2px 6px rgba(0,0,0,0.05);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-family: 'Nunito', sans-serif; cursor: pointer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">text-decoration: none; color: inherit;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: box-shadow 0.15s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 10px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes .ajustes-left { display: flex; align-items: center; gap: 12px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes .ajustes-icon { font-size: 28px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes .ajustes-texto { text-align: left; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes .ajustes-titulo { font-size: 15px; font-weight: 800; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes .ajustes-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-ir-ajustes .ajustes-arrow { font-size: 22px; color: #94a3b8; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.campo-check {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex; align-items: center; gap: 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #f8fafc; border-radius: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 14px 16px; margin-bottom: 14px; cursor: pointer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.campo-check input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #1E3A8A; flex-shrink: 0; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.campo-check-label { font-size: 14px; font-weight: 700; color: #475569; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.campo-check-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.aviso-info { background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 12px; padding: 10px 14px; margin: 12px 0; font-size: 13px; color: #1e40af; font-weight: 700; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.empty { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay.visible { display: flex; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; text-align: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">@media (min-width: 768px) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay { align-items: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal { border-radius: 24px; max-height: 85vh; margin: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-layout"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;aside class="sidebar"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-brand"&gt;&lt;img src="<a href="https://4fca45db.control-financiero-au9.pages.dev/logo_app.png"><span class="s2">logo_app.png</span></a>" alt="Olvisión" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="sidebar-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🏠</span><span class="s1">&lt;/span&gt; Inicio&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🧾</span><span class="s1">&lt;/span&gt; Caja Diaria&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">💸</span><span class="s1">&lt;/span&gt; Gastos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🏦</span><span class="s1">&lt;/span&gt; Cheques&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="s2">sueldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">👥</span><span class="s1">&lt;/span&gt; Sueldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="s2">saldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🔖</span><span class="s1">&lt;/span&gt; Saldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="s2">configuracion.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">⚙️</span><span class="s1">&lt;/span&gt; Config.&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-footer"&gt;&lt;button class="btn-salir-sidebar" onclick="salir()"&gt;</span><span class="s6">🚪</span><span class="s1"> Salir&lt;/button&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/aside&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-content"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-left"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="nav-back" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;‹&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-title"&gt;</span><span class="s6">⚙️</span><span class="s1"> Configuración&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-sub"&gt;Olvisión&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;main class="main"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- EMPLEADOS --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="config-section"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="config-section-titulo"&gt;</span><span class="s6">👤</span><span class="s1"> Empleados&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-agregar" onclick="abrirNuevo()"&gt;+ Agregar empleado&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div id="lista-empleados"&gt;&lt;div class="empty"&gt;Cargando...&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- PRODUCTOS --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="config-section"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="config-section-titulo"&gt;</span><span class="s6">📦</span><span class="s1"> Productos&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="btn-ir-ajustes" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/ajustes.html"><span class="s2">ajustes.html</span></a>"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="ajustes-left"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="ajustes-icon"&gt;</span><span class="s6">🏷️</span><span class="s1">&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="ajustes-texto"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="ajustes-titulo"&gt;Marcas y Tratamientos&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="ajustes-sub"&gt;Marcas de armazón · Lentes de contacto · Tratamientos por tipo&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="ajustes-arrow"&gt;›&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/main&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="bottom-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">🏠</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Inicio&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">🧾</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Caja&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">💸</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Gastos&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">🏦</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Cheques&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="s2">configuracion.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">⚙️</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Config.&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- MODAL EMPLEADO --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="overlay" id="overlay-empleado" onclick="cerrarFuera(event)"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal-titulo" id="emp-titulo"&gt;Nuevo empleado&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="hidden" id="emp-id" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;label&gt;Nombre&lt;/label&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="emp-nombre" placeholder="Ej: Miriam" autocomplete="off" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;label class="campo-check" onclick="toggleCheck()"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="checkbox" id="emp-tiene-sueldo" onclick="event.stopPropagation();toggleSueldoField()" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo-check-label"&gt;</span><span class="s6">💰</span><span class="s1"> Tiene sueldo quincenal&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo-check-sub"&gt;Se muestra en el módulo Sueldos&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/label&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo" id="emp-sueldo-campo" style="display:none"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;label&gt;Sueldo por quincena $&lt;/label&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" data-miles="true" id="emp-sueldo" placeholder="0" inputmode="numeric" oninput="fmtMiles(this)" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;label&gt;% Comisión sobre ventas&lt;/label&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="number" id="emp-comision" placeholder="0" inputmode="numeric" step="0.5" value="0" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;small style="color:#94a3b8;font-size:12px"&gt;Dejalo en 0 si no cobra comisión&lt;/small&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="aviso-info"&gt;</span><span class="s6">ℹ️</span><span class="s1"> Aparece automáticamente como vendedor en Caja y en Comisiones.&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-guardar" id="emp-btn-guardar" onclick="guardarEmpleado()"&gt;</span><span class="s6">✅</span><span class="s1"> Crear empleado&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-cancelar" onclick="cerrarModal()"&gt;Cancelar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { createClient } = supabase;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let empleados = [];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function formatPesos(n) { if(!n||isNaN(n))return'$0'; return'$'+Math.round(n).toLocaleString('es-AR'); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function cargarEmpleados() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { data } = await db.from('empleados').select('*').order('nombre');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">empleados = data || [];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">renderLista();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderLista() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const lista = document.getElementById('lista-empleados');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (empleados.length === 0) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">lista.innerHTML = '&lt;div class="empty"&gt;No hay empleados todavía.&lt;br&gt;Usá el botón de arriba para agregar.&lt;/div&gt;';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">lista.innerHTML = empleados.map(e =&gt; `</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="emp-card ${e.activo ? '' : 'inactivo'}"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div style="flex:1"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="emp-nombre"&gt;${e.nombre}&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="emp-detalle"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${e.tiene_sueldo ? `</span><span class="s6">💰</span><span class="s1"> ${formatPesos(e.sueldo_quincena)}/quincena` : 'Sin sueldo quincenal'}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${e.comision_pct &gt; 0 ? `&lt;br&gt;</span><span class="s6">📊</span><span class="s1"> Comisión: ${e.comision_pct}%` : ''}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="emp-badges"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="emp-badge ${e.activo ? 'verde' : 'gris'}"&gt;${e.activo ? '</span><span class="s6">✅</span><span class="s1"> Activo' : '</span><span class="s6">⛔</span><span class="s1"> Inactivo'}&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${e.tiene_sueldo ? '&lt;span class="emp-badge azul"&gt;</span><span class="s6">💰</span><span class="s1"> Sueldo&lt;/span&gt;' : ''}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${e.comision_pct &gt; 0 ? `&lt;span class="emp-badge celeste"&gt;</span><span class="s6">📊</span><span class="s1"> ${e.comision_pct}%&lt;/span&gt;` : ''}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="emp-acciones"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="emp-btn" style="background:#f1f5f9;color:#475569" onclick="abrirEditar(${e.id})"&gt;</span><span class="s6">✏️</span><span class="s1">&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="emp-btn" style="background:${e.activo?'#fef2f2':'#f0fdf4'};color:${e.activo?'#dc2626':'#059669'}"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onclick="toggleActivo(${e.id},${e.activo})"&gt;${e.activo?'</span><span class="s6">⛔</span><span class="s1">':'</span><span class="s6">✅</span><span class="s1">'}&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;`).join('');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function abrirNuevo() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-titulo').textContent = 'Nuevo empleado';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-id').value = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-nombre').value = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-tiene-sueldo').checked = false;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-sueldo-campo').style.display = 'none';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-sueldo').value = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-comision').value = '0';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-btn-guardar').textContent = '</span><span class="s6">✅</span><span class="s1"> Crear empleado';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('overlay-empleado').classList.add('visible');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">setTimeout(() =&gt; document.getElementById('emp-nombre').focus(), 200);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function abrirEditar(id) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const e = empleados.find(x =&gt; x.id === id);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!e) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-titulo').textContent = `</span><span class="s6">✏️</span><span class="s1"> Editar — ${e.nombre}`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-id').value = e.id;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-nombre').value = e.nombre;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-tiene-sueldo').checked = e.tiene_sueldo;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-sueldo-campo').style.display = e.tiene_sueldo ? 'block' : 'none';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">setVal(document.getElementById('emp-sueldo'), e.sueldo_quincena);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-comision').value = e.comision_pct;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-btn-guardar').textContent = '</span><span class="s6">💾</span><span class="s1"> Guardar cambios';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('overlay-empleado').classList.add('visible');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function cerrarModal() { document.getElementById('overlay-empleado').classList.remove('visible'); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function cerrarFuera(e) { if (e.target === document.getElementById('overlay-empleado')) cerrarModal(); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function toggleSueldoField() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-sueldo-campo').style.display =</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('emp-tiene-sueldo').checked ? 'block' : 'none';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function toggleCheck() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const cb = document.getElementById('emp-tiene-sueldo');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cb.checked = !cb.checked; toggleSueldoField();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function guardarEmpleado() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const id = document.getElementById('emp-id').value;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const nombre = document.getElementById('emp-nombre').value.trim();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const tiene_sueldo = document.getElementById('emp-tiene-sueldo').checked;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const sueldo_quincena = tiene_sueldo ? (getVal(document.getElementById('emp-sueldo')) || 0) : 0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const comision_pct = parseFloat(document.getElementById('emp-comision').value) || 0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!nombre) { alert('Ingresá el nombre'); return; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const btn = document.getElementById('emp-btn-guardar');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">btn.textContent = 'Guardando...'; btn.disabled = true;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let error;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (id) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">({ error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct }).eq('id', id));</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">} else {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">({ error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, activo: true }]));</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (error) { alert('Error: ' + error.message); btn.textContent = id ? '</span><span class="s6">💾</span><span class="s1"> Guardar cambios' : '</span><span class="s6">✅</span><span class="s1"> Crear empleado'; btn.disabled = false; return; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cerrarModal();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await cargarEmpleados();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">btn.textContent = id ? '</span><span class="s6">💾</span><span class="s1"> Guardar cambios' : '</span><span class="s6">✅</span><span class="s1"> Crear empleado';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">btn.disabled = false;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function toggleActivo(id, activo) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const e = empleados.find(x =&gt; x.id === id);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const accion = activo ? 'desactivar' : 'activar';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!confirm(`¿${accion.charAt(0).toUpperCase()+accion.slice(1)} a ${e?.nombre}?\n\n${activo ? 'Desaparece de toda la app.' : 'Vuelve a aparecer en toda la app.'}`)) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await db.from('empleados').update({ activo: !activo }).eq('id', id);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await cargarEmpleados();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cargarEmpleados();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,773 +1,2250 @@
-<!DOCTYPE html>
-<!-- saved from url=(0057)https://4fca45db.control-financiero-au9.pages.dev/ajustes -->
-<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Olvisión — Ajustes</title>
-  <link rel="stylesheet" href="./Olvisión — Ajustes_files/app.css">
-  <link rel="icon" type="image/png" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
-  <link rel="apple-touch-icon" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
-  <script src="./Olvisión — Ajustes_files/supabase-js@2"></script>
-  <script src="./Olvisión — Ajustes_files/config.js"></script>
-  <script src="./Olvisión — Ajustes_files/cache.js"></script>
-  <script src="./Olvisión — Ajustes_files/utils.js"></script>
-  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
-  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
-  <style>
-    /* ── Tabs ── */
-    .ajustes-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .ajustes-tab {
-      flex: 1;
-      padding: 12px;
-      border-radius: 14px;
-      border: none;
-      font-family: 'Nunito', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      background: white;
-      color: #94a3b8;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      transition: all .2s;
-    }
-    .ajustes-tab.activo {
-      background: #1E3A8A;
-      color: white;
-    }
-
-    /* ── Sección card ── */
-    .seccion-card {
-      background: white;
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .seccion-titulo {
-      font-size: 13px;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .seccion-count {
-      background: #eff6ff;
-      color: #1E3A8A;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 9px;
-      border-radius: 20px;
-      letter-spacing: 0;
-      text-transform: none;
-    }
-
-    /* ── Tags ── */
-    .tags-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-      min-height: 28px;
-    }
-    .tag-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: #f1f5f9;
-      border: 1.5px solid #e2e8f0;
-      color: #334155;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 6px 12px;
-      border-radius: 20px;
-      transition: background .15s;
-    }
-    .tag-chip .remove-tag {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #94a3b8;
-      font-size: 16px;
-      line-height: 1;
-      padding: 0 0 0 2px;
-      display: flex;
-      align-items: center;
-      transition: color .15s;
-      font-family: 'Nunito', sans-serif;
-    }
-    .tag-chip .remove-tag:hover { color: #ef4444; }
-    .empty-tags {
-      color: #cbd5e1;
-      font-size: 13px;
-      font-style: italic;
-    }
-
-    /* ── Add row ── */
-    .add-row {
-      display: flex;
-      gap: 8px;
-    }
-    .add-row input {
-      flex: 1;
-      padding: 10px 14px;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1e293b;
-      outline: none;
-      transition: border-color .2s;
-      background: #f8fafc;
-    }
-    .add-row input:focus {
-      border-color: #1E3A8A;
-      background: white;
-    }
-    .add-row input::placeholder { color: #94a3b8; font-weight: 500; }
-    .btn-add {
-      background: #1E3A8A;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 10px 18px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background .2s;
-    }
-    .btn-add:hover { background: #1e40af; }
-    .btn-add:active { transform: scale(.97); }
-
-    /* ── Separador entre secciones de tratamientos ── */
-    .seccion-sep {
-      height: 1px;
-      background: #f1f5f9;
-      margin: 16px 0;
-    }
-
-    /* ── Toast ── */
-    .toast {
-      position: fixed;
-      bottom: 88px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: #1E3A8A;
-      color: #fff;
-      padding: 10px 24px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 700;
-      opacity: 0;
-      transition: all .3s;
-      pointer-events: none;
-      z-index: 9999;
-      white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(30,58,138,.3);
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; color: #0000e9; -webkit-text-stroke: #0000e9}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Times New Roman'; -webkit-text-stroke: #000000}
+    span.s1 {font-kerning: none}
+    span.s2 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9}
+    span.s3 {font-kerning: none; color: #000000; -webkit-text-stroke: 0px #000000}
+    span.s4 {text-decoration: underline ; font-kerning: none; -webkit-text-stroke: 0px #0000e9}
+    span.s5 {font: 12.0px 'Times New Roman'; font-kerning: none}
+    span.s6 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
+    span.s7 {font: 12.0px Times; font-kerning: none}
+    td.td1 {width: 679.7px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
   </style>
 </head>
 <body>
-  <div class="app-layout">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-brand"><img src="./Olvisión — Ajustes_files/logo_app.png" alt="Olvisión"></div>
-      <nav class="sidebar-nav">
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="snav-icon">💸</span> Gastos</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
-        <a class="snav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
-      </nav>
-      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
-    </aside>
-
-    <div class="app-content">
-
-      <!-- TOP NAV -->
-      <nav class="nav">
-        <div class="nav-left">
-          <a class="nav-back" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html">‹</a>
-          <div>
-            <div class="nav-title">🏷️ Ajustes de productos</div>
-            <div class="nav-sub">Marcas · Tratamientos</div>
-          </div>
-        </div>
-      </nav>
-
-      <main class="main">
-
-        <!-- TABS -->
-        <div class="ajustes-tabs">
-          <button class="ajustes-tab activo" id="tab-btn-marcas" onclick="switchTab(&#39;marcas&#39;)">🏷️ Marcas</button>
-          <button class="ajustes-tab" id="tab-btn-tratamientos" onclick="switchTab(&#39;tratamientos&#39;)">🔬 Tratamientos</button>
-        </div>
-
-        <!-- ══ PANEL MARCAS ══ -->
-        <div id="panel-marcas">
-
-          <div class="seccion-card">
-            <div class="seccion-titulo">
-              👓 Marcas de Armazón
-              <span class="seccion-count" id="count-armazon">14</span>
-            </div>
-            <div class="tags-wrap" id="tags-armazon">
-            <span class="tag-chip">
-              Lisbon
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,0)">×</button>
-            </span>
-            <span class="tag-chip">
-              Puccini
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,1)">×</button>
-            </span>
-            <span class="tag-chip">
-              Usual
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,2)">×</button>
-            </span>
-            <span class="tag-chip">
-              Karina Rabolini
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,3)">×</button>
-            </span>
-            <span class="tag-chip">
-              Sarkany
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,4)">×</button>
-            </span>
-            <span class="tag-chip">
-              Union Pacific
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,5)">×</button>
-            </span>
-            <span class="tag-chip">
-              Giudicatti
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,6)">×</button>
-            </span>
-            <span class="tag-chip">
-              On-Off
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,7)">×</button>
-            </span>
-            <span class="tag-chip">
-              Nitido
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,8)">×</button>
-            </span>
-            <span class="tag-chip">
-              Lavanette
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,9)">×</button>
-            </span>
-            <span class="tag-chip">
-              Atlantis
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,10)">×</button>
-            </span>
-            <span class="tag-chip">
-              Optic 100
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,11)">×</button>
-            </span>
-            <span class="tag-chip">
-              Skyblack
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,12)">×</button>
-            </span>
-            <span class="tag-chip">
-              Punto Zeta
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_armazon&#39;,13)">×</button>
-            </span></div>
-            <div class="add-row">
-              <input type="text" id="input-armazon" placeholder="Nueva marca…" maxlength="60" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;marcas_armazon&#39;,&#39;armazon&#39;)">
-              <button class="btn-add" onclick="agregarItem(&#39;marcas_armazon&#39;,&#39;armazon&#39;)">+ Agregar</button>
-            </div>
-          </div>
-
-          <div class="seccion-card">
-            <div class="seccion-titulo">
-              👁️ Marcas Lentes de Contacto
-              <span class="seccion-count" id="count-contacto">6</span>
-            </div>
-            <div class="tags-wrap" id="tags-contacto">
-            <span class="tag-chip">
-              Acuvue 2
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,0)">×</button>
-            </span>
-            <span class="tag-chip">
-              Acuvue Oasys
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,1)">×</button>
-            </span>
-            <span class="tag-chip">
-              Acuvue Vita
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,2)">×</button>
-            </span>
-            <span class="tag-chip">
-              Baush y Lomb Ultra
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,3)">×</button>
-            </span>
-            <span class="tag-chip">
-              Softlens 59
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,4)">×</button>
-            </span>
-            <span class="tag-chip">
-              Vanguard
-              <button class="remove-tag" onclick="eliminarItem(&#39;marcas_lentes_contacto&#39;,5)">×</button>
-            </span></div>
-            <div class="add-row">
-              <input type="text" id="input-contacto" placeholder="Nueva marca…" maxlength="60" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;marcas_lentes_contacto&#39;,&#39;contacto&#39;)">
-              <button class="btn-add" onclick="agregarItem(&#39;marcas_lentes_contacto&#39;,&#39;contacto&#39;)">+ Agregar</button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ══ PANEL TRATAMIENTOS ══ -->
-        <div id="panel-tratamientos" style="display:none">
-
-          <div class="seccion-card">
-            <div class="seccion-titulo">👓 Monofocal</div>
-            <div class="tags-wrap" id="tags-monofocal">
-            <span class="tag-chip">
-              Orgánico Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,0)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Blanco con AR
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,1)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Blue-Cut
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,2)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Fotocromático
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,3)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Foto. Blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,4)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Fotocromático Espejado
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,5)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Blue HD 1.60 con AR
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,6)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico HD (1.61)
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,7)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico HD (1.67)
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,8)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Polarizado
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,9)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,10)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Blanco con AR
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,11)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Blue-Cut
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,12)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Fotocromático
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_monofocal&#39;,13)">×</button>
-            </span></div>
-            <div class="add-row">
-              <input type="text" id="input-monofocal" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_monofocal&#39;,&#39;monofocal&#39;)">
-              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_monofocal&#39;,&#39;monofocal&#39;)">+ Agregar</button>
-            </div>
-          </div>
-
-          <div class="seccion-card">
-            <div class="seccion-titulo">👴 Bifocal</div>
-            <div class="tags-wrap" id="tags-bifocal">
-            <span class="tag-chip">
-              Orgánico Flat Top Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,0)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Flat Top Blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,1)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Flat Top Fotocromático
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,2)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Flat Top Fotocromático Blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,3)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Invisible Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,4)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Invisible Blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,5)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Invisible Fotocromático
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,6)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Invisible Fotocromático Blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,7)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Invisible HD
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,8)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Blanco 1.67
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,9)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Flat Top Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,10)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Flat Top Fotocromático (Bichara)
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,11)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Invisible Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,12)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Invisible Blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,13)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Invisible Fotocromático
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_bifocal&#39;,14)">×</button>
-            </span></div>
-            <div class="add-row">
-              <input type="text" id="input-bifocal" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_bifocal&#39;,&#39;bifocal&#39;)">
-              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_bifocal&#39;,&#39;bifocal&#39;)">+ Agregar</button>
-            </div>
-          </div>
-
-          <div class="seccion-card">
-            <div class="seccion-titulo">💻 Ocupacional</div>
-            <div class="tags-wrap" id="tags-ocupacional">
-            <span class="tag-chip">
-              Orgánico Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,0)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Blue-Cut
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,1)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Blue HD
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,2)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico + AR Green
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,3)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico + AR Green +
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,4)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico + AR Blue +
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,5)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,6)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato Blue-Cut
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,7)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato + AR Green
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,8)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato + AR Green +
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,9)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato + AR Blue +
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_ocupacional&#39;,10)">×</button>
-            </span></div>
-            <div class="add-row">
-              <input type="text" id="input-ocupacional" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_ocupacional&#39;,&#39;ocupacional&#39;)">
-              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_ocupacional&#39;,&#39;ocupacional&#39;)">+ Agregar</button>
-            </div>
-          </div>
-
-          <div class="seccion-card">
-            <div class="seccion-titulo">👑 Progresivo / Multifocal</div>
-            <div class="tags-wrap" id="tags-progresivo">
-            <span class="tag-chip">
-              Orgánico Blanco
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,0)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Blue / Blue-Cut
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,1)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Fotocromático
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,2)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Fotocromático Blue / Blue-Cut
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,3)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico HD 1.61
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,4)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Polarizado
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,5)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Alto Índice 1.74
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,6)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Alto Índice 1.67 Blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,7)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Alto Índice 1.67 Fotocromático
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,8)">×</button>
-            </span>
-            <span class="tag-chip">
-              Policarbonato (línea premium POINT)
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_progresivo&#39;,9)">×</button>
-            </span></div>
-            <div class="add-row">
-              <input type="text" id="input-progresivo" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_progresivo&#39;,&#39;progresivo&#39;)">
-              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_progresivo&#39;,&#39;progresivo&#39;)">+ Agregar</button>
-            </div>
-          </div>
-
-          <div class="seccion-card">
-            <div class="seccion-titulo">🕶️ Solares y Teñidos</div>
-            <div class="tags-wrap" id="tags-tenido">
-            <span class="tag-chip">
-              Orgánico Compacto gris
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,0)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Compacto sepia
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,1)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Compacto verde
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,2)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Degradé gris
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,3)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Degradé sepia
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,4)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Degradé verde
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,5)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Espejado red
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,6)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Espejado blue
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,7)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Espejado silver
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,8)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Espejado gold
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,9)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Espejado pink
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,10)">×</button>
-            </span>
-            <span class="tag-chip">
-              Orgánico Anactínico
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,11)">×</button>
-            </span>
-            <span class="tag-chip">
-              Polarizado gris
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,12)">×</button>
-            </span>
-            <span class="tag-chip">
-              Polarizado sepia
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,13)">×</button>
-            </span>
-            <span class="tag-chip">
-              Polarizado verde
-              <button class="remove-tag" onclick="eliminarItem(&#39;tratamientos_tenido&#39;,14)">×</button>
-            </span></div>
-            <div class="add-row">
-              <input type="text" id="input-tenido" placeholder="Nuevo tratamiento…" maxlength="80" onkeydown="if(event.key===&#39;Enter&#39;) agregarItem(&#39;tratamientos_tenido&#39;,&#39;tenido&#39;)">
-              <button class="btn-add" onclick="agregarItem(&#39;tratamientos_tenido&#39;,&#39;tenido&#39;)">+ Agregar</button>
-            </div>
-          </div>
-
-        </div>
-
-      </main>
-
-      <!-- BOTTOM NAV -->
-      <nav class="bottom-nav">
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
-        <a class="bnav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="bnav-icon">⚙️</span><span class="bnav-label">Config.</span></a>
-      </nav>
-
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-
-  <script>
-    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
-    const { createClient } = supabase;
-    const _sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href = 'index.html'; }
-
-    // ── Estado ────────────────────────────────────────────────
-    const estado = {
-      marcas_armazon:           [],
-      marcas_lentes_contacto:   [],
-      tratamientos_monofocal:   [],
-      tratamientos_bifocal:     [],
-      tratamientos_ocupacional: [],
-      tratamientos_progresivo:  [],
-      tratamientos_tenido:      []
-    };
-
-    const mapaUI = {
-      marcas_armazon:           { tags: 'tags-armazon',     count: 'count-armazon'  },
-      marcas_lentes_contacto:   { tags: 'tags-contacto',    count: 'count-contacto' },
-      tratamientos_monofocal:   { tags: 'tags-monofocal',   count: null },
-      tratamientos_bifocal:     { tags: 'tags-bifocal',     count: null },
-      tratamientos_ocupacional: { tags: 'tags-ocupacional',  count: null },
-      tratamientos_progresivo:  { tags: 'tags-progresivo',  count: null },
-      tratamientos_tenido:      { tags: 'tags-tenido',      count: null }
-    };
-
-    // ── Carga ─────────────────────────────────────────────────
-    async function cargarTodo() {
-      const { data, error } = await _sb
-        .from('configuracion')
-        .select('clave,valor')
-        .in('clave', Object.keys(estado));
-      if (error) { mostrarToast('❌ Error al cargar'); return; }
-      data.forEach(row => {
-        try { estado[row.clave] = JSON.parse(row.valor) || []; }
-        catch { estado[row.clave] = []; }
-        renderTags(row.clave);
-      });
-    }
-
-    // ── Render tags ───────────────────────────────────────────
-    function renderTags(clave) {
-      const ui = mapaUI[clave];
-      if (!ui) return;
-      const container = document.getElementById(ui.tags);
-      const arr = estado[clave];
-      const viewer = isViewer();
-      container.innerHTML = arr.length === 0
-        ? '<span class="empty-tags">Sin opciones todavía</span>'
-        : arr.map((item, i) => `
-            <span class="tag-chip">
-              ${escH(item)}
-              ${viewer ? '' : `<button class="remove-tag" onclick="eliminarItem('${clave}',${i})">×</button>`}
-            </span>`).join('');
-      if (ui.count) document.getElementById(ui.count).textContent = arr.length;
-    }
-
-    // ── Agregar ───────────────────────────────────────────────
-    async function agregarItem(clave, inputSuffix) {
-      if (isViewer()) return;
-      const input = document.getElementById('input-' + inputSuffix);
-      const valor = input.value.trim();
-      if (!valor) return;
-      if (estado[clave].some(v => v.toLowerCase() === valor.toLowerCase())) {
-        mostrarToast('⚠️ Ya existe esa opción');
-        input.value = '';
-        return;
-      }
-      estado[clave].push(valor);
-      renderTags(clave);
-      input.value = '';
-      input.focus();
-      await guardar(clave);
-    }
-
-    // ── Eliminar ──────────────────────────────────────────────
-    async function eliminarItem(clave, index) {
-      if (isViewer()) return;
-      if (!confirm(`¿Eliminar "${estado[clave][index]}"?`)) return;
-      estado[clave].splice(index, 1);
-      renderTags(clave);
-      await guardar(clave);
-    }
-
-    // ── Guardar ───────────────────────────────────────────────
-    async function guardar(clave) {
-      const { error } = await _sb
-        .from('configuracion')
-        .upsert({ clave, valor: JSON.stringify(estado[clave]) }, { onConflict: 'clave' });
-      mostrarToast(error ? '❌ Error al guardar' : '✅ Guardado');
-      if (error) console.error(error);
-    }
-
-    // ── Tabs ──────────────────────────────────────────────────
-    function switchTab(nombre) {
-      document.getElementById('panel-marcas').style.display       = nombre === 'marcas'       ? 'block' : 'none';
-      document.getElementById('panel-tratamientos').style.display = nombre === 'tratamientos' ? 'block' : 'none';
-      document.getElementById('tab-btn-marcas').className       = 'ajustes-tab' + (nombre === 'marcas'       ? ' activo' : '');
-      document.getElementById('tab-btn-tratamientos').className = 'ajustes-tab' + (nombre === 'tratamientos' ? ' activo' : '');
-    }
-
-    // ── Helpers ───────────────────────────────────────────────
-    function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-    let toastTimer;
-    function mostrarToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
-    }
-
-    cargarTodo();
-  </script>
-
-
-</body></html>
+<table cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;html lang="es"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta charset="UTF-8" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;title&gt;Olvisión — Ajustes&lt;/title&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="stylesheet" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/app.css"><span class="s2">app.css</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="icon" type="image/png" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="apple-touch-icon" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p2"><span class="s3">&lt;script src="<a href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><span class="s4">https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/config.js"><span class="s2">config.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/cache.js"><span class="s2">cache.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/utils.js"><span class="s2">utils.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="manifest" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json"><span class="s2">manifest.json</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script&gt;if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* </span><span class="s5">──</span><span class="s1"> Tabs </span><span class="s5">──</span><span class="s1"> */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.ajustes-tabs {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">gap: 8px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 20px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.ajustes-tab {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">flex: 1;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-family: 'Nunito', sans-serif;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-weight: 700;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cursor: pointer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: white;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #94a3b8;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">box-shadow: 0 2px 6px rgba(0,0,0,0.05);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: all .2s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.ajustes-tab.activo {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #1E3A8A;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: white;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* </span><span class="s5">──</span><span class="s1"> Sección card </span><span class="s5">──</span><span class="s1"> */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.seccion-card {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: white;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 20px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 18px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 16px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">box-shadow: 0 2px 8px rgba(0,0,0,0.06);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.seccion-titulo {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 13px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-weight: 800;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #94a3b8;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">text-transform: uppercase;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">letter-spacing: 1px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">align-items: center;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">justify-content: space-between;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.seccion-count {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #eff6ff;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #1E3A8A;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 11px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-weight: 800;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 2px 9px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 20px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">letter-spacing: 0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">text-transform: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* </span><span class="s5">──</span><span class="s1"> Tags </span><span class="s5">──</span><span class="s1"> */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.tags-wrap {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">flex-wrap: wrap;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">gap: 8px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin-bottom: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">min-height: 28px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.tag-chip {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: inline-flex;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">align-items: center;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">gap: 5px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #f1f5f9;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border: 1.5px solid #e2e8f0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #334155;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 13px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-weight: 700;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 6px 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 20px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: background .15s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.tag-chip .remove-tag {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cursor: pointer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #94a3b8;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 16px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">line-height: 1;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 0 0 0 2px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">align-items: center;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: color .15s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-family: 'Nunito', sans-serif;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.tag-chip .remove-tag:hover { color: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.empty-tags {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #cbd5e1;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 13px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-style: italic;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* </span><span class="s5">──</span><span class="s1"> Add row </span><span class="s5">──</span><span class="s1"> */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.add-row {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">display: flex;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">gap: 8px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.add-row input {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">flex: 1;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 10px 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border: 2px solid #e2e8f0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-family: 'Nunito', sans-serif;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-weight: 600;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #1e293b;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">outline: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: border-color .2s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #f8fafc;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.add-row input:focus {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-color: #1E3A8A;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: white;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.add-row input::placeholder { color: #94a3b8; font-weight: 500; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-add {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #1E3A8A;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #fff;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 10px 18px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-family: 'Nunito', sans-serif;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-weight: 800;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cursor: pointer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">white-space: nowrap;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: background .2s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-add:hover { background: #1e40af; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-add:active { transform: scale(.97); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* </span><span class="s5">──</span><span class="s1"> Separador entre secciones de tratamientos </span><span class="s5">──</span><span class="s1"> */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.seccion-sep {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">height: 1px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #f1f5f9;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">margin: 16px 0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* </span><span class="s5">──</span><span class="s1"> Toast </span><span class="s5">──</span><span class="s1"> */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.toast {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">position: fixed;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">bottom: 88px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">left: 50%;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transform: translateX(-50%) translateY(20px);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: #1E3A8A;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">color: #fff;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 10px 24px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">border-radius: 20px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-size: 14px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-weight: 700;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">opacity: 0;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">transition: all .3s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">pointer-events: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">z-index: 9999;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">white-space: nowrap;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">box-shadow: 0 4px 16px rgba(30,58,138,.3);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-layout"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- SIDEBAR --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;aside class="sidebar"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-brand"&gt;&lt;img src="<a href="https://4fca45db.control-financiero-au9.pages.dev/logo_app.png"><span class="s2">logo_app.png</span></a>" alt="Olvisión" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="sidebar-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🏠</span><span class="s1">&lt;/span&gt; Inicio&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🧾</span><span class="s1">&lt;/span&gt; Caja Diaria&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">💸</span><span class="s1">&lt;/span&gt; Gastos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🏦</span><span class="s1">&lt;/span&gt; Cheques&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="s2">sueldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">👥</span><span class="s1">&lt;/span&gt; Sueldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="s2">saldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">🔖</span><span class="s1">&lt;/span&gt; Saldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="s2">configuracion.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s6">⚙️</span><span class="s1">&lt;/span&gt; Config.&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-footer"&gt;&lt;button class="btn-salir-sidebar" onclick="salir()"&gt;</span><span class="s6">🚪</span><span class="s1"> Salir&lt;/button&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/aside&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-content"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- TOP NAV --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-left"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="nav-back" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="s2">configuracion.html</span></a>"&gt;‹&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-title"&gt;</span><span class="s6">🏷️</span><span class="s1"> Ajustes de productos&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-sub"&gt;Marcas · Tratamientos&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;main class="main"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- TABS --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="ajustes-tabs"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="ajustes-tab activo" id="tab-btn-marcas" onclick="switchTab('marcas')"&gt;</span><span class="s6">🏷️</span><span class="s1"> Marcas&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="ajustes-tab" id="tab-btn-tratamientos" onclick="switchTab('tratamientos')"&gt;</span><span class="s6">🔬</span><span class="s1"> Tratamientos&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- </span><span class="s5">══</span><span class="s1"> PANEL MARCAS </span><span class="s5">══</span><span class="s1"> --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div id="panel-marcas"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-titulo"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s6">👓</span><span class="s1"> Marcas de Armazón</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="seccion-count" id="count-armazon"&gt;0&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="tags-wrap" id="tags-armazon"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="empty-tags"&gt;Cargando…&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="add-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="input-armazon" placeholder="Nueva marca…" maxlength="60"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onkeydown="if(event.key==='Enter') agregarItem('marcas_armazon','armazon')" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-add" onclick="agregarItem('marcas_armazon','armazon')"&gt;+ Agregar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-titulo"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s6">👁️</span><span class="s1"> Marcas Lentes de Contacto</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="seccion-count" id="count-contacto"&gt;0&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="tags-wrap" id="tags-contacto"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="empty-tags"&gt;Cargando…&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="add-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="input-contacto" placeholder="Nueva marca…" maxlength="60"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onkeydown="if(event.key==='Enter') agregarItem('marcas_lentes_contacto','contacto')" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-add" onclick="agregarItem('marcas_lentes_contacto','contacto')"&gt;+ Agregar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- </span><span class="s5">══</span><span class="s1"> PANEL TRATAMIENTOS </span><span class="s5">══</span><span class="s1"> --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div id="panel-tratamientos" style="display:none"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-titulo"&gt;</span><span class="s6">👓</span><span class="s1"> Monofocal&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="tags-wrap" id="tags-monofocal"&gt;&lt;span class="empty-tags"&gt;Cargando…&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="add-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="input-monofocal" placeholder="Nuevo tratamiento…" maxlength="80"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onkeydown="if(event.key==='Enter') agregarItem('tratamientos_monofocal','monofocal')" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-add" onclick="agregarItem('tratamientos_monofocal','monofocal')"&gt;+ Agregar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-titulo"&gt;</span><span class="s6">👴</span><span class="s1"> Bifocal&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="tags-wrap" id="tags-bifocal"&gt;&lt;span class="empty-tags"&gt;Cargando…&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="add-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="input-bifocal" placeholder="Nuevo tratamiento…" maxlength="80"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onkeydown="if(event.key==='Enter') agregarItem('tratamientos_bifocal','bifocal')" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-add" onclick="agregarItem('tratamientos_bifocal','bifocal')"&gt;+ Agregar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-titulo"&gt;</span><span class="s6">💻</span><span class="s1"> Ocupacional&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="tags-wrap" id="tags-ocupacional"&gt;&lt;span class="empty-tags"&gt;Cargando…&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="add-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="input-ocupacional" placeholder="Nuevo tratamiento…" maxlength="80"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onkeydown="if(event.key==='Enter') agregarItem('tratamientos_ocupacional','ocupacional')" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-add" onclick="agregarItem('tratamientos_ocupacional','ocupacional')"&gt;+ Agregar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-titulo"&gt;</span><span class="s6">👑</span><span class="s1"> Progresivo / Multifocal&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="tags-wrap" id="tags-progresivo"&gt;&lt;span class="empty-tags"&gt;Cargando…&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="add-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="input-progresivo" placeholder="Nuevo tratamiento…" maxlength="80"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onkeydown="if(event.key==='Enter') agregarItem('tratamientos_progresivo','progresivo')" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-add" onclick="agregarItem('tratamientos_progresivo','progresivo')"&gt;+ Agregar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="seccion-titulo"&gt;</span><span class="s6">🕶️</span><span class="s1"> Solares y Teñidos&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="tags-wrap" id="tags-tenido"&gt;&lt;span class="empty-tags"&gt;Cargando…&lt;/span&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="add-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="input-tenido" placeholder="Nuevo tratamiento…" maxlength="80"</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">onkeydown="if(event.key==='Enter') agregarItem('tratamientos_tenido','tenido')" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-add" onclick="agregarItem('tratamientos_tenido','tenido')"&gt;+ Agregar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/main&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- BOTTOM NAV --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="bottom-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">🏠</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Inicio&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">🧾</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Caja&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">💸</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Gastos&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">🏦</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Cheques&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="s2">configuracion.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s6">⚙️</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Config.&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="toast" id="toast"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { createClient } = supabase;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const _sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function salir() { sessionStorage.removeItem('olvision_auth'); window.location.href = 'index.html'; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Estado </span><span class="s1">────────────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const estado = {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">marcas_armazon: [],</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">marcas_lentes_contacto: [],</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_monofocal: [],</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_bifocal: [],</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_ocupacional: [],</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_progresivo: [],</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_tenido: []</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">};</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const mapaUI = {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">marcas_armazon: { tags: 'tags-armazon', count: 'count-armazon' },</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">marcas_lentes_contacto: { tags: 'tags-contacto', count: 'count-contacto' },</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_monofocal: { tags: 'tags-monofocal', count: null },</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_bifocal: { tags: 'tags-bifocal', count: null },</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_ocupacional: { tags: 'tags-ocupacional', count: null },</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_progresivo: { tags: 'tags-progresivo', count: null },</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">tratamientos_tenido: { tags: 'tags-tenido', count: null }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">};</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Carga </span><span class="s1">─────────────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function cargarTodo() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { data, error } = await _sb</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.from('configuracion')</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.select('clave,valor')</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.in('clave', Object.keys(estado));</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (error) { mostrarToast('</span><span class="s6">❌</span><span class="s1"> Error al cargar'); return; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">data.forEach(row =&gt; {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">try { estado[row.clave] = JSON.parse(row.valor) || []; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">catch { estado[row.clave] = []; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">renderTags(row.clave);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">});</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Render tags </span><span class="s1">───────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderTags(clave) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const ui = mapaUI[clave];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!ui) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const container = document.getElementById(ui.tags);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const arr = estado[clave];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const viewer = isViewer();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">container.innerHTML = arr.length === 0</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">? '&lt;span class="empty-tags"&gt;Sin opciones todavía&lt;/span&gt;'</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">: arr.map((item, i) =&gt; `</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="tag-chip"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${escH(item)}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${viewer ? '' : `&lt;button class="remove-tag" onclick="eliminarItem('${clave}',${i})"&gt;×&lt;/button&gt;`}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/span&gt;`).join('');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (ui.count) document.getElementById(ui.count).textContent = arr.length;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Agregar </span><span class="s1">───────────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function agregarItem(clave, inputSuffix) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (isViewer()) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const input = document.getElementById('input-' + inputSuffix);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const valor = input.value.trim();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!valor) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (estado[clave].some(v =&gt; v.toLowerCase() === valor.toLowerCase())) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">mostrarToast('</span><span class="s6">⚠️</span><span class="s1"> Ya existe esa opción');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">input.value = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">estado[clave].push(valor);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">renderTags(clave);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">input.value = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">input.focus();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await guardar(clave);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Eliminar </span><span class="s1">──────────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function eliminarItem(clave, index) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (isViewer()) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!confirm(`¿Eliminar "${estado[clave][index]}"?`)) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">estado[clave].splice(index, 1);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">renderTags(clave);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await guardar(clave);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Guardar </span><span class="s1">───────────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function guardar(clave) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { error } = await _sb</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.from('configuracion')</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.upsert({ clave, valor: JSON.stringify(estado[clave]) }, { onConflict: 'clave' });</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">mostrarToast(error ? '</span><span class="s6">❌</span><span class="s1"> Error al guardar' : '</span><span class="s6">✅</span><span class="s1"> Guardado');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (error) console.error(error);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Tabs </span><span class="s1">──────────────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function switchTab(nombre) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('panel-marcas').style.display = nombre === 'marcas' ? 'block' : 'none';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('panel-tratamientos').style.display = nombre === 'tratamientos' ? 'block' : 'none';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('tab-btn-marcas').className = 'ajustes-tab' + (nombre === 'marcas' ? ' activo' : '');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('tab-btn-tratamientos').className = 'ajustes-tab' + (nombre === 'tratamientos' ? ' activo' : '');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p4"><span class="s7">// </span><span class="s1">──</span><span class="s7"> Helpers </span><span class="s1">───────────────────────────────────────────────</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function escH(s) { return String(s).replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(/&gt;/g,'&amp;gt;').replace(/"/g,'&amp;quot;'); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let toastTimer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function mostrarToast(msg) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const t = document.getElementById('toast');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">t.textContent = msg;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">t.classList.add('show');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">clearTimeout(toastTimer);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">toastTimer = setTimeout(() =&gt; t.classList.remove('show'), 2200);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cargarTodo();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

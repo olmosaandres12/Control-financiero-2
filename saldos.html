@@ -1,932 +1,2058 @@
-<!DOCTYPE html>
-<!-- saved from url=(0056)https://4fca45db.control-financiero-au9.pages.dev/saldos -->
-<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Olvisión — Saldos Pendientes</title>
-  <link rel="stylesheet" href="./Olvisión — Saldos Pendientes_files/app.css">
-  <link rel="icon" type="image/png" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
-  <link rel="apple-touch-icon" href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png">
-  <script src="./Olvisión — Saldos Pendientes_files/supabase-js@2"></script>
-  <script src="./Olvisión — Saldos Pendientes_files/config.js"></script>
-  <script src="./Olvisión — Saldos Pendientes_files/cache.js"></script>
-  <script src="./Olvisión — Saldos Pendientes_files/utils.js"></script>
-  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
-  <link rel="stylesheet" href="./Olvisión — Saldos Pendientes_files/estetica.css">
-  <style>
-    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    .stat-card { background: white; border-radius: 16px; padding: 16px 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-    .stat-val { font-size: 18px; font-weight: 900; color: #1E3A8A; line-height: 1.2; }
-    .stat-val.rojo { color: #ef4444; }
-    .stat-lbl { font-size: 11px; color: #94a3b8; margin-top: 3px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
-
-    .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    .search-row input {
-      flex: 1; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px;
-      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; color: #1e293b;
-      background: white; outline: none; transition: border .2s;
-    }
-    .search-row input:focus { border-color: #1E3A8A; }
-    .search-row select {
-      padding: 10px 10px; border: 1.5px solid #e2e8f0; border-radius: 12px;
-      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
-      background: white; color: #64748b; outline: none; cursor: pointer;
-      appearance: none; -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 8px center; padding-right: 26px;
-    }
-
-    .sort-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
-    .sort-lbl { font-size: 12px; color: #94a3b8; font-weight: 700; }
-    .sort-btn { background: white; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 5px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; transition: all .15s; }
-    .sort-btn.activo { background: #1E3A8A; color: white; border-color: #1E3A8A; }
-
-    .saldo-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #1E3A8A; }
-    .saldo-card.urgente { border-left-color: #ef4444; }
-    .saldo-card.reciente { border-left-color: #10b981; }
-
-    .sc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-    .sc-cliente { font-size: 15px; font-weight: 800; color: #1e293b; }
-    .sc-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: #f1f5f9; color: #64748b; }
-    .sc-badge.urgente { background: #fee2e2; color: #ef4444; }
-    .sc-badge.reciente { background: #d1fae5; color: #065f46; }
-
-    .sc-producto { font-size: 12px; color: #64748b; margin-bottom: 12px; }
-    .sc-producto .tag { display: inline-block; background: #eff6ff; color: #1E3A8A; border-radius: 6px; padding: 1px 8px; font-weight: 700; font-size: 11px; margin-right: 4px; }
-
-    .sc-montos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .monto-item { background: #f8fafc; border-radius: 10px; padding: 10px 8px; text-align: center; }
-    .monto-item .m-val { font-size: 14px; font-weight: 900; color: #1e293b; }
-    .monto-item.pendiente .m-val { color: #ef4444; }
-    .monto-item .m-lbl { font-size: 10px; color: #94a3b8; margin-top: 2px; font-weight: 700; text-transform: uppercase; }
-
-    .sc-footer { display: flex; justify-content: space-between; align-items: center; }
-    .sc-meta { font-size: 12px; color: #94a3b8; line-height: 1.6; }
-    .btn-cobrar { background: #1E3A8A; color: white; border: none; border-radius: 12px; padding: 10px 20px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
-    .btn-cobrar:hover { background: #163069; }
-
-    .empty { text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 14px; }
-    .empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }
-
-    /* Modal */
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
-    .overlay.visible { display: flex; }
-    .modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }
-    .modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 4px; text-align: center; }
-    .modal-sub { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 20px; font-weight: 600; }
-
-    .monto-destacado { background: #fef2f2; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 20px; }
-    .monto-destacado .md-lbl { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .monto-destacado .md-val { font-size: 32px; font-weight: 900; color: #ef4444; margin-top: 4px; }
-
-    .modal-info { background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; font-size: 13px; color: #475569; line-height: 1.8; }
-    .modal-info strong { color: #1E3A8A; }
-
-    @media (min-width: 768px) {
-      .overlay { align-items: center; }
-      .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
-    }
-
-    /* Toast */
-    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; z-index: 1100; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
-    .toast.show { opacity: 1; }
-    .toast.error { background: #ef4444; }
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; color: #0000e9; -webkit-text-stroke: #0000e9}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    span.s1 {font-kerning: none}
+    span.s2 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9}
+    span.s3 {font-kerning: none; color: #000000; -webkit-text-stroke: 0px #000000}
+    span.s4 {text-decoration: underline ; font-kerning: none; -webkit-text-stroke: 0px #0000e9}
+    span.s5 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
+    span.s6 {font: 12.0px 'STIX Two Math'; font-kerning: none}
+    td.td1 {width: 764.0px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
   </style>
 </head>
 <body>
-  <div class="app-layout">
-    <aside class="sidebar">
-      <div class="sidebar-brand"><img src="./Olvisión — Saldos Pendientes_files/logo_app.png" alt="Olvisión"></div>
-      <nav class="sidebar-nav">
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="snav-icon">💸</span> Gastos</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
-        <a class="snav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
-        <a class="snav-item" href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
-      </nav>
-      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
-    </aside>
-
-    <div class="app-content">
-      <nav class="nav">
-        <div class="nav-left">
-          <a class="nav-back" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html">‹</a>
-          <div>
-            <div class="nav-title">🔖 Saldos Pendientes</div>
-            <div class="nav-sub" id="nav-sub">24 ordenes pendientes</div>
-          </div>
-        </div>
-      </nav>
-
-      <main class="main">
-
-        <!-- Stats -->
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-val rojo" id="stat-total">$1.953.750</div>
-            <div class="stat-lbl">Total</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val" id="stat-cantidad">21</div>
-            <div class="stat-lbl">Clientes</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val" id="stat-antiguos">17</div>
-            <div class="stat-lbl">+30 días</div>
-          </div>
-        </div>
-
-        <!-- Buscador + filtro -->
-        <div class="search-row">
-          <input type="text" id="buscador" placeholder="🔍 Buscar cliente..." oninput="filtrar()">
-          <select id="filtro-vendedor" onchange="filtrar()">
-            <option value="">Todos</option>
-          <option value="Andres">Andres</option><option value="Luis">Luis</option><option value="Sandra">Sandra</option><option value="Valentina">Valentina</option></select>
-        </div>
-
-        <!-- Ordenar -->
-        <div class="sort-row">
-          <span class="sort-lbl">Ordenar:</span>
-          <button class="sort-btn activo" id="sort-fecha" onclick="setSortMode(&#39;fecha&#39;)">Más antiguos</button>
-          <button class="sort-btn" id="sort-monto" onclick="setSortMode(&#39;monto&#39;)">Mayor monto</button>
-        </div>
-
-        <!-- Lista -->
-        <div id="lista-saldos"><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">peralta yessica</div>
-            <div class="sc-badge urgente">⏱ 75d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1119 · 👤 Luis
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$50.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 06/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(2974dd22-11fd-4af9-8e92-aae74d667b77)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">yaradi yaqueline</div>
-            <div class="sc-badge urgente">⏱ 70d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Reposicion C.</span>
-            Orden #1122 · 👤 Sandra
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$40.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$10.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 11/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(04ab47bf-e50e-4e47-b197-e1029edc2298)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">marquez maria lucia</div>
-            <div class="sc-badge urgente">⏱ 68d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Reposicion C.</span>
-            Orden #1124 · 👤 Valentina
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$50.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 13/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(362b4f8d-e9c8-4775-8f6d-553cd8e5cd2b)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">adriana carrazano</div>
-            <div class="sc-badge urgente">⏱ 67d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Reposicion C.</span>
-            Orden #1128 · 👤 Sandra
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$65.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$9.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$56.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 14/03/2026
-               · Transferencia
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(eba399a4-b9d6-4e2f-8d2b-8c982b5c1553)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">adriana carrazano</div>
-            <div class="sc-badge urgente">⏱ 67d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Saldo</span>
-            Orden #1128 · 👤 Sandra
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$56.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$5.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$51.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 14/03/2026
-               · Debito
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(11775458-9f88-4b7f-8e15-8c2e9a8d7154)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">adriana carrazano</div>
-            <div class="sc-badge urgente">⏱ 65d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Saldo</span>
-            Orden #1128 · 👤 Sandra
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$51.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$42.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$9.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 16/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(2e3b9298-cf47-4385-a1de-73a4469293a1)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">sierra maria cecilia</div>
-            <div class="sc-badge urgente">⏱ 63d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1140 · 👤 Sandra
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$70.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$30.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$40.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 18/03/2026
-               · Transferencia
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(3bc6eb7d-0ff8-422d-85e1-4c546e270e08)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">Julio ambrosio</div>
-            <div class="sc-badge urgente">⏱ 63d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1142 · 👤 Valentina
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$127.500</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$60.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$67.500</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 18/03/2026
-               · Transferencia
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(bb9ae46c-0739-45fa-89c8-11bfc39251be)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">cordoba camila</div>
-            <div class="sc-badge urgente">⏱ 63d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1137 · 👤 Andres
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$135.500</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$35.500</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 18/03/2026
-               · QR
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(6926cbd8-ded8-4d23-b7c6-ff7a71f6fc3d)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">moyano paz elena</div>
-            <div class="sc-badge urgente">⏱ 62d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Reposicion C.</span>
-            Orden #1144 · 👤 Andres
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$25.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$10.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$15.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 19/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(5d2be51f-97a8-4ec7-b881-44332f81931b)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">teran octavio</div>
-            <div class="sc-badge urgente">⏱ 60d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1145 · 👤 Valentina
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$140.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$10.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$130.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 21/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(95ced026-fb45-4ce3-8767-b3c6d36876de)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">jose castagnaro</div>
-            <div class="sc-badge urgente">⏱ 57d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1148 · 👤 Valentina
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$322.500</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$222.500</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 24/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(864abe90-f9c3-47f4-bd44-a40661a0b43a)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">Carizzo cristina</div>
-            <div class="sc-badge urgente">⏱ 54d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1153 · 👤 Andres
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$225.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$80.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$145.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 27/03/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(639c8ac4-eb5b-43bf-b596-81b858a469d1)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">Karen barthabur</div>
-            <div class="sc-badge urgente">⏱ 42d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1167 · 👤 Luis
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$125.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$75.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 08/04/2026
-               · Efectivo
-              <br>📝 Armazon genérico + poli con AR.
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(a4e8bd41-d9e0-4d2c-b652-2c0596087d46)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">Remis maria eugenia</div>
-            <div class="sc-badge urgente">⏱ 41d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1168 · 👤 Andres
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$175.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$75.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$100.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 09/04/2026
-               · Transferencia
-              <br>📝 Onoff + teñido polarizado con aumento
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(64485cc0-d4e9-4205-827b-aed12169e7bc)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card urgente">
-          <div class="sc-header">
-            <div class="sc-cliente">Karen barthabur</div>
-            <div class="sc-badge urgente">⏱ 40d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Saldo</span>
-            Orden #1167 · 👤 Luis
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$75.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$50.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$25.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 10/04/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(ee740f4c-56ae-46a1-98e6-f4cbadb9b95a)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card ">
-          <div class="sc-header">
-            <div class="sc-cliente">Área isabel</div>
-            <div class="sc-badge ">⏱ 30d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1182 · 👤 Valentina
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$255.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$105.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$150.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 20/04/2026
-               · Transferencia
-              <br>📝 Karina rabolini (Rx-1439) + HD
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(c4838c22-bef1-4d76-8ea1-7b5eec7b4bb6)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card ">
-          <div class="sc-header">
-            <div class="sc-cliente">maria mercedez flugel</div>
-            <div class="sc-badge ">⏱ 29d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1183 · 👤 Andres
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$176.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$40.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$136.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 21/04/2026
-               · Transferencia
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(aa445cca-4c02-46da-9e6b-16abd4f71b84)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card ">
-          <div class="sc-header">
-            <div class="sc-cliente">montengero sebastian</div>
-            <div class="sc-badge ">⏱ 28d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Reposicion C.</span>
-            Orden #1185 · 👤 Sandra
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$90.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$20.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$70.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 22/04/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(700b879b-db49-4cec-af58-ec8b467e62fe)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card ">
-          <div class="sc-header">
-            <div class="sc-cliente">Lobo cecilia</div>
-            <div class="sc-badge ">⏱ 23d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1191 · 👤 Luis
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$178.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$60.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$118.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 27/04/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(4fa42fd4-ff2c-4c7b-8728-a82355d774d8)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card ">
-          <div class="sc-header">
-            <div class="sc-cliente">Ledesma Pilar</div>
-            <div class="sc-badge ">⏱ 20d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1194 · 👤 Valentina
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$208.250</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$100.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$108.250</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 30/04/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(fe07c313-9517-4724-ba83-874ad586f708)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card ">
-          <div class="sc-header">
-            <div class="sc-cliente">Melia Maria Sofia</div>
-            <div class="sc-badge ">⏱ 18d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1197 · 👤 Valentina
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$145.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$65.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$80.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 02/05/2026
-               · T. Credito
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(71d1a8d4-da2b-496b-971e-b973d209f448)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card ">
-          <div class="sc-header">
-            <div class="sc-cliente">Gamalero Leiza</div>
-            <div class="sc-badge ">⏱ 18d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Recetado</span>
-            Orden #1199 · 👤 Andres
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$185.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$30.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$155.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 02/05/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(0b69d716-c15e-498e-b3c8-8527e92613c6)">Cobrar</button>
-          </div>
-        </div><div class="saldo-card reciente">
-          <div class="sc-header">
-            <div class="sc-cliente">Otero Ana maria</div>
-            <div class="sc-badge reciente">⏱ 6d</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">Reposicion C.</span>
-            Orden #— · 👤 Sandra
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">$95.000</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">$40.000</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">$55.000</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 14/05/2026
-               · Efectivo
-              
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(e073d2b9-f5a3-47f8-b3c4-a89d174044be)">Cobrar</button>
-          </div>
-        </div></div>
-
-      </main>
-
-      <nav class="bottom-nav">
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
-        <a class="bnav-item" href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="bnav-icon">🏦</span><span class="bnav-label">Cheques</span></a>
-        <a class="bnav-item activo" href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="bnav-icon">🔖</span><span class="bnav-label">Saldos</span></a>
-      </nav>
-    </div>
-  </div>
-
-  <!-- MODAL COBRAR -->
-  <div class="overlay" id="overlay-cobrar" onclick="cerrarModalFuera(event)">
-    <div class="modal">
-      <div class="modal-titulo">💰 Registrar cobro</div>
-      <div class="modal-sub" id="modal-cliente"></div>
-
-      <div class="modal-info" id="modal-info"></div>
-
-      <div class="monto-destacado">
-        <div class="md-lbl">Saldo a cobrar</div>
-        <div class="md-val" id="modal-monto">$0</div>
-      </div>
-
-      <div class="campo">
-        <label>Forma de pago</label>
-        <select id="modal-forma">
-          <option>Efectivo</option><option>T. Credito</option><option>Debito</option><option>QR</option><option>Transferencia</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label>Fecha de cobro</label>
-        <input type="date" id="modal-fecha">
-      </div>
-      <div class="campo">
-        <label>Observación (opcional)</label>
-        <textarea id="modal-obs" placeholder="Notas adicionales..."></textarea>
-      </div>
-
-      <button class="btn-guardar" id="btn-confirmar" onclick="confirmarCobro()">✅ Confirmar cobro</button>
-      <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
-
-  <script>
-    if (!sessionStorage.getItem('olvision_auth')) location.href = 'index.html';
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let todosLosSaldos = [], saldosFiltrados = [], sortMode = 'fecha', registroActual = null;
-    let empleados = [];
-
-    // Fecha hoy para el input
-    const _hoy = new Date();
-    const _fechaHoy = `${_hoy.getFullYear()}-${String(_hoy.getMonth()+1).padStart(2,'0')}-${String(_hoy.getDate()).padStart(2,'0')}`;
-
-    function salir() { sessionStorage.clear(); location.href = 'index.html'; }
-    function formatPesos(n) { if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }
-    function formatFecha(f) { if(!f) return '—'; const [y,m,d] = f.split('-'); return `${d}/${m}/${y}`; }
-
-    async function cargarEmpleados() {
-      const { data } = await db.from('empleados').select('nombre').eq('activo', true).order('nombre');
-      empleados = (data || []).map(e => e.nombre);
-      const sel = document.getElementById('filtro-vendedor');
-      empleados.forEach(n => {
-        const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
-      });
-    }
-
-    async function cargarSaldos() {
-      const cacheKey = 'saldos_pendientes';
-      const cached = OlvisionCache.get(cacheKey);
-      let data;
-      if (cached) {
-        data = cached;
-      } else {
-        const { data: rows, error } = await db
-          .from('registros').select('*').gt('saldo', 0)
-          .or('egreso.is.null,egreso.eq.0').order('fecha', { ascending: true });
-        if (error) {
-          document.getElementById('lista-saldos').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>Error: ${error.message}</div>`;
-          return;
-        }
-        data = rows || [];
-        OlvisionCache.set(cacheKey, data);
-      }
-      todosLosSaldos = data;
-      actualizarStats();
-      filtrar();
-    }
-
-    function actualizarStats() {
-      const total = todosLosSaldos.reduce((s,r) => s+(r.saldo||0), 0);
-      const clientes = new Set(todosLosSaldos.map(r => r.nombre_cliente)).size;
-      const hoy = new Date();
-      const antiguos = todosLosSaldos.filter(r => {
-        if (!r.fecha) return false;
-        return (hoy - new Date(r.fecha+'T12:00:00')) / 86400000 > 30;
-      }).length;
-      document.getElementById('stat-total').textContent = formatPesos(total);
-      document.getElementById('stat-cantidad').textContent = clientes;
-      document.getElementById('stat-antiguos').textContent = antiguos;
-      document.getElementById('nav-sub').textContent = `${todosLosSaldos.length} orden${todosLosSaldos.length!==1?'es':''} pendiente${todosLosSaldos.length!==1?'s':''}`;
-    }
-
-    function filtrar() {
-      const busq = document.getElementById('buscador').value.toLowerCase();
-      const vendedor = document.getElementById('filtro-vendedor').value;
-      saldosFiltrados = todosLosSaldos.filter(r => {
-        const matchB = !busq || (r.nombre_cliente||'').toLowerCase().includes(busq);
-        const matchV = !vendedor || r.vendedor === vendedor;
-        return matchB && matchV;
-      });
-      ordenar(); renderizar();
-    }
-
-    function setSortMode(mode) {
-      sortMode = mode;
-      document.getElementById('sort-fecha').classList.toggle('activo', mode==='fecha');
-      document.getElementById('sort-monto').classList.toggle('activo', mode==='monto');
-      ordenar(); renderizar();
-    }
-
-    function ordenar() {
-      if (sortMode === 'fecha') saldosFiltrados.sort((a,b) => new Date(a.fecha+'T12:00:00') - new Date(b.fecha+'T12:00:00'));
-      else saldosFiltrados.sort((a,b) => (b.saldo||0) - (a.saldo||0));
-    }
-
-    function renderizar() {
-      const lista = document.getElementById('lista-saldos');
-      if (saldosFiltrados.length === 0) {
-        lista.innerHTML = `<div class="empty"><div class="empty-icon">${todosLosSaldos.length===0?'🎉':'🔍'}</div><p>${todosLosSaldos.length===0?'¡Todo cobrado! No hay saldos pendientes':'Sin resultados para esa búsqueda'}</p></div>`;
-        return;
-      }
-      const hoy = new Date();
-      lista.innerHTML = saldosFiltrados.map(r => {
-        const dias = r.fecha ? Math.floor((hoy - new Date(r.fecha+'T12:00:00')) / 86400000) : null;
-        let cardClass = '', badgeClass = '', badgeLabel = '';
-        if (dias !== null) {
-          badgeLabel = `⏱ ${dias}d`;
-          if (dias > 30) { cardClass='urgente'; badgeClass='urgente'; }
-          else if (dias <= 7) { cardClass='reciente'; badgeClass='reciente'; }
-        }
-        return `<div class="saldo-card ${cardClass}">
-          <div class="sc-header">
-            <div class="sc-cliente">${r.nombre_cliente||'Sin nombre'}</div>
-            <div class="sc-badge ${badgeClass}">${badgeLabel}</div>
-          </div>
-          <div class="sc-producto">
-            <span class="tag">${r.producto||'—'}</span>
-            Orden #${r.numero_orden||'—'}${r.vendedor?` · 👤 ${r.vendedor}`:''}
-          </div>
-          <div class="sc-montos">
-            <div class="monto-item"><div class="m-val">${formatPesos(r.total||0)}</div><div class="m-lbl">Total</div></div>
-            <div class="monto-item"><div class="m-val">${formatPesos(r.a_cuenta||0)}</div><div class="m-lbl">A cuenta</div></div>
-            <div class="monto-item pendiente"><div class="m-val">${formatPesos(r.saldo||0)}</div><div class="m-lbl">Resta cobrar</div></div>
-          </div>
-          <div class="sc-footer">
-            <div class="sc-meta">
-              📅 ${formatFecha(r.fecha)}
-              ${r.forma_pago?` · ${r.forma_pago}`:''}
-              ${r.observacion?`<br>📝 ${r.observacion}`:''}
-            </div>
-            <button class="btn-cobrar" onclick="abrirModal(${r.id})">Cobrar</button>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    function abrirModal(id) {
-      registroActual = saldosFiltrados.find(r => r.id === id);
-      if (!registroActual) return;
-      document.getElementById('modal-cliente').textContent = registroActual.nombre_cliente || 'Sin nombre';
-      document.getElementById('modal-info').innerHTML = `
-        <strong>Producto:</strong> ${registroActual.producto||'—'}<br>
-        <strong>Orden:</strong> #${registroActual.numero_orden||'—'}<br>
-        <strong>Total original:</strong> ${formatPesos(registroActual.total||0)}<br>
-        <strong>Ya pagó:</strong> ${formatPesos(registroActual.a_cuenta||0)}`;
-      document.getElementById('modal-monto').textContent = formatPesos(registroActual.saldo||0);
-      document.getElementById('modal-obs').value = '';
-      document.getElementById('modal-forma').value = 'Efectivo';
-      document.getElementById('modal-fecha').value = _fechaHoy;
-      document.getElementById('btn-confirmar').disabled = false;
-      document.getElementById('btn-confirmar').textContent = '✅ Confirmar cobro';
-      document.getElementById('overlay-cobrar').classList.add('visible');
-    }
-
-    function cerrarModal() { document.getElementById('overlay-cobrar').classList.remove('visible'); registroActual = null; }
-    function cerrarModalFuera(e) { if(e.target===document.getElementById('overlay-cobrar')) cerrarModal(); }
-
-    async function confirmarCobro() {
-      if (!registroActual) return;
-      const btn = document.getElementById('btn-confirmar');
-      btn.disabled = true; btn.textContent = 'Guardando...';
-
-      const formaPago = document.getElementById('modal-forma').value;
-      const obs = document.getElementById('modal-obs').value.trim();
-      const fechaInput = document.getElementById('modal-fecha').value;
-      const [yyyy, mm] = fechaInput.split('-');
-      const mes = `${yyyy}-${mm}`;
-
-      const nuevoReg = {
-        fecha: fechaInput, nombre_cliente: registroActual.nombre_cliente,
-        numero_orden: registroActual.numero_orden, producto: 'Saldo',
-        total: registroActual.saldo, a_cuenta: 0, saldo: 0,
-        forma_pago: formaPago, observacion: obs || `Cobro saldo orden #${registroActual.numero_orden}`,
-        egreso: 0, vendedor: registroActual.vendedor, mes
-      };
-
-      const { error: errInsert } = await db.from('registros').insert(nuevoReg);
-      if (errInsert) {
-        mostrarToast('Error: ' + errInsert.message, true);
-        btn.disabled = false; btn.textContent = '✅ Confirmar cobro'; return;
-      }
-
-      await db.from('registros').update({ saldo: 0 }).eq('id', registroActual.id);
-
-      OlvisionCache.clear('saldos_pendientes');
-      OlvisionCache.clear('caja_' + fechaInput);
-      OlvisionCache.clear('hist_' + mes);
-
-      mostrarToast('✅ Cobro registrado');
-      cerrarModal();
-      await cargarSaldos();
-    }
-
-    function mostrarToast(msg, error = false) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast show' + (error ? ' error' : '');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    async function init() {
-      await cargarEmpleados();
-      await cargarSaldos();
-    }
-    init();
-  </script>
-
-
-</body></html>
+<table cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;html lang="es"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta charset="UTF-8" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;title&gt;Olvisión — Saldos Pendientes&lt;/title&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="stylesheet" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/app.css"><span class="s2">app.css</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="icon" type="image/png" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="apple-touch-icon" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/finanzas_logo.png"><span class="s2">finanzas_logo.png</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p2"><span class="s3">&lt;script src="<a href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><span class="s4">https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/config.js"><span class="s2">config.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/cache.js"><span class="s2">cache.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script src="<a href="https://4fca45db.control-financiero-au9.pages.dev/utils.js"><span class="s2">utils.js</span></a>"&gt;&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="manifest" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json"><span class="s2">manifest.json</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;link rel="stylesheet" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/estetica.css"><span class="s2">estetica.css</span></a>" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.stat-card { background: white; border-radius: 16px; padding: 16px 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.stat-val { font-size: 18px; font-weight: 900; color: #1E3A8A; line-height: 1.2; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.stat-val.rojo { color: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.stat-lbl { font-size: 11px; color: #94a3b8; margin-top: 3px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.search-row { display: flex; gap: 8px; margin-bottom: 12px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.search-row input {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">flex: 1; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; color: #1e293b;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: white; outline: none; transition: border .2s;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.search-row input:focus { border-color: #1E3A8A; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.search-row select {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">padding: 10px 10px; border: 1.5px solid #e2e8f0; border-radius: 12px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background: white; color: #64748b; outline: none; cursor: pointer;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">appearance: none; -webkit-appearance: none;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">background-repeat: no-repeat; background-position: right 8px center; padding-right: 26px;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sort-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sort-lbl { font-size: 12px; color: #94a3b8; font-weight: 700; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sort-btn { background: white; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 5px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; transition: all .15s; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sort-btn.activo { background: #1E3A8A; color: white; border-color: #1E3A8A; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.saldo-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #1E3A8A; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.saldo-card.urgente { border-left-color: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.saldo-card.reciente { border-left-color: #10b981; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-cliente { font-size: 15px; font-weight: 800; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: #f1f5f9; color: #64748b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-badge.urgente { background: #fee2e2; color: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-badge.reciente { background: #d1fae5; color: #065f46; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-producto { font-size: 12px; color: #64748b; margin-bottom: 12px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-producto .tag { display: inline-block; background: #eff6ff; color: #1E3A8A; border-radius: 6px; padding: 1px 8px; font-weight: 700; font-size: 11px; margin-right: 4px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-montos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.monto-item { background: #f8fafc; border-radius: 10px; padding: 10px 8px; text-align: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.monto-item .m-val { font-size: 14px; font-weight: 900; color: #1e293b; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.monto-item.pendiente .m-val { color: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.monto-item .m-lbl { font-size: 10px; color: #94a3b8; margin-top: 2px; font-weight: 700; text-transform: uppercase; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-footer { display: flex; justify-content: space-between; align-items: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.sc-meta { font-size: 12px; color: #94a3b8; line-height: 1.6; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-cobrar { background: #1E3A8A; color: white; border: none; border-radius: 12px; padding: 10px 20px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.btn-cobrar:hover { background: #163069; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.empty { text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 14px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* Modal */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay.visible { display: flex; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal-titulo { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 4px; text-align: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal-sub { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 20px; font-weight: 600; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.monto-destacado { background: #fef2f2; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.monto-destacado .md-lbl { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.monto-destacado .md-val { font-size: 32px; font-weight: 900; color: #ef4444; margin-top: 4px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal-info { background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; font-size: 13px; color: #475569; line-height: 1.8; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal-info strong { color: #1E3A8A; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">@media (min-width: 768px) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.overlay { align-items: center; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.modal { border-radius: 24px; max-height: 85vh; margin: 20px; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">/* Toast */</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; z-index: 1100; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.toast.show { opacity: 1; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.toast.error { background: #ef4444; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/style&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-layout"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;aside class="sidebar"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-brand"&gt;&lt;img src="<a href="https://4fca45db.control-financiero-au9.pages.dev/logo_app.png"><span class="s2">logo_app.png</span></a>" alt="Olvisión" /&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="sidebar-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🏠</span><span class="s1">&lt;/span&gt; Inicio&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🧾</span><span class="s1">&lt;/span&gt; Caja Diaria&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">💸</span><span class="s1">&lt;/span&gt; Gastos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🏦</span><span class="s1">&lt;/span&gt; Cheques&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/sueldos.html"><span class="s2">sueldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">👥</span><span class="s1">&lt;/span&gt; Sueldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="s2">saldos.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">🔖</span><span class="s1">&lt;/span&gt; Saldos&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="snav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/configuracion.html"><span class="s2">configuracion.html</span></a>"&gt;&lt;span class="snav-icon"&gt;</span><span class="s5">⚙️</span><span class="s1">&lt;/span&gt; Config.&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sidebar-footer"&gt;&lt;button class="btn-salir-sidebar" onclick="salir()"&gt;</span><span class="s5">🚪</span><span class="s1"> Salir&lt;/button&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/aside&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="app-content"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-left"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="nav-back" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;‹&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-title"&gt;</span><span class="s5">🔖</span><span class="s1"> Saldos Pendientes&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="nav-sub" id="nav-sub"&gt;Cargando...&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;main class="main"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- Stats --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stats-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-val rojo" id="stat-total"&gt;$—&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-lbl"&gt;Total&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-val" id="stat-cantidad"&gt;—&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-lbl"&gt;Clientes&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-card"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-val" id="stat-antiguos"&gt;—&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="stat-lbl"&gt;+30 días&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- Buscador + filtro --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="search-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="text" id="buscador" placeholder="</span><span class="s5">🔍</span><span class="s1"> Buscar cliente..." oninput="filtrar()" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;select id="filtro-vendedor" onchange="filtrar()"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;option value=""&gt;Todos&lt;/option&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/select&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- Ordenar --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sort-row"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="sort-lbl"&gt;Ordenar:&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="sort-btn activo" id="sort-fecha" onclick="setSortMode('fecha')"&gt;Más antiguos&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="sort-btn" id="sort-monto" onclick="setSortMode('monto')"&gt;Mayor monto&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- Lista --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div id="lista-saldos"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="empty"&gt;&lt;div class="empty-icon"&gt;</span><span class="s5">⏳</span><span class="s1">&lt;/div&gt;Cargando...&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/main&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;nav class="bottom-nav"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/dashboard.html"><span class="s2">dashboard.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">🏠</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Inicio&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/caja.html"><span class="s2">caja.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">🧾</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Caja&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/gastos.html"><span class="s2">gastos.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">💸</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Gastos&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/cheques.html"><span class="s2">cheques.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">🏦</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Cheques&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;a class="bnav-item activo" href="<a href="https://4fca45db.control-financiero-au9.pages.dev/saldos.html"><span class="s2">saldos.html</span></a>"&gt;&lt;span class="bnav-icon"&gt;</span><span class="s5">🔖</span><span class="s1">&lt;/span&gt;&lt;span class="bnav-label"&gt;Saldos&lt;/span&gt;&lt;/a&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/nav&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- MODAL COBRAR --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="overlay" id="overlay-cobrar" onclick="cerrarModalFuera(event)"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal-titulo"&gt;</span><span class="s5">💰</span><span class="s1"> Registrar cobro&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal-sub" id="modal-cliente"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="modal-info" id="modal-info"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="monto-destacado"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="md-lbl"&gt;Saldo a cobrar&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="md-val" id="modal-monto"&gt;$0&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;label&gt;Forma de pago&lt;/label&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;select id="modal-forma"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;option&gt;Efectivo&lt;/option&gt;&lt;option&gt;T. Credito&lt;/option&gt;&lt;option&gt;Debito&lt;/option&gt;&lt;option&gt;QR&lt;/option&gt;&lt;option&gt;Transferencia&lt;/option&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/select&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;label&gt;Fecha de cobro&lt;/label&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;input type="date" id="modal-fecha" /&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="campo"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;label&gt;Observación (opcional)&lt;/label&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;textarea id="modal-obs" placeholder="Notas adicionales..."&gt;&lt;/textarea&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-guardar" id="btn-confirmar" onclick="confirmarCobro()"&gt;</span><span class="s5">✅</span><span class="s1"> Confirmar cobro&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-cancelar" onclick="cerrarModal()"&gt;Cancelar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;!-- Toast --&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="toast" id="toast"&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!sessionStorage.getItem('olvision_auth')) location.href = 'index.html';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { createClient } = supabase;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let todosLosSaldos = [], saldosFiltrados = [], sortMode = 'fecha', registroActual = null;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let empleados = [];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">// Fecha hoy para el input</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const _hoy = new Date();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const _fechaHoy = `${_hoy.getFullYear()}-${String(_hoy.getMonth()+1).padStart(2,'0')}-${String(_hoy.getDate()).padStart(2,'0')}`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function salir() { sessionStorage.clear(); location.href = 'index.html'; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function formatPesos(n) { if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function formatFecha(f) { if(!f) return '—'; const [y,m,d] = f.split('-'); return `${d}/${m}/${y}`; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function cargarEmpleados() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { data } = await db.from('empleados').select('nombre').eq('activo', true).order('nombre');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">empleados = (data || []).map(e =&gt; e.nombre);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const sel = document.getElementById('filtro-vendedor');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">empleados.forEach(n =&gt; {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">});</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function cargarSaldos() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const cacheKey = 'saldos_pendientes';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const cached = OlvisionCache.get(cacheKey);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let data;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (cached) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">data = cached;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">} else {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { data: rows, error } = await db</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.from('registros').select('*').gt('saldo', 0)</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">.or('egreso.is.null,egreso.eq.0').order('fecha', { ascending: true });</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (error) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('lista-saldos').innerHTML = `&lt;div class="empty"&gt;&lt;div class="empty-icon"&gt;</span><span class="s5">⚠️</span><span class="s1">&lt;/div&gt;Error: ${error.message}&lt;/div&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">data = rows || [];</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">OlvisionCache.set(cacheKey, data);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">todosLosSaldos = data;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">actualizarStats();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">filtrar();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function actualizarStats() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const total = todosLosSaldos.reduce((s,r) =&gt; s+(r.saldo||0), 0);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const clientes = new Set(todosLosSaldos.map(r =&gt; r.nombre_cliente)).size;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const hoy = new Date();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const antiguos = todosLosSaldos.filter(r =&gt; {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!r.fecha) return false;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return (hoy - new Date(r.fecha+'T12:00:00')) / 86400000 &gt; 30;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}).length;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('stat-total').textContent = formatPesos(total);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('stat-cantidad').textContent = clientes;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('stat-antiguos').textContent = antiguos;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('nav-sub').textContent = `${todosLosSaldos.length} orden${todosLosSaldos.length!==1?'es':''} pendiente${todosLosSaldos.length!==1?'s':''}`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function filtrar() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const busq = document.getElementById('buscador').value.toLowerCase();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const vendedor = document.getElementById('filtro-vendedor').value;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">saldosFiltrados = todosLosSaldos.filter(r =&gt; {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const matchB = !busq || (r.nombre_cliente||'').toLowerCase().includes(busq);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const matchV = !vendedor || r.vendedor === vendedor;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return matchB &amp;&amp; matchV;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">});</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">ordenar(); renderizar();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function setSortMode(mode) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">sortMode = mode;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('sort-fecha').classList.toggle('activo', mode==='fecha');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('sort-monto').classList.toggle('activo', mode==='monto');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">ordenar(); renderizar();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function ordenar() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (sortMode === 'fecha') saldosFiltrados.sort((a,b) =&gt; new Date(a.fecha+'T12:00:00') - new Date(b.fecha+'T12:00:00'));</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else saldosFiltrados.sort((a,b) =&gt; (b.saldo||0) - (a.saldo||0));</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function renderizar() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const lista = document.getElementById('lista-saldos');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (saldosFiltrados.length === 0) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">lista.innerHTML = `&lt;div class="empty"&gt;&lt;div class="empty-icon"&gt;${todosLosSaldos.length===0?'</span><span class="s5">🎉</span><span class="s1">':'</span><span class="s5">🔍</span><span class="s1">'}&lt;/div&gt;&lt;p&gt;${todosLosSaldos.length===0?'¡Todo cobrado! No hay saldos pendientes':'Sin resultados para esa búsqueda'}&lt;/p&gt;&lt;/div&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const hoy = new Date();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">lista.innerHTML = saldosFiltrados.map(r =&gt; {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const dias = r.fecha ? Math.floor((hoy - new Date(r.fecha+'T12:00:00')) / 86400000) : null;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">let cardClass = '', badgeClass = '', badgeLabel = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (dias !== null) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">badgeLabel = `</span><span class="s6">⏱</span><span class="s1"> ${dias}d`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (dias &gt; 30) { cardClass='urgente'; badgeClass='urgente'; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">else if (dias &lt;= 7) { cardClass='reciente'; badgeClass='reciente'; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">return `&lt;div class="saldo-card ${cardClass}"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sc-header"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sc-cliente"&gt;${r.nombre_cliente||'Sin nombre'}&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sc-badge ${badgeClass}"&gt;${badgeLabel}&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sc-producto"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;span class="tag"&gt;${r.producto||'—'}&lt;/span&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">Orden #${r.numero_orden||'—'}${r.vendedor?` · </span><span class="s5">👤</span><span class="s1"> ${r.vendedor}`:''}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sc-montos"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="monto-item"&gt;&lt;div class="m-val"&gt;${formatPesos(r.total||0)}&lt;/div&gt;&lt;div class="m-lbl"&gt;Total&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="monto-item"&gt;&lt;div class="m-val"&gt;${formatPesos(r.a_cuenta||0)}&lt;/div&gt;&lt;div class="m-lbl"&gt;A cuenta&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="monto-item pendiente"&gt;&lt;div class="m-val"&gt;${formatPesos(r.saldo||0)}&lt;/div&gt;&lt;div class="m-lbl"&gt;Resta cobrar&lt;/div&gt;&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sc-footer"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;div class="sc-meta"&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s5">📅</span><span class="s1"> ${formatFecha(r.fecha)}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${r.forma_pago?` · ${r.forma_pago}`:''}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">${r.observacion?`&lt;br&gt;</span><span class="s5">📝</span><span class="s1"> ${r.observacion}`:''}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;button class="btn-cobrar" onclick="abrirModal(${r.id})"&gt;Cobrar&lt;/button&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/div&gt;`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}).join('');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function abrirModal(id) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">registroActual = saldosFiltrados.find(r =&gt; r.id === id);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!registroActual) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('modal-cliente').textContent = registroActual.nombre_cliente || 'Sin nombre';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('modal-info').innerHTML = `</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;strong&gt;Producto:&lt;/strong&gt; ${registroActual.producto||'—'}&lt;br&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;strong&gt;Orden:&lt;/strong&gt; #${registroActual.numero_orden||'—'}&lt;br&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;strong&gt;Total original:&lt;/strong&gt; ${formatPesos(registroActual.total||0)}&lt;br&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;strong&gt;Ya pagó:&lt;/strong&gt; ${formatPesos(registroActual.a_cuenta||0)}`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('modal-monto').textContent = formatPesos(registroActual.saldo||0);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('modal-obs').value = '';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('modal-forma').value = 'Efectivo';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('modal-fecha').value = _fechaHoy;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('btn-confirmar').disabled = false;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('btn-confirmar').textContent = '</span><span class="s5">✅</span><span class="s1"> Confirmar cobro';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">document.getElementById('overlay-cobrar').classList.add('visible');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function cerrarModal() { document.getElementById('overlay-cobrar').classList.remove('visible'); registroActual = null; }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function cerrarModalFuera(e) { if(e.target===document.getElementById('overlay-cobrar')) cerrarModal(); }</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function confirmarCobro() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (!registroActual) return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const btn = document.getElementById('btn-confirmar');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">btn.disabled = true; btn.textContent = 'Guardando...';</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const formaPago = document.getElementById('modal-forma').value;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const obs = document.getElementById('modal-obs').value.trim();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const fechaInput = document.getElementById('modal-fecha').value;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const [yyyy, mm] = fechaInput.split('-');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const mes = `${yyyy}-${mm}`;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const nuevoReg = {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">fecha: fechaInput, nombre_cliente: registroActual.nombre_cliente,</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">numero_orden: registroActual.numero_orden, producto: 'Saldo',</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">total: registroActual.saldo, a_cuenta: 0, saldo: 0,</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">forma_pago: formaPago, observacion: obs || `Cobro saldo orden #${registroActual.numero_orden}`,</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">egreso: 0, vendedor: registroActual.vendedor, mes</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">};</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const { error: errInsert } = await db.from('registros').insert(nuevoReg);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">if (errInsert) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">mostrarToast('Error: ' + errInsert.message, true);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">btn.disabled = false; btn.textContent = '</span><span class="s5">✅</span><span class="s1"> Confirmar cobro'; return;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await db.from('registros').update({ saldo: 0 }).eq('id', registroActual.id);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">OlvisionCache.clear('saldos_pendientes');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">OlvisionCache.clear('caja_' + fechaInput);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">OlvisionCache.clear('hist_' + mes);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">mostrarToast('</span><span class="s5">✅</span><span class="s1"> Cobro registrado');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">cerrarModal();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await cargarSaldos();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">function mostrarToast(msg, error = false) {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">const t = document.getElementById('toast');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">t.textContent = msg;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">t.className = 'toast show' + (error ? ' error' : '');</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">setTimeout(() =&gt; t.classList.remove('show'), 3000);</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">async function init() {</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await cargarEmpleados();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">await cargarSaldos();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">}</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">init();</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p3"><span class="s1"></span><br></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

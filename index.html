@@ -1,13 +1,14 @@
+
 <!DOCTYPE html>
-<!-- saved from url=(0066)https://4fca45db.control-financiero-au9.pages.dev/%C3%ADndice.html -->
-<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Olvisión — Acceso</title>
-  <link href="./Olvisión — Acceso_files/css2" rel="stylesheet">
-  <link rel="icon" type="image/png" href="./Olvisión — Acceso_files/logo_app.png">
-  <link rel="apple-touch-icon" href="./Olvisión — Acceso_files/logo_app.png">
-  <link rel="manifest" href="https://4fca45db.control-financiero-au9.pages.dev/manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="logo_app.png" />
+  <link rel="apple-touch-icon" href="logo_app.png" />
+  <link rel="manifest" href="manifest.json" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -106,7 +107,8 @@
   <div class="card">
 
     <div class="logo-wrap">
-      <img src="./Olvisión — Acceso_files/logo_app.png" alt="Olvisión" onerror="this.style.display=&#39;none&#39;; this.nextElementSibling.style.display=&#39;inline-flex&#39;">
+      <img src="logo_app.png" alt="Olvisión"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex'">
       <span class="logo-fallback" style="display:none">OV</span>
     </div>
 
@@ -114,12 +116,12 @@
     <p class="subtitle">Control Financiero</p>
 
     <div class="user-selector">
-      <button class="user-btn" id="btn-admin" onclick="selectUser(&#39;admin&#39;)">
+      <button class="user-btn" id="btn-admin" onclick="selectUser('admin')">
         <span class="icon">👨‍💼</span>
         <span>Andres</span>
         <span class="role-label">Admin</span>
       </button>
-      <button class="user-btn" id="btn-viewer" onclick="selectUser(&#39;viewer&#39;)">
+      <button class="user-btn" id="btn-viewer" onclick="selectUser('viewer')">
         <span class="icon">👁</span>
         <span>Luis</span>
         <span class="role-label">Visualizador</span>
@@ -139,25 +141,25 @@
 
     <div class="keypad-wrap locked" id="keypad-wrap">
       <div class="keypad">
-        <button class="key" onclick="pressKey(&#39;1&#39;)">1</button>
-        <button class="key" onclick="pressKey(&#39;2&#39;)">2</button>
-        <button class="key" onclick="pressKey(&#39;3&#39;)">3</button>
-        <button class="key" onclick="pressKey(&#39;4&#39;)">4</button>
-        <button class="key" onclick="pressKey(&#39;5&#39;)">5</button>
-        <button class="key" onclick="pressKey(&#39;6&#39;)">6</button>
-        <button class="key" onclick="pressKey(&#39;7&#39;)">7</button>
-        <button class="key" onclick="pressKey(&#39;8&#39;)">8</button>
-        <button class="key" onclick="pressKey(&#39;9&#39;)">9</button>
+        <button class="key" onclick="pressKey('1')">1</button>
+        <button class="key" onclick="pressKey('2')">2</button>
+        <button class="key" onclick="pressKey('3')">3</button>
+        <button class="key" onclick="pressKey('4')">4</button>
+        <button class="key" onclick="pressKey('5')">5</button>
+        <button class="key" onclick="pressKey('6')">6</button>
+        <button class="key" onclick="pressKey('7')">7</button>
+        <button class="key" onclick="pressKey('8')">8</button>
+        <button class="key" onclick="pressKey('9')">9</button>
         <div></div>
-        <button class="key zero" onclick="pressKey(&#39;0&#39;)">0</button>
-        <button class="key del" onclick="deleteLast()">⌫</button>
+        <button class="key zero" onclick="pressKey('0')">0</button>
+        <button class="key del"  onclick="deleteLast()">⌫</button>
       </div>
     </div>
 
   </div>
 
-  <script src="./Olvisión — Acceso_files/supabase-js@2"></script>
-  <script src="./Olvisión — Acceso_files/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 
   <script>
     if (sessionStorage.getItem('olvision_auth')) {
@@ -226,6 +228,5 @@
       if (e.key === 'Backspace') deleteLast();
     });
   </script>
-
-
-</body></html> 
+</body>
+</html>
