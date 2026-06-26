@@ -1,44 +1,28 @@
-const CACHE_NAME = 'olvision-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/dashboard.html',
-  '/caja.html',
-  '/cheques.html',
-  '/gastos.html',
-  '/sueldos.html',
-  '/saldos.html',
-  '/ajustes.html',
-  '/configuracion.html',
-  '/importar.html',
-  '/app.css',
-  '/estetica.css',
-  '/cache.js',
-  '/config.js',
-  '/utils.js',
-  '/exportar.js',
-  '/caja_pdf.js',
-  '/logo_app.png'
-];
+// ─────────────────────────────────────────────────────────────
+// sw.js — Olvisión
+// Service worker DESACTIVADO a propósito.
+//
+// Antes guardaba copias de las páginas para funcionar sin internet,
+// pero eso dejaba copias rotas pegadas en el navegador (la pantalla
+// "ERR_FAILED" / "No se puede acceder a este sitio web").
+//
+// Esta versión NO intercepta nada: limpia las copias viejas y se
+// desregistra sola. La app va siempre directo a internet.
+// ─────────────────────────────────────────────────────────────
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  );
+self.addEventListener('install', () => {
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
-  );
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    // Borrar todas las copias (cachés) viejas
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+    // Apagar y desregistrar este service worker
+    await self.registration.unregister();
+  })());
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  );
-});
+// (No hay handler de 'fetch' a propósito: el navegador va directo a
+//  la red y no se intercepta ninguna página.)
