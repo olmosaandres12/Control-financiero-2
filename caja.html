@@ -1674,12 +1674,14 @@
         });
         if(saldoActual<=0){banner.style.display='none';return;}
         banner.style.display='block';
-        document.getElementById('banner-saldo-info').textContent=`${clienteNombre||'Cliente'} · Saldo pendiente: ${formatPesos(saldoActual)}`;
+        document.getElementById('banner-saldo-info').textContent=`${clienteNombre||'Cliente'} · Saldo pendiente: ${formatPesos(saldoActual)} · Se completó "A cuenta" con el total. Si te pagaron menos, editalo.`;
         if(clienteNombre)document.getElementById('f-cliente').value=clienteNombre;
         if(vendedorNombre){const sel=document.getElementById('f-vendedor');for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===vendedorNombre){sel.selectedIndex=i;break;}}}
         const selProd=document.getElementById('f-producto');
         for(let i=0;i<selProd.options.length;i++){if(selProd.options[i].value==='Saldo'){selProd.selectedIndex=i;break;}}
-        setVal(document.getElementById('f-total'),saldoActual);calcularSaldo();
+        setVal(document.getElementById('f-total'),saldoActual);
+        setVal(document.getElementById('f-acuenta'),saldoActual);
+        calcularSaldo();
       },600);
     }
 
