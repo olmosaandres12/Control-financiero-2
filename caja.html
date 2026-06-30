@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1324,10 +1323,11 @@
       document.querySelector('#overlay .modal').scrollTop=0;
       limpiarForm();
     }
-    function cerrarModal(){clearTimeout(_saldoTimer);document.getElementById('overlay').classList.remove('visible');}
+    function cerrarModal(){clearTimeout(_saldoTimer);_saldoReqId++;document.getElementById('overlay').classList.remove('visible');}
     function cerrarModalFuera(e){if(e.target===document.getElementById('overlay'))cerrarModal();}
     function limpiarForm(){
       clearTimeout(_saldoTimer);
+      _saldoReqId++;
       ['f-cliente','f-orden','f-total','f-acuenta','f-saldo','f-obs','f-egreso-desc','f-egreso-monto'].forEach(id=>document.getElementById(id).value='');
       ['f-producto','f-vendedor','f-formapago','f-egreso-forma'].forEach(id=>document.getElementById(id).selectedIndex=0);
       document.getElementById('detalle-wrap').innerHTML='';
@@ -1352,6 +1352,7 @@
 
     async function guardar(){
       clearTimeout(_saldoTimer);
+      _saldoReqId++;
       if(cajaEstado){alert('La caja de este día ya está cerrada.');return;}
       const fecha=fechaSeleccionada,mes=fecha.substring(0,7);
       const esEgreso=document.getElementById('btn-tipo-egreso').classList.contains('activo');
@@ -1379,6 +1380,7 @@
       const{error}=await db.from('registros').insert([registro]);
       if(error){alert('Error: '+error.message);btn.textContent='✅ Guardar';btn.disabled=false;return;}
       OlvisionCache.clear('caja_'+fecha);
+      OlvisionCache.clear('saldos_pendientes');
       if(!esEgreso&&productoInvSeleccionado){
         try{
           const{data:fnData,error:fnError}=await dbInv.rpc('descuento_desde_caja',{p_product_id:productoInvSeleccionado.id,p_cantidad:1,p_notas:`Venta Olvisión · ${registro.nombre_cliente||'Sin nombre'} · ${registro.fecha}`});
@@ -1395,7 +1397,9 @@
       if(cajaEstado){alert('La caja ya está cerrada.');return;}
       if(!confirm('¿Eliminar este registro?'))return;
       await db.from('registros').delete().eq('id',id);
-      OlvisionCache.clear('caja_'+fechaSeleccionada);await cargar();
+      OlvisionCache.clear('caja_'+fechaSeleccionada);
+      OlvisionCache.clear('saldos_pendientes');
+      await cargar();
     }
 
     function abrirCierre(){
@@ -1573,6 +1577,7 @@
       if(error){alert('Error: '+error.message);btn.textContent='💾 Guardar cambios';btn.disabled=false;return;}
       OlvisionCache.clear('caja_'+r.fecha);
       OlvisionCache.clear('hist_'+(r.mes||r.fecha.substring(0,7)));
+      OlvisionCache.clear('saldos_pendientes');
       cerrarEditar();
       if(_globalSearchActive&&filtroHistCliente){
         await cargarHistorial();
@@ -1594,6 +1599,7 @@
       if(error){alert('Error: '+error.message);return;}
       OlvisionCache.clear('caja_'+r.fecha);
       OlvisionCache.clear('hist_'+(r.mes||r.fecha.substring(0,7)));
+      OlvisionCache.clear('saldos_pendientes');
       if(_globalSearchActive&&filtroHistCliente){
         await cargarHistorial();
         if(r.fecha===fechaSeleccionada)await cargar();
@@ -1635,16 +1641,24 @@
       if(error){alert('Error: '+error.message);return;}
       await db.from('cierres_caja').delete().eq('fecha',fecha);
       OlvisionCache.clear('caja_'+fecha);OlvisionCache.clear('hist_'+fecha.substring(0,7));
+      OlvisionCache.clear('saldos_pendientes');
       await cargarHistorial();if(fecha===fechaSeleccionada)await cargar();
     }
 
     let _saldoTimer=null;
+    let _saldoReqId=0;
     async function detectarSaldoPendiente(orden){
       const banner=document.getElementById('banner-saldo');
-      if(!orden||orden.trim().length<2){banner.style.display='none';return;}
+      if(!orden||orden.trim().length<2){banner.style.display='none';_saldoReqId++;return;}
       clearTimeout(_saldoTimer);
+      const miReqId=++_saldoReqId;
+      const ordenBuscada=orden.trim();
       _saldoTimer=setTimeout(async()=>{
-        const{data:todos}=await db.from('registros').select('*').eq('numero_orden',orden.trim()).order('fecha',{ascending:true});
+        const{data:todos}=await db.from('registros').select('*').eq('numero_orden',ordenBuscada).order('fecha',{ascending:true});
+        // Si mientras esperábamos la respuesta se cerró el modal, se limpió el form,
+        // o el usuario ya cambió el N° de orden, esta respuesta quedó vieja: se descarta.
+        if(miReqId!==_saldoReqId)return;
+        if(document.getElementById('f-orden').value.trim()!==ordenBuscada)return;
         if(!todos||todos.length===0){banner.style.display='none';return;}
         let saldoActual=0,clienteNombre='',vendedorNombre='';
         todos.filter(r=>!r.egreso||parseFloat(r.egreso)===0).forEach(r=>{
