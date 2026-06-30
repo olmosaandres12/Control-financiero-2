@@ -482,8 +482,8 @@
           </div>
         </div>
         <div class="campos-grid">
-          <div class="campo"><label>Total $</label><input type="text" data-miles="true" id="f-total" placeholder="0" inputmode="numeric" /></div>
-          <div class="campo"><label>A cuenta $ <small style="font-weight:400;text-transform:none">(seña)</small></label><input type="text" data-miles="true" id="f-acuenta" placeholder="0" inputmode="numeric" oninput="fmtMiles(this);calcularSaldo()" /></div>
+          <div class="campo"><label>Total $</label><input type="text" data-miles="true" id="f-total" placeholder="0" inputmode="numeric" autocomplete="off" /></div>
+          <div class="campo"><label>A cuenta $ <small style="font-weight:400;text-transform:none">(seña)</small></label><input type="text" data-miles="true" id="f-acuenta" placeholder="0" inputmode="numeric" autocomplete="off" oninput="fmtMiles(this);calcularSaldo()" /></div>
         </div>
         <div class="campo"><label>Saldo a cobrar</label><input type="number" id="f-saldo" placeholder="0" readonly style="background:#f8fafc;color:#94a3b8" /></div>
         <div class="campo"><label>Forma de pago</label>
@@ -495,7 +495,7 @@
       </div>
       <div id="campos-egreso" style="display:none">
         <div class="campo"><label>Descripción</label><input type="text" id="f-egreso-desc" placeholder="Ej: Compra de insumos" autocomplete="off" /></div>
-        <div class="campo"><label>Monto $</label><input type="text" data-miles="true" id="f-egreso-monto" placeholder="0" inputmode="numeric" /></div>
+        <div class="campo"><label>Monto $</label><input type="text" data-miles="true" id="f-egreso-monto" placeholder="0" inputmode="numeric" autocomplete="off" /></div>
         <div class="campo"><label>Forma de pago</label>
           <select id="f-egreso-forma">
             <option value="">Seleccionar</option>
@@ -552,8 +552,8 @@
           <div class="campo"><label>Vendedor</label><select id="edit-vendedor"><option value="">Seleccionar</option></select></div>
         </div>
         <div class="campos-grid">
-          <div class="campo"><label>Total $</label><input type="text" data-miles="true" id="edit-total" placeholder="0" inputmode="numeric" /></div>
-          <div class="campo"><label>A cuenta $</label><input type="text" data-miles="true" id="edit-acuenta" placeholder="0" inputmode="numeric" oninput="fmtMiles(this);calcularSaldoEdit()" /></div>
+          <div class="campo"><label>Total $</label><input type="text" data-miles="true" id="edit-total" placeholder="0" inputmode="numeric" autocomplete="off" /></div>
+          <div class="campo"><label>A cuenta $</label><input type="text" data-miles="true" id="edit-acuenta" placeholder="0" inputmode="numeric" autocomplete="off" oninput="fmtMiles(this);calcularSaldoEdit()" /></div>
         </div>
         <div class="campo"><label>Saldo a cobrar</label><input type="number" id="edit-saldo" placeholder="0" readonly style="background:#f8fafc;color:#94a3b8" /></div>
         <div class="campo"><label>Forma de pago</label>
@@ -565,7 +565,7 @@
       </div>
       <div id="edit-campos-egreso" style="display:none">
         <div class="campo"><label>Descripción</label><input type="text" id="edit-egreso-desc" placeholder="Ej: Compra de insumos" autocomplete="off" /></div>
-        <div class="campo"><label>Monto $</label><input type="text" data-miles="true" id="edit-egreso-monto" placeholder="0" inputmode="numeric" /></div>
+        <div class="campo"><label>Monto $</label><input type="text" data-miles="true" id="edit-egreso-monto" placeholder="0" inputmode="numeric" autocomplete="off" /></div>
         <div class="campo"><label>Forma de pago</label>
           <select id="edit-egreso-forma">
             <option value="">Seleccionar</option>
