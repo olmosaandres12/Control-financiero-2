@@ -1328,7 +1328,11 @@
     function limpiarForm(){
       clearTimeout(_saldoTimer);
       _saldoReqId++;
-      ['f-cliente','f-orden','f-total','f-acuenta','f-saldo','f-obs','f-egreso-desc','f-egreso-monto'].forEach(id=>document.getElementById(id).value='');
+      ['f-cliente','f-orden','f-total','f-acuenta','f-saldo','f-obs','f-egreso-desc','f-egreso-monto'].forEach(id=>{
+        const el=document.getElementById(id);
+        el.value='';
+        el.dataset.raw='';
+      });
       ['f-producto','f-vendedor','f-formapago','f-egreso-forma'].forEach(id=>document.getElementById(id).selectedIndex=0);
       document.getElementById('detalle-wrap').innerHTML='';
       document.getElementById('banner-saldo').style.display='none';
