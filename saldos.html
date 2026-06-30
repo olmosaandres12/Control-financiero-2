@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -326,14 +325,14 @@
               ${r.forma_pago?` · ${r.forma_pago}`:''}
               ${r.observacion?`<br>📝 ${r.observacion}`:''}
             </div>
-            <button class="btn-cobrar" onclick="abrirModal(${r.id})">Cobrar</button>
+            <button class="btn-cobrar" onclick="abrirModal('${r.id}')">Cobrar</button>
           </div>
         </div>`;
       }).join('');
     }
 
     function abrirModal(id) {
-      registroActual = saldosFiltrados.find(r => r.id === id);
+      registroActual = saldosFiltrados.find(r => r.id == id);
       if (!registroActual) return;
       document.getElementById('modal-cliente').textContent = registroActual.nombre_cliente || 'Sin nombre';
       document.getElementById('modal-info').innerHTML = `
