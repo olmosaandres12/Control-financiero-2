@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -263,6 +262,14 @@
       const [y, m, d] = f.split('-');
       return `${d}/${m}/${y}`;
     }
+    // Fecha de HOY en horario local (evita el corrimiento de día que causa toISOString con UTC)
+    function getFechaLocalHoy() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dia = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${dia}`;
+    }
     function salir() {
       sessionStorage.removeItem('olvision_auth');
       window.location.href = 'index.html';
@@ -378,7 +385,7 @@
     function abrirModal() {
       editandoId = null;
       document.getElementById('modal-titulo').textContent = 'Registrar gasto';
-      document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
+      document.getElementById('f-fecha').value = getFechaLocalHoy();
       limpiarForm();
       document.getElementById('overlay').classList.add('visible');
     }
