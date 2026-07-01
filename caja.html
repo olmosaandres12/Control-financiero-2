@@ -689,6 +689,7 @@
             wrap.querySelectorAll(`input[name="${inp.name}"]`).forEach(r => { r.checked=false; r.closest('.dp-checkbox-item')?.classList.remove('marcado'); });
             inp.checked=true; this.classList.add('marcado');
           } else { inp.checked=!inp.checked; this.classList.toggle('marcado',inp.checked); }
+          inp.dispatchEvent(new Event('change', {bubbles:true}));
         });
       });
       const invWrap = document.getElementById('inv-link-wrap');
