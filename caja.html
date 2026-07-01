@@ -633,10 +633,31 @@
     }
 
     const LIQUIDOS_CONFIG = {
-      'Arlt Express':['60ml','120ml','240ml','360ml','500ml'],
-      'Arlt Premium':['60ml','120ml','240ml','360ml'],
-      'Biotrue':['120ml'],'Arlt Fresh':['15ml'],'Arlt Lubricante':['15ml']
+      'Arlyt Express':{'60ml':8000,'120ml':12500,'240ml':15900,'360ml':18600,'500ml':22900},
+      'Arlyt Premium':{'60ml':9200,'120ml':13500,'240ml':19300,'360ml':21400},
+      'Arlyt RGP':{'120ml':21400},
+      'Arlyt Fresh':{'15ml':13500},
+      'Arlyt Lubricante':{'15ml':15700},
+      'Bausch+Lomb Renu Fresh':{'60ml':8500,'120ml':12400,'355ml':18900,'500ml':22600},
+      'Bausch+Lomb Renu Gotas':{'8ml':11800},
+      'Natura Express':{'120ml':12400,'355ml':18900,'500ml':22600},
+      'Sol. Salina':{'500ml':16200},
+      'Artelac':{'10ml':18200},
+      'Pastillas NAC (caja x10)':{'10un':21000},
+      'Pastillas NAC (unidad)':{'x1 unidad':2500}
     };
+    const PRECIOS_CONTACTO = {
+      default: { par: 30000, medio: 15000 },
+      especiales: [
+        { match: 'vanguard', par: 24000, medio: 12000 }
+      ]
+    };
+    function precioLenteContacto(marca, esMedio) {
+      const key = (marca||'').toLowerCase();
+      let precios = PRECIOS_CONTACTO.default;
+      for (const esp of PRECIOS_CONTACTO.especiales) { if (key.includes(esp.match)) { precios = esp; break; } }
+      return esMedio ? precios.medio : precios.par;
+    }
     let opcionesProducto = {}, liquidoCount = 0;
 
     async function cargarOpcionesProducto() {
@@ -672,6 +693,8 @@
       });
       const invWrap = document.getElementById('inv-link-wrap');
       if (invWrap) { invWrap.style.display = producto && producto!=='Saldo'?'block':'none'; limpiarVinculoInv(); }
+      if (producto==='Lentes') actualizarPrecioContacto();
+      if (producto==='Liquidos') actualizarPrecioLiquido(0);
     }
 
     function renderDetalleForm(producto) {
@@ -713,43 +736,77 @@
 
     function renderContacto(){
       return `<div class="dp-titulo">👁️ Lentes de contacto</div>
-        <div class="campo"><label>Marca</label><select id="dp-cont-marca" class="dp-select" onchange="toggleOtraInput('dp-cont-marca','dp-cont-marca-otra')">${_optsMarcasContacto()}</select><input type="text" id="dp-cont-marca-otra" placeholder="Escribí la marca…" style="display:none;margin-top:6px" /></div>
-        <div class="campo"><label>Tipo</label><select id="dp-cont-tipo" class="dp-select"><option value="">Seleccionar</option><option>Diario</option><option>Quincenal</option><option>Mensual</option></select></div>
+        <div class="campo"><label>Marca</label><select id="dp-cont-marca" class="dp-select" onchange="toggleOtraInput('dp-cont-marca','dp-cont-marca-otra');actualizarPrecioContacto()">${_optsMarcasContacto()}</select><input type="text" id="dp-cont-marca-otra" placeholder="Escribí la marca…" style="display:none;margin-top:6px" oninput="actualizarPrecioContacto()" /></div>
         <div class="dp-fila-2"><div class="campo"><label>Graduación OD</label><input type="text" id="dp-cont-od" placeholder="Ej: -1.50" /></div><div class="campo"><label>Graduación OI</label><input type="text" id="dp-cont-oi" placeholder="Ej: -1.75" /></div></div>
         <div class="campo"><label>Cantidad</label><div class="dp-radio-group">
-          <label class="dp-checkbox-item marcado"><input type="radio" name="dp-cont-cant" value="1/2 par" checked /><span>½ par</span></label>
-          <label class="dp-checkbox-item"><input type="radio" name="dp-cont-cant" value="1 par" /><span>1 par</span></label>
-          <label class="dp-checkbox-item"><input type="radio" name="dp-cont-cant" value="2 pares" /><span>2 pares</span></label>
-          <label class="dp-checkbox-item"><input type="radio" name="dp-cont-cant" value="1 caja" /><span>1 caja</span></label>
-        </div></div>`;
+          <label class="dp-checkbox-item marcado"><input type="radio" name="dp-cont-cant" value="Medio par" checked onchange="actualizarPrecioContacto()" /><span>½ par</span></label>
+          <label class="dp-checkbox-item"><input type="radio" name="dp-cont-cant" value="Par completo" onchange="actualizarPrecioContacto()" /><span>Par completo</span></label>
+        </div></div>
+        <div class="campo"><label>Precio lente <small style="font-weight:400;text-transform:none">(automático, editable)</small></label><input type="text" data-miles="true" id="dp-cont-precio" placeholder="0" inputmode="numeric" oninput="fmtMiles(this);actualizarTotalDesdeItems()" /></div>
+        <div id="dp-liq-lista"></div>
+        <button type="button" class="dp-btn-add" onclick="agregarLiquido()">➕ Agregar líquido</button>`;
+    }
+    function actualizarPrecioContacto(){
+      const marcaSel=document.getElementById('dp-cont-marca');
+      if(!marcaSel) return;
+      let marca=marcaSel.value;
+      if(marca==='__otra__') marca=document.getElementById('dp-cont-marca-otra')?.value||'';
+      const esMedio=document.querySelector('#detalle-wrap input[name="dp-cont-cant"]:checked')?.value!=='Par completo';
+      const precio=precioLenteContacto(marca,esMedio);
+      const inp=document.getElementById('dp-cont-precio');
+      if(inp) setVal(inp,precio);
+      actualizarTotalDesdeItems();
+    }
+
+    function itemLiquidoHtml(idx){
+      const nombres=Object.keys(LIQUIDOS_CONFIG);
+      const primerNombre=nombres[0];
+      const optsProd=nombres.map(n=>`<option value="${escH(n)}">${escH(n)}</option>`).join('');
+      const optsPres=Object.keys(LIQUIDOS_CONFIG[primerNombre]).map(p=>`<option value="${escH(p)}">${escH(p)}</option>`).join('');
+      return `<div class="dp-liquido-item" id="dp-liq-${idx}"><div class="dp-liquido-header"><span class="dp-liquido-num">Ítem ${idx+1}</span>${idx>0?`<button type="button" class="dp-btn-remove" onclick="quitarLiquido(${idx})">✕ Quitar</button>`:''}</div>
+        <div class="dp-fila-2"><div class="campo"><label>Producto</label><select id="dp-liq-prod-${idx}" class="dp-select" onchange="actualizarPres(${idx})">${optsProd}</select></div><div class="campo"><label>Presentación</label><select id="dp-liq-pres-${idx}" class="dp-select" onchange="actualizarPrecioLiquido(${idx})">${optsPres}</select></div></div>
+        <div class="dp-fila-2"><div class="campo"><label>Cantidad</label><input type="number" id="dp-liq-cant-${idx}" min="1" value="1" oninput="actualizarPrecioLiquido(${idx})" /></div><div class="campo"><label>Precio <small style="font-weight:400;text-transform:none">(automático, editable)</small></label><input type="text" data-miles="true" id="dp-liq-precio-${idx}" placeholder="0" inputmode="numeric" oninput="fmtMiles(this);actualizarTotalDesdeItems()" /></div></div></div>`;
+    }
+    function agregarLiquido(){
+      const lista=document.getElementById('dp-liq-lista'); if(!lista) return;
+      const idx=liquidoCount;
+      const div=document.createElement('div'); div.innerHTML=itemLiquidoHtml(idx);
+      lista.appendChild(div.firstElementChild); liquidoCount++;
+      actualizarPrecioLiquido(idx);
+    }
+    function quitarLiquido(idx){document.getElementById('dp-liq-'+idx)?.remove();actualizarTotalDesdeItems();}
+    function actualizarPres(idx){
+      const prodSel=document.getElementById('dp-liq-prod-'+idx),presSel=document.getElementById('dp-liq-pres-'+idx);
+      if(!prodSel||!presSel) return;
+      const prod=prodSel.value;
+      const presentaciones=Object.keys(LIQUIDOS_CONFIG[prod]||{});
+      presSel.innerHTML=presentaciones.map(p=>`<option value="${escH(p)}">${escH(p)}</option>`).join('');
+      actualizarPrecioLiquido(idx);
+    }
+    function actualizarPrecioLiquido(idx){
+      const prod=document.getElementById('dp-liq-prod-'+idx)?.value;
+      const pres=document.getElementById('dp-liq-pres-'+idx)?.value;
+      const cant=parseInt(document.getElementById('dp-liq-cant-'+idx)?.value||'1')||1;
+      const precioUnit=(LIQUIDOS_CONFIG[prod]&&LIQUIDOS_CONFIG[prod][pres])||0;
+      const inp=document.getElementById('dp-liq-precio-'+idx);
+      if(inp) setVal(inp,precioUnit*cant);
+      actualizarTotalDesdeItems();
+    }
+    function actualizarTotalDesdeItems(){
+      const producto=document.getElementById('f-producto')?.value;
+      if(producto!=='Lentes'&&producto!=='Liquidos') return;
+      let total=0;
+      const precioLente=document.getElementById('dp-cont-precio');
+      if(precioLente) total+=getVal(precioLente)||0;
+      document.querySelectorAll('[id^="dp-liq-precio-"]').forEach(inp=>{ total+=getVal(inp)||0; });
+      const fTotal=document.getElementById('f-total');
+      if(fTotal){ setVal(fTotal,total); calcularSaldo(); }
     }
 
     function renderLiquidos(){
       liquidoCount=0;
-      const nomLiq=Object.keys(LIQUIDOS_CONFIG);
-      const opts=nomLiq.map(n=>`<option value="${escH(n)}">${escH(n)}</option>`).join('');
-      const pres0=LIQUIDOS_CONFIG[nomLiq[0]].map(p=>`<option>${p}</option>`).join('');
-      const item0=itemLiquidoHtml(0,opts,pres0); liquidoCount=1;
+      const item0=itemLiquidoHtml(0); liquidoCount=1;
       return `<div class="dp-titulo">💧 Líquidos</div><div id="dp-liq-lista">${item0}</div><button type="button" class="dp-btn-add" onclick="agregarLiquido()">➕ Agregar otro líquido</button>`;
-    }
-    function itemLiquidoHtml(idx,optsLiq,optsPres){
-      return `<div class="dp-liquido-item" id="dp-liq-${idx}"><div class="dp-liquido-header"><span class="dp-liquido-num">Ítem ${idx+1}</span>${idx>0?`<button type="button" class="dp-btn-remove" onclick="quitarLiquido(${idx})">✕ Quitar</button>`:''}</div>
-        <div class="dp-fila-2"><div class="campo"><label>Producto</label><select id="dp-liq-prod-${idx}" class="dp-select" onchange="actualizarPres(${idx})">${optsLiq}</select></div><div class="campo"><label>Presentación</label><select id="dp-liq-pres-${idx}" class="dp-select">${optsPres}</select></div></div>
-        <div class="campo"><label>Cantidad</label><input type="number" id="dp-liq-cant-${idx}" min="1" value="1" style="width:80px" /></div></div>`;
-    }
-    function agregarLiquido(){
-      const lista=document.getElementById('dp-liq-lista'); if(!lista) return;
-      const nomLiq=Object.keys(LIQUIDOS_CONFIG);
-      const opts=nomLiq.map(n=>`<option value="${escH(n)}">${escH(n)}</option>`).join('');
-      const pres=LIQUIDOS_CONFIG[nomLiq[0]].map(p=>`<option>${p}</option>`).join('');
-      const div=document.createElement('div'); div.innerHTML=itemLiquidoHtml(liquidoCount,opts,pres);
-      lista.appendChild(div.firstElementChild); liquidoCount++;
-    }
-    function quitarLiquido(idx){document.getElementById('dp-liq-'+idx)?.remove();}
-    function actualizarPres(idx){
-      const prod=document.getElementById('dp-liq-prod-'+idx)?.value,sel=document.getElementById('dp-liq-pres-'+idx);
-      if(!sel||!prod) return;
-      sel.innerHTML=(LIQUIDOS_CONFIG[prod]||[]).map(p=>`<option>${p}</option>`).join('');
     }
 
     function renderSolPase(){
@@ -793,21 +850,31 @@
           case 'Lentes':{
             const marcaSel=document.getElementById('dp-cont-marca')?.value||'';
             const marca=marcaSel==='__otra__'?(document.getElementById('dp-cont-marca-otra')?.value||''):marcaSel;
-            const tipo=document.getElementById('dp-cont-tipo')?.value||'';
             const od=document.getElementById('dp-cont-od')?.value||'';
             const oi=document.getElementById('dp-cont-oi')?.value||'';
-            const cantidad=document.querySelector('#detalle-wrap input[name="dp-cont-cant"]:checked')?.value||'1 par';
-            return JSON.stringify({marca,tipo,od,oi,cantidad});
+            const cantidad=document.querySelector('#detalle-wrap input[name="dp-cont-cant"]:checked')?.value||'Medio par';
+            const precioLente=getVal(document.getElementById('dp-cont-precio'))||0;
+            const liquidos=[];
+            document.querySelectorAll('#dp-liq-lista .dp-liquido-item').forEach(el=>{
+              const idx=el.id.replace('dp-liq-','');
+              const prod=document.getElementById('dp-liq-prod-'+idx)?.value||'';
+              const pres=document.getElementById('dp-liq-pres-'+idx)?.value||'';
+              const cant=parseInt(document.getElementById('dp-liq-cant-'+idx)?.value||'1')||1;
+              const precio=getVal(document.getElementById('dp-liq-precio-'+idx))||0;
+              if(prod) liquidos.push({producto:prod,presentacion:pres,cantidad:cant,precio});
+            });
+            return JSON.stringify({marca,od,oi,cantidad,precioLente,liquidos});
           }
           case 'Liquidos':{
             const items=[];
-            for(let i=0;i<liquidoCount;i++){
-              if(!document.getElementById('dp-liq-'+i)) continue;
-              const prod=document.getElementById('dp-liq-prod-'+i)?.value||'';
-              const pres=document.getElementById('dp-liq-pres-'+i)?.value||'';
-              const cant=parseInt(document.getElementById('dp-liq-cant-'+i)?.value||'1')||1;
-              if(prod) items.push({producto:prod,presentacion:pres,cantidad:cant});
-            }
+            document.querySelectorAll('#dp-liq-lista .dp-liquido-item').forEach(el=>{
+              const idx=el.id.replace('dp-liq-','');
+              const prod=document.getElementById('dp-liq-prod-'+idx)?.value||'';
+              const pres=document.getElementById('dp-liq-pres-'+idx)?.value||'';
+              const cant=parseInt(document.getElementById('dp-liq-cant-'+idx)?.value||'1')||1;
+              const precio=getVal(document.getElementById('dp-liq-precio-'+idx))||0;
+              if(prod) items.push({producto:prod,presentacion:pres,cantidad:cant,precio});
+            });
             return JSON.stringify({items});
           }
           case 'Sol':case 'Pase':{
@@ -835,8 +902,13 @@
         const d=JSON.parse(detalleJson);
         switch(producto){
           case 'Recetado':case 'PAMI':{const p=[];if(d.tipo)p.push(d.tipo.charAt(0).toUpperCase()+d.tipo.slice(1));if(d.marca)p.push(d.marca);if(d.tratamiento)p.push(d.tratamiento);if(d.codigo)p.push(d.codigo);if(d.cantidad)p.push(d.cantidad);return p.join(' · ');}
-          case 'Lentes':{const p=[];if(d.marca)p.push(d.marca);if(d.tipo)p.push(d.tipo);if(d.od||d.oi)p.push(`OD ${d.od||'—'} / OI ${d.oi||'—'}`);if(d.cantidad)p.push(d.cantidad);return p.join(' · ');}
-          case 'Liquidos': return d.items?.length?d.items.map(i=>`${i.producto} ${i.presentacion} x${i.cantidad}`).join(' + '):'';
+          case 'Lentes':{
+            const p=[];if(d.marca)p.push(d.marca);if(d.od||d.oi)p.push(`OD ${d.od||'—'} / OI ${d.oi||'—'}`);if(d.cantidad)p.push(d.cantidad);
+            let base=p.join(' · ');
+            if(d.liquidos&&d.liquidos.length) base+=(base?' + ':'')+d.liquidos.map(i=>`${i.producto} ${i.presentacion}${i.cantidad>1?' x'+i.cantidad:''}`).join(' + ');
+            return base;
+          }
+          case 'Liquidos': return d.items?.length?d.items.map(i=>`${i.producto} ${i.presentacion}${i.cantidad>1?' x'+i.cantidad:''}`).join(' + '):'';
           case 'Sol':case 'Pase':{const p=[];if(d.marca)p.push(d.marca);if(d.codigo)p.push(d.codigo);return p.join(' · ');}
           case 'Accesorio': return d.items?.join(', ')||'';
           case 'Taller': return d.items?.join(', ')||'';
