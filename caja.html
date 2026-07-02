@@ -240,6 +240,10 @@
     .dp-btn-add:hover { border-color: #1E3A8A; color: #1E3A8A; }
     .dp-btn-remove { background: #fee2e2; border: none; border-radius: 8px; color: #ef4444; padding: 3px 8px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; }
     .reg-detalle-extra { font-size: 11px; color: #1E3A8A; font-weight: 700; margin-top: 3px; background: #eff6ff; border-radius: 6px; padding: 2px 7px; display: inline-block; }
+    .dp-grad-wrap { position: relative; }
+    .dp-grad-sugerencias { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid #d0d9f0; border-radius: 10px; margin-top: 4px; max-height: 180px; overflow-y: auto; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .dp-grad-opt { padding: 9px 12px; font-size: 13px; font-weight: 700; color: #1e293b; cursor: pointer; }
+    .dp-grad-opt:hover, .dp-grad-opt:active { background: #eff6ff; color: #1E3A8A; }
 
     @media (min-width: 768px) {
       .overlay { align-items: center; }
@@ -658,6 +662,42 @@
       for (const esp of PRECIOS_CONTACTO.especiales) { if (key.includes(esp.match)) { precios = esp; break; } }
       return esMedio ? precios.medio : precios.par;
     }
+    function generarGraduaciones(){
+      const vals=[];
+      for(let c=-50;c>=-600;c-=25) vals.push(c);
+      for(let c=-650;c>=-1200;c-=50) vals.push(c);
+      for(let c=50;c<=800;c+=25) vals.push(c);
+      return vals.map(c=>{
+        const v=c/100;
+        return (v>0?'+':'-')+Math.abs(v).toFixed(2);
+      });
+    }
+    const GRADUACIONES_CONTACTO = generarGraduaciones();
+    function buscarGraduacion(campo,val){
+      const cont=document.getElementById(campo==='od'?'dp-cont-od-sug':'dp-cont-oi-sug');
+      if(!cont) return;
+      const typed=(val||'').trim().replace(',','.');
+      if(!typed){cont.style.display='none';cont.innerHTML='';return;}
+      let signWanted=null,numPart=typed;
+      if(typed[0]==='-'){signWanted='-';numPart=typed.slice(1);}
+      else if(typed[0]==='+'){signWanted='+';numPart=typed.slice(1);}
+      const matches=GRADUACIONES_CONTACTO.filter(g=>{
+        if(signWanted&&g[0]!==signWanted) return false;
+        return g.slice(1).startsWith(numPart);
+      }).slice(0,8);
+      if(!matches.length){cont.style.display='none';cont.innerHTML='';return;}
+      cont.innerHTML=matches.map(g=>`<div class="dp-grad-opt" onmousedown="seleccionarGraduacion('${campo}','${g}')">${g}</div>`).join('');
+      cont.style.display='block';
+    }
+    function seleccionarGraduacion(campo,valor){
+      const inp=document.getElementById(campo==='od'?'dp-cont-od':'dp-cont-oi');
+      if(inp) inp.value=valor;
+      ocultarGraduacion(campo);
+    }
+    function ocultarGraduacion(campo){
+      const cont=document.getElementById(campo==='od'?'dp-cont-od-sug':'dp-cont-oi-sug');
+      if(cont){cont.style.display='none';cont.innerHTML='';}
+    }
     let opcionesProducto = {}, liquidoCount = 0;
 
     async function cargarOpcionesProducto() {
@@ -738,7 +778,10 @@
     function renderContacto(){
       return `<div class="dp-titulo">👁️ Lentes de contacto</div>
         <div class="campo"><label>Marca</label><select id="dp-cont-marca" class="dp-select" onchange="toggleOtraInput('dp-cont-marca','dp-cont-marca-otra');actualizarPrecioContacto()">${_optsMarcasContacto()}</select><input type="text" id="dp-cont-marca-otra" placeholder="Escribí la marca…" style="display:none;margin-top:6px" oninput="actualizarPrecioContacto()" /></div>
-        <div class="dp-fila-2"><div class="campo"><label>Graduación OD</label><input type="text" id="dp-cont-od" placeholder="Ej: -1.50" /></div><div class="campo"><label>Graduación OI</label><input type="text" id="dp-cont-oi" placeholder="Ej: -1.75" /></div></div>
+        <div class="dp-fila-2">
+          <div class="campo dp-grad-wrap"><label>Graduación OD</label><input type="text" id="dp-cont-od" placeholder="Ej: -1.50" autocomplete="off" oninput="buscarGraduacion('od',this.value)" onfocus="buscarGraduacion('od',this.value)" onblur="setTimeout(()=>ocultarGraduacion('od'),150)" /><div class="dp-grad-sugerencias" id="dp-cont-od-sug"></div></div>
+          <div class="campo dp-grad-wrap"><label>Graduación OI</label><input type="text" id="dp-cont-oi" placeholder="Ej: -1.75" autocomplete="off" oninput="buscarGraduacion('oi',this.value)" onfocus="buscarGraduacion('oi',this.value)" onblur="setTimeout(()=>ocultarGraduacion('oi'),150)" /><div class="dp-grad-sugerencias" id="dp-cont-oi-sug"></div></div>
+        </div>
         <div class="campo"><label>Cantidad</label><div class="dp-radio-group">
           <label class="dp-checkbox-item marcado"><input type="radio" name="dp-cont-cant" value="Medio par" checked onchange="actualizarPrecioContacto()" /><span>½ par</span></label>
           <label class="dp-checkbox-item"><input type="radio" name="dp-cont-cant" value="Par completo" onchange="actualizarPrecioContacto()" /><span>Par completo</span></label>
