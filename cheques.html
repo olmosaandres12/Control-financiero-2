@@ -341,7 +341,7 @@
         else{grupos[ym].pendiente+=m;grupos[ym].cantPend++;if(diasHasta(c.fecha_cobro)<0)grupos[ym].cantVencidos++;}
       });
       const keys=Object.keys(grupos).sort();
-      if(!Object.keys(mesAbierto).length){keys.forEach(k=>{mesAbierto[k]=grupos[k].pendiente>0;});if(!keys.some(k=>mesAbierto[k])&&keys.length)mesAbierto[keys[keys.length-1]]=true;}
+      // Todos los meses arrancan cerrados; se abren solo al tocarlos
       lista.innerHTML=keys.map(ym=>{
         const g=grupos[ym], pct=g.comprometido>0?Math.round(g.pagado/g.comprometido*100):0;
         const abierto=!!mesAbierto[ym], todoPagado=g.pendiente===0;
