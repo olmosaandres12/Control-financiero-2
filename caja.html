@@ -135,6 +135,20 @@
     .ranking-cant { font-size: 12px; color: #94a3b8; }
     .ranking-monto { font-size: 16px; font-weight: 900; color: #1E3A8A; }
 
+    .ic-cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .ic-card { background: white; border-radius: 16px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-align: center; }
+    .ic-card .ic-icon { font-size: 18px; margin-bottom: 4px; }
+    .ic-card .ic-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ic-card .ic-valor { font-size: 17px; font-weight: 900; color: #1e293b; margin-top: 4px; line-height: 1.2; }
+    .ic-card .ic-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .ic-tabla-wrap { overflow-x: auto; }
+    .ic-tabla { width: 100%; border-collapse: collapse; }
+    .ic-tabla th { padding: 8px 10px; text-align: right; color: #64748b; font-weight: 700; font-size: 9px; text-transform: uppercase; letter-spacing: 0.4px; background: #f8fafc; white-space: nowrap; }
+    .ic-tabla th:first-child { text-align: left; }
+    .ic-tabla td { padding: 8px 10px; font-size: 12px; text-align: right; color: #475569; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+    .ic-tabla td:first-child { text-align: left; font-weight: 700; color: #1e293b; }
+    .ic-tabla tr:last-child td { border-bottom: none; }
+
     .productos-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 12px; }
     .productos-titulo { font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 12px; }
     .producto-fila { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid #f8fafc; gap: 8px; }
@@ -409,6 +423,16 @@
                 <div class="stat-sub">gastos de caja</div>
               </div>
             </div>
+
+            <!-- 📊 INDICADORES COMERCIALES -->
+            <div class="seccion-titulo" style="margin-top:4px">📊 Indicadores Comerciales</div>
+            <div class="ic-cards-grid" id="ic-cards"></div>
+            <div id="ic-nota" style="font-size:11px;color:#94a3b8;text-align:center;margin:-6px 0 14px"></div>
+            <div class="ranking-card"><div class="ranking-titulo">🏆 Ranking comercial por vendedor</div><div id="ic-ranking-comercial"></div></div>
+            <div class="productos-card"><div class="productos-titulo">📦 Participación por producto</div><div id="ic-participacion"></div></div>
+            <div class="ranking-card"><div class="ranking-titulo">🎯 Mix de productos por vendedor</div><div id="ic-mix-vendedor"></div></div>
+            <!-- /INDICADORES COMERCIALES -->
+
             <div class="formas-card"><div class="formas-titulo">💳 Por forma de pago</div><div id="hist-formas"></div></div>
             <div class="ranking-card"><div class="ranking-titulo">🏆 Ranking vendedoras <span style="font-size:10px;font-weight:600;color:#94a3b8">(por cobrado)</span></div><div id="hist-ranking"></div></div>
             <div class="ranking-card" id="hist-comisiones-card" style="display:none">
@@ -962,6 +986,141 @@
       } catch(e){return '';}
     }
 
+    // ── INDICADORES COMERCIALES ───────────────────────────────
+    const PRODUCTOS_OPTICOS = ['Recetado','Reposicion C.','PAMI','Pase'];
+    const CATEGORIAS_MIX = ['Recetado','Lentes','Liquidos','Reposicion C.','PAMI','Sol','Accesorio','Taller','Otros'];
+
+    // Normaliza variantes de escritura de productos (con/sin tilde, con/sin punto, etc.)
+    // a los nombres canónicos usados en la base de datos, para que ningún cálculo
+    // se rompa por un typo o una variante de carga.
+    function normalizarProducto(raw){
+      if(!raw) return raw;
+      const s=raw.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); // saca tildes
+      const mapa={
+        'recetado':'Recetado',
+        'sol':'Sol',
+        'lentes':'Lentes',
+        'taller':'Taller',
+        'accesorio':'Accesorio',
+        'saldo':'Saldo',
+        'liquidos':'Liquidos',
+        'pase':'Pase',
+        'pami':'PAMI',
+        'reposicion c.':'Reposicion C.',
+        'reposicion c':'Reposicion C.',
+        'reposicion cristales':'Reposicion C.',
+        'reposicion':'Reposicion C.'
+      };
+      return mapa[s] || raw;
+    }
+
+    // Calcula todos los indicadores comerciales a partir de un array de ventas
+    // (ya excluidas las operaciones de tipo egreso). Reutilizable desde cualquier vista.
+    function calcularIndicadoresComerciales(ventas){
+      const regs=ventas.map(r=>({...r,producto:normalizarProducto(r.producto)}));
+      const ventasReales=regs.filter(r=>r.producto!=='Saldo'); // Saldo = cobro de deuda, no es una venta nueva
+
+      const totalFacturado=ventasReales.reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+      const cantOperaciones=ventasReales.length;
+      const ticketCaja=cantOperaciones>0?totalFacturado/cantOperaciones:0;
+
+      const opticas=ventasReales.filter(r=>PRODUCTOS_OPTICOS.includes(r.producto));
+      const totalOptico=opticas.reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+      const cantOpticas=opticas.length;
+      const ticketOptico=cantOpticas>0?totalOptico/cantOpticas:0;
+
+      // Participación por producto
+      const porProducto={};
+      ventasReales.forEach(r=>{
+        const p=r.producto||'Otro';
+        if(!porProducto[p]) porProducto[p]={monto:0,cant:0};
+        porProducto[p].monto+=(parseFloat(r.total)||0);
+        porProducto[p].cant+=1;
+      });
+      const participacion=Object.entries(porProducto).map(([nombre,d])=>({
+        nombre,monto:d.monto,cant:d.cant,
+        pct:totalFacturado>0?(d.monto/totalFacturado*100):0
+      })).sort((a,b)=>b.monto-a.monto);
+      const productoLider=participacion[0]||null;
+
+      // Por vendedor: monto, cantidad, ticket, % del total y mix de productos
+      const porVendedor={};
+      ventasReales.forEach(r=>{
+        const v=r.vendedor||'Sin asignar';
+        if(!porVendedor[v]) porVendedor[v]={monto:0,cant:0,mix:{}};
+        porVendedor[v].monto+=(parseFloat(r.total)||0);
+        porVendedor[v].cant+=1;
+        const p=r.producto||'Otro';
+        porVendedor[v].mix[p]=(porVendedor[v].mix[p]||0)+(parseFloat(r.total)||0);
+      });
+      const rankingComercial=Object.entries(porVendedor).map(([nombre,d])=>({
+        nombre,monto:d.monto,cant:d.cant,
+        ticket:d.cant>0?d.monto/d.cant:0,
+        pct:totalFacturado>0?(d.monto/totalFacturado*100):0,
+        mix:d.mix
+      })).sort((a,b)=>b.monto-a.monto);
+      const vendedorLider=rankingComercial[0]||null;
+      const dependenciaPct=vendedorLider?vendedorLider.pct:0;
+
+      // Mix de productos por vendedor, agrupado en las categorías fijas solicitadas
+      const CATEGORIAS_DIRECTAS=CATEGORIAS_MIX.slice(0,-1); // todas menos 'Otros'
+      const mixPorVendedor=rankingComercial.map(v=>{
+        const totalV=v.monto||1;
+        const fila={nombre:v.nombre};
+        let otros=0;
+        Object.entries(v.mix).forEach(([prod,monto])=>{
+          if(CATEGORIAS_DIRECTAS.includes(prod)) fila[prod]=(fila[prod]||0)+monto;
+          else otros+=monto;
+        });
+        fila['Otros']=otros;
+        CATEGORIAS_MIX.forEach(c=>{ fila[c+'_pct']=totalV>0?((fila[c]||0)/totalV*100):0; });
+        return fila;
+      });
+
+      return {
+        ticketCaja,ticketOptico,cantOpticas,totalFacturado,cantOperaciones,
+        productoLider,vendedorLider,dependenciaPct,
+        participacion,rankingComercial,mixPorVendedor
+      };
+    }
+
+    // Pinta el bloque "📊 Indicadores Comerciales" (cards + 3 tablas) en el historial mensual.
+    function renderIndicadoresComerciales(ventas){
+      const elCards=document.getElementById('ic-cards');
+      if(!elCards) return; // el bloque solo existe en el panel Historial
+      const ic=calcularIndicadoresComerciales(ventas);
+
+      elCards.innerHTML=`
+        <div class="ic-card"><div class="ic-icon">🧾</div><div class="ic-label">Ticket Caja</div><div class="ic-valor">${formatPesos(ic.ticketCaja)}</div><div class="ic-sub">${ic.cantOperaciones} operación${ic.cantOperaciones!==1?'es':''}</div></div>
+        <div class="ic-card"><div class="ic-icon">👓</div><div class="ic-label">Ticket Óptico</div><div class="ic-valor">${formatPesos(ic.ticketOptico)}</div><div class="ic-sub">${ic.cantOpticas} operación${ic.cantOpticas!==1?'es':''}</div></div>
+        <div class="ic-card"><div class="ic-icon">📋</div><div class="ic-label">Órdenes Ópticas</div><div class="ic-valor">${ic.cantOpticas}</div><div class="ic-sub">recetado · reposición · pami · pase</div></div>
+        <div class="ic-card"><div class="ic-icon">🏆</div><div class="ic-label">Producto Líder</div><div class="ic-valor" style="font-size:15px">${ic.productoLider?ic.productoLider.nombre:'—'}</div><div class="ic-sub">${ic.productoLider?ic.productoLider.pct.toFixed(0)+'% de facturación':'sin datos'}</div></div>
+        <div class="ic-card"><div class="ic-icon">⭐</div><div class="ic-label">Vendedor Líder</div><div class="ic-valor" style="font-size:15px">${ic.vendedorLider?ic.vendedorLider.nombre:'—'}</div><div class="ic-sub">${ic.vendedorLider?formatPesos(ic.vendedorLider.monto):'sin datos'}</div></div>
+        <div class="ic-card"><div class="ic-icon">⚠️</div><div class="ic-label">Dependencia Comercial</div><div class="ic-valor">${ic.dependenciaPct.toFixed(0)}%</div><div class="ic-sub">${ic.vendedorLider?ic.vendedorLider.nombre:'—'}</div></div>
+      `;
+      const elNota=document.getElementById('ic-nota');
+      if(elNota) elNota.textContent='Excluye saldos cobrados de meses anteriores';
+
+      const medallas=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'];
+      document.getElementById('ic-ranking-comercial').innerHTML=ic.rankingComercial.length===0
+        ?'<div style="color:#94a3b8;font-size:13px">Sin datos</div>'
+        :`<div class="ic-tabla-wrap"><table class="ic-tabla"><thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto</th><th>Ticket prom.</th><th>% del total</th></tr></thead><tbody>${
+            ic.rankingComercial.map((v,i)=>`<tr><td>${medallas[i]||''} ${v.nombre}</td><td>${v.cant}</td><td style="font-weight:800;color:#1E3A8A">${formatPesos(v.monto)}</td><td>${formatPesos(v.ticket)}</td><td style="font-weight:700">${v.pct.toFixed(0)}%</td></tr>`).join('')
+          }</tbody></table></div>`;
+
+      const maxPart=Math.max(...ic.participacion.map(p=>p.monto),1);
+      document.getElementById('ic-participacion').innerHTML=ic.participacion.length===0
+        ?'<div style="color:#94a3b8;font-size:13px">Sin datos</div>'
+        :ic.participacion.map(p=>`<div class="producto-fila"><div style="display:flex;align-items:center;min-width:105px;gap:7px"><span class="prod-dot" style="background:${COLORES_PROD[p.nombre]||'#94a3b8'}"></span><span class="prod-nombre">${p.nombre}</span></div><div class="prod-barra-wrap"><div class="prod-barra"><div class="prod-fill" style="width:${Math.round(p.monto/maxPart*85)}%;background:${COLORES_PROD[p.nombre]||'#94a3b8'}"></div></div></div><span class="prod-cant" style="min-width:34px">${p.pct.toFixed(0)}%</span><span class="prod-monto">${formatPesos(p.monto)}</span></div>`).join('');
+
+      document.getElementById('ic-mix-vendedor').innerHTML=ic.mixPorVendedor.length===0
+        ?'<div style="color:#94a3b8;font-size:13px">Sin datos</div>'
+        :`<div class="ic-tabla-wrap"><table class="ic-tabla"><thead><tr><th>Vendedor</th>${CATEGORIAS_MIX.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${
+            ic.mixPorVendedor.map(f=>`<tr><td>${f.nombre}</td>${CATEGORIAS_MIX.map(c=>`<td>${f[c+'_pct']>0?f[c+'_pct'].toFixed(0)+'%':'—'}</td>`).join('')}</tr>`).join('')
+          }</tbody></table></div>`;
+    }
+    // ── FIN INDICADORES COMERCIALES ───────────────────────────
+
     let registros=[],vistaActual='ventas';
     let histMes=new Date().getMonth(),histAnio=new Date().getFullYear();
     let registrosMes=[],cierresMes=[],tablaAbierta=false;
@@ -1314,6 +1473,8 @@
       const totalSaldo=Object.values(ordenesTemp).reduce((s,o)=>s+o.saldoActual,0)
         +regsOrdenados.filter(r=>!(r.numero_orden||'').trim()&&(parseFloat(r.saldo)||0)>0).reduce((s,r)=>s+(parseFloat(r.saldo)||0),0);
       document.getElementById('hs-saldo').textContent=formatPesos(totalSaldo);
+
+      renderIndicadoresComerciales(ventas);
 
       const formas=['Efectivo','T. Credito','Debito','QR','Transferencia'];
       const porForma={};
