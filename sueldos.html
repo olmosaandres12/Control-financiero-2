@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,8 +23,8 @@
     .resumen-item { text-align: center; }
     .resumen-item .valor { font-size: 18px; font-weight: 900; }
     .resumen-item .etiqueta { font-size: 11px; color: #93c5fd; margin-top: 2px; }
-    .tabs { display: flex; gap: 6px; margin-bottom: 20px; }
-    .tab { flex: 1; padding: 9px 4px; border-radius: 12px; border: none; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; background: white; color: #94a3b8; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { flex: 1; min-width: 68px; padding: 9px 4px; border-radius: 12px; border: none; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; background: white; color: #94a3b8; }
     .tab.activo { background: #1E3A8A; color: white; }
     .empleada-section { margin-bottom: 28px; }
     .empleada-section-header { display: flex; align-items: center; justify-content: space-between; background: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
@@ -160,6 +159,38 @@
     .btn-copiar-wa:active { opacity: 0.85; }
     .wa-copiado { text-align: center; font-size: 13px; color: #10b981; font-weight: 800; margin-bottom: 10px; display: none; }
 
+    /* ── ASISTENCIA ── */
+    .asist-pills { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .asist-pill { flex: 1; min-width: 90px; background: white; border: none; border-radius: 12px; padding: 10px 6px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; color: #64748b; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .asist-pill.activo { background: #1E3A8A; color: white; }
+    .asist-buscador { display: flex; gap: 8px; margin-bottom: 16px; }
+    .asist-buscador input[type="date"] { flex: 1; background: white; border: none; border-radius: 12px; padding: 10px 12px; font-family: 'Nunito', sans-serif; font-size: 14px; color: #1e293b; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .asist-buscador button { background: #1E3A8A; color: white; border: none; border-radius: 12px; padding: 0 16px; font-size: 16px; cursor: pointer; }
+    .asist-resumen { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+    .asist-res-card { background: white; border-radius: 14px; padding: 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .asist-res-card.clicable { cursor: pointer; }
+    .asist-res-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .asist-res-val { font-size: 20px; font-weight: 900; color: #1e293b; }
+    .asist-res-val.verde { color: #10b981; }
+    .asist-res-val.naranja { color: #f59e0b; }
+    .asist-res-val.gris { color: #94a3b8; }
+    .asist-faltantes-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .asist-falt-item { display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px; padding: 10px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; font-size: 13px; font-weight: 700; color: #1e293b; }
+    .asist-falt-item span.link { color: #1E3A8A; font-weight: 800; }
+    .asist-cal-dias { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 6px; font-weight: 700; }
+    .asist-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-bottom: 16px; }
+    .asist-cal-celda { aspect-ratio: 1; border-radius: 10px; background: #f8fafc; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-family: 'Nunito', sans-serif; }
+    .asist-cal-celda.ok { background: #d1fae5; }
+    .asist-cal-celda.tarde1 { background: #fef3c7; }
+    .asist-cal-celda.tarde2 { background: #fee2e2; }
+    .asist-cal-celda.futuro { opacity: 0.4; cursor: default; box-shadow: none; }
+    .asist-cal-celda.no-laboral { opacity: 0.3; background: none; box-shadow: none; cursor: default; }
+    .asist-cal-num { font-size: 13px; font-weight: 800; color: #1e293b; }
+    .asist-cal-hora { font-size: 9px; color: #64748b; font-weight: 700; }
+    .asist-leyenda { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 20px; }
+    .asist-leyenda span { display: flex; align-items: center; gap: 4px; }
+    .asist-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
     @media (min-width: 768px) {
       .overlay { align-items: center; }
       .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
@@ -200,6 +231,7 @@
         <div class="tabs">
           <button class="tab activo" id="tab-sueldos"    onclick="cambiarTab('sueldos')">💰 Sueldos</button>
           <button class="tab"        id="tab-comisiones" onclick="cambiarTab('comisiones')">📊 Comisiones</button>
+          <button class="tab"        id="tab-asistencia" onclick="cambiarTab('asistencia')">📅 Asistencia</button>
           <button class="tab"        id="tab-historico"  onclick="cambiarTab('historico')">📅 Histórico</button>
           <button class="tab"        id="tab-personal"   onclick="cambiarTab('personal')">👤 Personal</button>
         </div>
@@ -228,6 +260,32 @@
             <button class="com-mes-btn" onclick="cambiarMesCom(1)">&#8250;</button>
           </div>
           <div id="contenido-comisiones"><div class="loading-comisiones">Seleccioná un mes</div></div>
+        </div>
+
+        <div id="panel-asistencia" style="display:none">
+          <div class="asist-pills" id="asist-pills"></div>
+          <div class="asist-buscador">
+            <input type="date" id="asist-buscar-fecha" />
+            <button onclick="buscarFechaAsistencia()">🔍</button>
+          </div>
+          <div class="periodo-selector">
+            <button class="periodo-btn" onclick="cambiarMesAsist(-1)">&#8249;</button>
+            <span class="periodo-nombre" id="asist-mes-nombre">—</span>
+            <button class="periodo-btn" onclick="cambiarMesAsist(1)">&#8250;</button>
+          </div>
+          <div class="asist-resumen">
+            <div class="asist-res-card"><div class="asist-res-label">A tiempo</div><div class="asist-res-val verde" id="asist-ok">0</div></div>
+            <div class="asist-res-card"><div class="asist-res-label">Tarde</div><div class="asist-res-val naranja" id="asist-tarde">0</div></div>
+            <div class="asist-res-card clicable" id="asist-card-faltantes" onclick="toggleFaltantesAsist()"><div class="asist-res-label">Sin cargar</div><div class="asist-res-val gris" id="asist-faltan">0</div></div>
+          </div>
+          <div id="asist-lista-faltantes" style="display:none" class="asist-faltantes-lista"></div>
+          <div class="asist-cal-dias"><div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+          <div class="asist-cal-grid" id="asist-cal-grid"></div>
+          <div class="asist-leyenda">
+            <span><span class="asist-dot" style="background:#d1fae5"></span> A horario</span>
+            <span><span class="asist-dot" style="background:#fef3c7"></span> Hasta 15 min tarde</span>
+            <span><span class="asist-dot" style="background:#fee2e2"></span> Más de 15 min tarde</span>
+          </div>
         </div>
 
         <div id="panel-historico" style="display:none">
@@ -346,6 +404,11 @@
         <input type="number" id="config-comision" placeholder="Ej: 4" inputmode="numeric" step="0.5" />
         <small style="color:#94a3b8;font-size:12px">Ponelo en 0 si no cobra comisión</small>
       </div>
+      <div class="campo">
+        <label>Horario de entrada esperado</label>
+        <input type="time" id="config-horario" />
+        <small style="color:#94a3b8;font-size:12px">Se usa en la pestaña Asistencia para marcar tardanzas</small>
+      </div>
       <button class="btn-guardar" onclick="guardarConfig()">✅ Guardar</button>
       <button class="btn-cancelar" onclick="cerrarModal('overlay-config')">Cancelar</button>
     </div>
@@ -393,8 +456,26 @@
         <input type="number" id="emp-comision" placeholder="0" inputmode="numeric" step="0.5" value="0" />
         <small style="color:#94a3b8;font-size:12px">Ponelo en 0 si no cobra comisión</small>
       </div>
+      <div class="campo">
+        <label>Horario de entrada esperado</label>
+        <input type="time" id="emp-horario" value="09:30" />
+      </div>
       <button class="btn-guardar" id="emp-btn-guardar" onclick="guardarEmpleado()">✅ Crear empleado</button>
       <button class="btn-cancelar" onclick="cerrarModal('overlay-empleado')">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: ASISTENCIA -->
+  <div class="overlay" id="overlay-asistencia" onclick="cerrarFuera(event,'overlay-asistencia')">
+    <div class="modal">
+      <div class="modal-titulo" id="asist-titulo">Registrar llegada</div>
+      <div class="modal-sub" id="asist-sub">—</div>
+      <input type="hidden" id="asist-fecha" />
+      <div class="campo"><label>Hora de entrada</label><input type="time" id="asist-hora" /></div>
+      <div class="campo"><label>Notas (opcional)</label><input type="text" id="asist-notas" placeholder="Ej: avisó que llegaba tarde" autocomplete="off" /></div>
+      <button class="btn-guardar" onclick="guardarAsistencia()">✅ Guardar</button>
+      <button class="btn-cancelar" onclick="eliminarAsistenciaDia()" style="background:#fef2f2;color:#ef4444">🗑️ Borrar registro del día</button>
+      <button class="btn-cancelar" onclick="cerrarModal('overlay-asistencia')">Cancelar</button>
     </div>
   </div>
 
@@ -454,10 +535,11 @@
       tabActual = tab;
       document.querySelectorAll('.tab').forEach(t=>t.classList.remove('activo'));
       document.getElementById('tab-'+tab).classList.add('activo');
-      ['sueldos','comisiones','historico','personal'].forEach(p=>{
+      ['sueldos','comisiones','asistencia','historico','personal'].forEach(p=>{
         document.getElementById('panel-'+p).style.display = p===tab ? 'block' : 'none';
       });
       if(tab==='comisiones'){document.getElementById('com-mes-nombre').textContent=getPeriodoComLabel();cargarComisiones();}
+      if(tab==='asistencia'){document.getElementById('asist-mes-nombre').textContent=getPeriodoAsistLabel();cargarAsistencia();}
       if(tab==='historico'){document.getElementById('anio-nombre').textContent=anioHistorico;cargarHistorico();}
       if(tab==='personal'){renderPersonal();}
     }
@@ -617,6 +699,7 @@
       document.getElementById('emp-sueldo-campo').style.display = 'none';
       document.getElementById('emp-sueldo').value = '';
       document.getElementById('emp-comision').value = '0';
+      document.getElementById('emp-horario').value = '09:30';
       document.getElementById('emp-btn-guardar').textContent = '✅ Crear empleado';
       document.getElementById('overlay-empleado').classList.add('visible');
     }
@@ -630,6 +713,7 @@
       document.getElementById('emp-sueldo-campo').style.display = e.tiene_sueldo ? 'block' : 'none';
       setVal(document.getElementById('emp-sueldo'), e.sueldo_quincena);
       document.getElementById('emp-comision').value = e.comision_pct;
+      document.getElementById('emp-horario').value = e.horario_entrada || '09:30';
       document.getElementById('emp-btn-guardar').textContent = '💾 Guardar cambios';
       document.getElementById('overlay-empleado').classList.add('visible');
     }
@@ -644,20 +728,22 @@
       const tiene_sueldo = document.getElementById('emp-tiene-sueldo').checked;
       const sueldo_quincena = tiene_sueldo ? (getVal(document.getElementById('emp-sueldo')) || 0) : 0;
       const comision_pct = parseFloat(document.getElementById('emp-comision').value) || 0;
+      const horario_entrada = document.getElementById('emp-horario').value || '09:30';
       if (!nombre) { alert('Ingresá el nombre'); return; }
       const btn = document.getElementById('emp-btn-guardar');
       btn.textContent = 'Guardando...'; btn.disabled = true;
       if (id) {
-        const { error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct }).eq('id', id);
+        const { error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada }).eq('id', id);
         if (error) { alert('Error: ' + error.message); btn.textContent='💾 Guardar cambios'; btn.disabled=false; return; }
       } else {
-        const { error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, activo: true }]);
+        const { error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, activo: true }]);
         if (error) { alert('Error: ' + error.message); btn.textContent='✅ Crear empleado'; btn.disabled=false; return; }
       }
       cerrarModal('overlay-empleado');
       await cargarEmpleados(); renderPersonal();
       if (tabActual === 'sueldos') cargar();
       if (tabActual === 'comisiones') cargarComisiones();
+      if (tabActual === 'asistencia') { renderPillsAsist(); cargarAsistencia(); }
       btn.textContent = id ? '💾 Guardar cambios' : '✅ Crear empleado'; btn.disabled = false;
     }
 
@@ -722,6 +808,165 @@
         html+=`</div>`;
       });
       document.getElementById('contenido-comisiones').innerHTML=html;
+    }
+
+    // ── ASISTENCIA ─────────────────────────────────────────────
+    let asistEmpleadaActual = null;
+    let asistMes = new Date().getMonth(), asistAnio = new Date().getFullYear();
+    let asistDatos = [];
+    let asistFaltantesArr = [];
+
+    function getPeriodoAsist(){ return `${asistAnio}-${String(asistMes+1).padStart(2,'0')}`; }
+    function getPeriodoAsistLabel(){ return `${MESES[asistMes]} ${asistAnio}`; }
+
+    function renderPillsAsist(){
+      const cont = document.getElementById('asist-pills');
+      const lista = getEmpleadosActivos();
+      if((!asistEmpleadaActual || !lista.some(e=>e.nombre===asistEmpleadaActual)) && lista.length>0) asistEmpleadaActual = lista[0].nombre;
+      cont.innerHTML = lista.map(e => `<button class="asist-pill ${e.nombre===asistEmpleadaActual?'activo':''}" onclick="seleccionarEmpAsist('${e.nombre}')">${e.nombre}</button>`).join('');
+    }
+
+    function seleccionarEmpAsist(nombre){
+      asistEmpleadaActual = nombre;
+      renderPillsAsist();
+      cargarAsistencia();
+    }
+
+    function cambiarMesAsist(dir){
+      asistMes+=dir;
+      if(asistMes>11){asistMes=0;asistAnio++;} if(asistMes<0){asistMes=11;asistAnio--;}
+      cargarAsistencia();
+    }
+
+    function toMinAsist(t){ if(!t) return null; const p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
+
+    function getHorarioEsperado(nombre){
+      const e = getEmpleado(nombre);
+      return e?.horario_entrada || '09:30';
+    }
+
+    function estadoAsist(nombre, hora){
+      if(!hora) return 'vacio';
+      const diff = toMinAsist(hora) - toMinAsist(getHorarioEsperado(nombre));
+      if(diff<=0) return 'ok';
+      if(diff<=15) return 'tarde1';
+      return 'tarde2';
+    }
+
+    async function cargarAsistencia(){
+      document.getElementById('asist-mes-nombre').textContent = getPeriodoAsistLabel();
+      renderPillsAsist();
+      if(!asistEmpleadaActual){ document.getElementById('asist-cal-grid').innerHTML=''; return; }
+      const periodo = getPeriodoAsist();
+      const periodoSig = getMesSig(asistMes,asistAnio);
+      const cacheKey = 'asistencia_'+asistEmpleadaActual+'_'+periodo;
+      const cached = OlvisionCache.get(cacheKey);
+      if(cached){ asistDatos = cached; renderAsistencia(); }
+      const { data } = await db.from('asistencias').select('*').eq('empleada',asistEmpleadaActual).gte('fecha',periodo+'-01').lt('fecha',periodoSig);
+      asistDatos = data || [];
+      OlvisionCache.set(cacheKey, asistDatos);
+      renderAsistencia();
+    }
+
+    function renderAsistencia(){
+      const grid = document.getElementById('asist-cal-grid');
+      const diasEnMes = new Date(asistAnio, asistMes+1, 0).getDate();
+      const primerDia = new Date(asistAnio, asistMes, 1).getDay();
+      const offset = (primerDia+6)%7;
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      let html='';
+      for(let i=0;i<offset;i++) html += '<div></div>';
+      let ok=0, tarde=0, faltan=0;
+      const faltantesArr = [];
+      for(let d=1; d<=diasEnMes; d++){
+        const fecha = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const reg = asistDatos.find(r=>r.fecha===fecha);
+        const hora = reg?.hora_entrada || null;
+        const fechaObj = new Date(asistAnio, asistMes, d);
+        const esNoLaboral = fechaObj.getDay()===0;
+        const esFuturo = fechaObj > hoy;
+        let cls = 'asist-cal-celda';
+        if(esNoLaboral){ cls += ' no-laboral'; }
+        else if(esFuturo){ cls += ' futuro'; }
+        else {
+          const est = estadoAsist(asistEmpleadaActual, hora);
+          if(est==='ok'){ cls+=' ok'; ok++; }
+          else if(est==='tarde1'){ cls+=' tarde1'; tarde++; }
+          else if(est==='tarde2'){ cls+=' tarde2'; tarde++; }
+          else { faltan++; faltantesArr.push(d); }
+        }
+        const clickable = !(esNoLaboral||esFuturo);
+        const onclickAttr = clickable ? `onclick="abrirModalAsistencia('${fecha}')"` : '';
+        html += `<div class="${cls}" ${onclickAttr}><span class="asist-cal-num">${d}</span>${hora?`<span class="asist-cal-hora">${hora}</span>`:''}</div>`;
+      }
+      grid.innerHTML = html;
+      document.getElementById('asist-ok').textContent = ok;
+      document.getElementById('asist-tarde').textContent = tarde;
+      document.getElementById('asist-faltan').textContent = faltan;
+      asistFaltantesArr = faltantesArr;
+      const listaEl = document.getElementById('asist-lista-faltantes');
+      if(listaEl.style.display !== 'none') renderListaFaltantes();
+    }
+
+    function toggleFaltantesAsist(){
+      const el = document.getElementById('asist-lista-faltantes');
+      if(el.style.display==='none'){ el.style.display='flex'; renderListaFaltantes(); }
+      else el.style.display='none';
+    }
+
+    function renderListaFaltantes(){
+      const el = document.getElementById('asist-lista-faltantes');
+      if(asistFaltantesArr.length===0){ el.innerHTML = '<div class="asist-falt-item" style="cursor:default">✅ No hay días sin cargar</div>'; return; }
+      el.innerHTML = asistFaltantesArr.map(d=>{
+        const fecha = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        return `<div class="asist-falt-item" onclick="abrirModalAsistencia('${fecha}')"><span>${d} de ${MESES[asistMes]}</span><span class="link">Cargar ›</span></div>`;
+      }).join('');
+    }
+
+    async function abrirModalAsistencia(fecha){
+      const [y,m,d] = fecha.split('-').map(Number);
+      if((m-1)!==asistMes || y!==asistAnio){
+        asistMes = m-1; asistAnio = y;
+        await cargarAsistencia();
+      }
+      const reg = asistDatos.find(r=>r.fecha===fecha);
+      document.getElementById('asist-titulo').textContent = `Llegada — ${asistEmpleadaActual}`;
+      document.getElementById('asist-sub').textContent = `${d} de ${MESES[m-1]} ${y} · Horario esperado: ${getHorarioEsperado(asistEmpleadaActual)}`;
+      document.getElementById('asist-fecha').value = fecha;
+      document.getElementById('asist-hora').value = reg?.hora_entrada || '';
+      document.getElementById('asist-notas').value = reg?.notas || '';
+      document.getElementById('overlay-asistencia').classList.add('visible');
+    }
+
+    async function guardarAsistencia(){
+      const fecha = document.getElementById('asist-fecha').value;
+      const hora = document.getElementById('asist-hora').value;
+      const notas = document.getElementById('asist-notas').value;
+      if(!hora){ alert('Ingresá la hora de entrada'); return; }
+      const btn = document.querySelector('#overlay-asistencia .btn-guardar');
+      btn.textContent='Guardando...'; btn.disabled=true;
+      const { error } = await db.from('asistencias').upsert([{ empleada: asistEmpleadaActual, fecha, hora_entrada: hora, notas }], { onConflict: 'empleada,fecha' });
+      btn.textContent='✅ Guardar'; btn.disabled=false;
+      if(error){ alert('Error: '+error.message); return; }
+      OlvisionCache.clear('asistencia_'+asistEmpleadaActual+'_'+getPeriodoAsist());
+      cerrarModal('overlay-asistencia');
+      cargarAsistencia();
+    }
+
+    async function eliminarAsistenciaDia(){
+      const fecha = document.getElementById('asist-fecha').value;
+      if(!fecha) return;
+      if(!confirm('¿Borrar el registro de este día?')) return;
+      await db.from('asistencias').delete().eq('empleada',asistEmpleadaActual).eq('fecha',fecha);
+      OlvisionCache.clear('asistencia_'+asistEmpleadaActual+'_'+getPeriodoAsist());
+      cerrarModal('overlay-asistencia');
+      cargarAsistencia();
+    }
+
+    function buscarFechaAsistencia(){
+      const v = document.getElementById('asist-buscar-fecha').value;
+      if(!v){ alert('Elegí una fecha'); return; }
+      abrirModalAsistencia(v);
     }
 
     function cambiarAnio(dir){anioHistorico+=dir;document.getElementById('anio-nombre').textContent=anioHistorico;cargarHistorico();}
@@ -817,6 +1062,7 @@
       document.getElementById('config-sueldo-campo').style.display=e?.tiene_sueldo?'block':'none';
       if(e?.tiene_sueldo) setVal(document.getElementById('config-monto'), e.sueldo_quincena);
       document.getElementById('config-comision').value=getComPct(nombre);
+      document.getElementById('config-horario').value=e?.horario_entrada || '09:30';
       document.getElementById('overlay-config').classList.add('visible');
     }
 
@@ -1008,10 +1254,11 @@
     async function guardarConfig() {
       const nombre=document.getElementById('config-empleada').value;
       const com=parseFloat(document.getElementById('config-comision').value)||0;
+      const horario=document.getElementById('config-horario').value || '09:30';
       const e=getEmpleado(nombre);
       const btn=document.querySelector('#overlay-config .btn-guardar');
       btn.textContent='Guardando...';btn.disabled=true;
-      const updates={comision_pct:com};
+      const updates={comision_pct:com, horario_entrada:horario};
       if(e?.tiene_sueldo){
         const monto=getVal(document.getElementById('config-monto'));
         if(!monto){alert('Ingresá el monto');btn.textContent='✅ Guardar';btn.disabled=false;return;}
@@ -1024,6 +1271,7 @@
       if(tabActual==='sueldos') cargar();
       if(tabActual==='comisiones') cargarComisiones();
       if(tabActual==='personal') renderPersonal();
+      if(tabActual==='asistencia') { renderPillsAsist(); cargarAsistencia(); }
       btn.textContent='✅ Guardar';btn.disabled=false;
     }
 
@@ -1080,6 +1328,7 @@
       await detectarMesConDeuda();
       document.getElementById('periodo-nombre').textContent=getPeriodoLabel();
       document.getElementById('com-mes-nombre').textContent=getPeriodoComLabel();
+      document.getElementById('asist-mes-nombre').textContent=getPeriodoAsistLabel();
       document.getElementById('anio-nombre').textContent=anioHistorico;
       document.getElementById('nav-sub').textContent=getPeriodoLabel();
       await cargar();
