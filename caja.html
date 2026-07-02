@@ -384,6 +384,7 @@
           <!-- Contenido historial normal -->
           <div id="historial-contenido">
             <button id="btn-exportar-excel" class="btn-exportar-excel" onclick="exportarExcelMes(`${histAnio}-${String(histMes+1).padStart(2,'0')}`, db)">📊 Exportar Excel del mes</button>
+            <button id="btn-exportar-analisis" class="btn-exportar-excel" style="background:#4f46e5;margin-top:-8px" onclick="exportarAnalisisIA()">🤖 Exportar imagen para análisis IA</button>
             <div class="stat-card azul" style="border-radius:16px;margin-bottom:12px;text-align:center;padding:22px 16px">
               <div class="stat-icon">💰</div>
               <div class="stat-label">Facturado este mes</div>
@@ -561,6 +562,7 @@
 
   <div id="tpl-operaciones" style="position:fixed;left:-9999px;top:0;width:900px;background:white;font-family:'Nunito',sans-serif"></div>
   <div id="tpl-arqueo" style="position:fixed;left:-9999px;top:0;width:520px;background:white;font-family:'Nunito',sans-serif"></div>
+  <div id="tpl-analisis" style="position:fixed;left:-9999px;top:0;width:900px;background:white;font-family:'Nunito',sans-serif"></div>
 
   <!-- MODAL EDITAR OPERACIÓN -->
   <div class="overlay" id="overlay-editar" onclick="cerrarEditarFuera(event)">
@@ -1771,6 +1773,98 @@
         ${coms.length>0?`<div style="margin-top:20px"><div style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">Comisiones del día</div>${coms.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:${i<coms.length-1?'1px solid #f1f5f9':'none'}"><span style="font-size:14px;color:#475569;font-weight:700">👤 ${c.nombre} (${c.pct}%)</span><span style="font-size:15px;font-weight:900;color:#1E3A8A">${formatPesos(c.ventas*(c.pct/100))}</span></div>`).join('')}</div>`:''}</div>
         <div style="padding:12px 28px;font-size:11px;color:#94a3b8;text-align:right;border-top:1px solid #f1f5f9">Generado por Olvisión · ${new Date().toLocaleString('es-AR')}</div>`;
     }
+
+    // ── EXPORTAR IMAGEN PARA ANÁLISIS IA ──────────────────────
+    // Solo estadísticas agregadas del mes (respeta los filtros activos del Historial).
+    // NO incluye: detalle de operaciones (clientes/órdenes), días del mes, ni estado de caja.
+    function generarTemplateAnalisis(){
+      const todosRegs=getFiltradosMes();
+      const ventas=todosRegs.filter(r=>!r.egreso||parseFloat(r.egreso)===0);
+      const ic=calcularIndicadoresComerciales(ventas);
+
+      const totalVendido=ventas.filter(r=>r.producto!=='Saldo').reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+      const totalCobrado=ventas.reduce((s,r)=>s+(parseFloat(r.a_cuenta)>0?parseFloat(r.a_cuenta):parseFloat(r.total)||0),0);
+      const totalEgresosMes=registrosMes.filter(r=>parseFloat(r.egreso)>0).reduce((s,r)=>s+(parseFloat(r.egreso)||0),0);
+      const netoCaja=totalCobrado-totalEgresosMes;
+
+      const formas=['Efectivo','T. Credito','Debito','QR','Transferencia'];
+      const porForma={};
+      formas.forEach(f=>{porForma[f]=ventas.filter(r=>r.forma_pago===f).reduce((s,r)=>s+(parseFloat(r.a_cuenta)>0?parseFloat(r.a_cuenta):parseFloat(r.total)||0),0);});
+
+      const nombresVendedores=empleados.length>0?empleados.map(e=>e.nombre):['Sandra','Valentina','Andres','Luis'];
+      const rankingCobrado=nombresVendedores.map(v=>({nombre:v,total:ventas.filter(r=>r.vendedor===v).reduce((s,r)=>s+(parseFloat(r.a_cuenta)>0?parseFloat(r.a_cuenta):parseFloat(r.total)||0),0),cant:ventas.filter(r=>r.vendedor===v).length})).filter(v=>v.total>0).sort((a,b)=>b.total-a.total);
+
+      const PRODS_COM=['Recetado','Sol','PAMI','Reposicion C.','Pase','Saldo'];
+      const comsData=empleados.filter(e=>e.comision_pct>0).map(e=>{
+        const base=ventas.filter(r=>r.vendedor===e.nombre&&PRODS_COM.includes(r.producto)).reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+        return{nombre:e.nombre,pct:e.comision_pct,base,comision:Math.round(base*e.comision_pct/100)};
+      }).filter(c=>c.base>0);
+
+      const totalG=gastosMes.reduce((s,g)=>s+(parseFloat(g.monto)||0),0);
+      const porCatG={};
+      gastosMes.forEach(g=>{const cat=g.categoria||'Sin categoría';porCatG[cat]=(porCatG[cat]||0)+(parseFloat(g.monto)||0);});
+
+      const hayFiltro=filtroHistVendedor||filtroHistProducto||filtroHistPago;
+      const mesLabel=`${MESES[histMes]} ${histAnio}`+(hayFiltro?` · filtrado (${[filtroHistVendedor,filtroHistProducto,filtroHistPago].filter(Boolean).join(' · ')})`:'');
+
+      const cardMini=(label,valor,color='#1e293b')=>`<div style="background:#f8fafc;border-radius:10px;padding:10px 8px;text-align:center"><div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.3px">${label}</div><div style="font-size:14px;font-weight:900;color:${color};margin-top:3px">${valor}</div></div>`;
+      const bloque=(titulo,contenido)=>`<div style="margin-bottom:18px"><div style="font-size:11px;font-weight:800;color:#1E3A8A;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">${titulo}</div>${contenido||'<div style="color:#94a3b8;font-size:12px">Sin datos</div>'}</div>`;
+      const filaSimple=(izq,der,colorDer='#1e293b')=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px"><span style="color:#475569">${izq}</span><span style="font-weight:800;color:${colorDer}">${der}</span></div>`;
+
+      document.getElementById('tpl-analisis').innerHTML=`
+        <div style="background:#1E3A8A;padding:20px 28px">
+          <img src="logo_reporte.png" style="height:48px;object-fit:contain;display:block" />
+          <div style="color:#93c5fd;font-size:13px;margin-top:4px;font-weight:600">🤖 Análisis Comercial · ${mesLabel}</div>
+        </div>
+        <div style="padding:22px 28px">
+          ${bloque('Resumen general',`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+            ${cardMini('Facturado',formatPesos(totalVendido),'#1E3A8A')}
+            ${cardMini('Cobrado',formatPesos(totalCobrado),'#059669')}
+            ${cardMini('Neto en caja',formatPesos(netoCaja),'#15803d')}
+            ${cardMini('Egresos',formatPesos(totalEgresosMes),'#ef4444')}
+          </div>`)}
+
+          ${bloque('Indicadores comerciales <span style="font-weight:500;text-transform:none;color:#94a3b8">(excluye saldos cobrados de meses anteriores)</span>',`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            ${cardMini('Ticket Caja',formatPesos(ic.ticketCaja))}
+            ${cardMini('Ticket Óptico',formatPesos(ic.ticketOptico))}
+            ${cardMini('Órdenes Ópticas',ic.cantOpticas)}
+            ${cardMini('Producto Líder',ic.productoLider?ic.productoLider.nombre:'—')}
+            ${cardMini('Vendedor Líder',ic.vendedorLider?ic.vendedorLider.nombre:'—')}
+            ${cardMini('Dependencia Comercial',ic.dependenciaPct.toFixed(0)+'%')}
+          </div>`)}
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
+            <div>
+              ${bloque('🏆 Ranking comercial (por facturado)',ic.rankingComercial.map(v=>filaSimple(v.nombre,`${v.cant} op · ${formatPesos(v.monto)} · ${v.pct.toFixed(0)}%`,'#1E3A8A')).join(''))}
+              ${bloque('💳 Por forma de pago',formas.filter(f=>porForma[f]>0).map(f=>filaSimple(f,formatPesos(porForma[f]))).join(''))}
+              ${comsData.length?bloque('💵 Comisiones del mes',comsData.map(c=>filaSimple(`${c.nombre} (${c.pct}%)`,formatPesos(c.comision),'#10b981')).join('')):''}
+            </div>
+            <div>
+              ${bloque('📦 Participación por producto',ic.participacion.map(p=>filaSimple(p.nombre,`${p.pct.toFixed(0)}% · ${formatPesos(p.monto)}`)).join(''))}
+              ${bloque('👥 Ranking vendedoras (por cobrado)',rankingCobrado.map(v=>filaSimple(v.nombre,`${v.cant} op · ${formatPesos(v.total)}`,'#059669')).join(''))}
+              ${gastosMes.length?bloque('💸 Gastos del mes',Object.entries(porCatG).sort((a,b)=>b[1]-a[1]).map(([cat,monto])=>filaSimple(cat,formatPesos(monto),'#ef4444')).join('')+`<div style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:4px;border-top:2px solid #f1f5f9"><span style="font-size:12px;font-weight:700;color:#475569">Total gastos</span><span style="font-size:13px;font-weight:900;color:#ef4444">${formatPesos(totalG)}</span></div>`):''}
+            </div>
+          </div>
+
+          ${bloque('🎯 Mix de productos por vendedor',`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#f8fafc">${['Vendedor',...CATEGORIAS_MIX].map(c=>`<th style="padding:6px 8px;text-align:${c==='Vendedor'?'left':'right'};color:#64748b;font-weight:700;font-size:9px;text-transform:uppercase">${c}</th>`).join('')}</tr></thead><tbody>${ic.mixPorVendedor.map(f=>`<tr><td style="padding:6px 8px;text-align:left;font-weight:700;color:#1e293b;border-bottom:1px solid #f1f5f9">${f.nombre}</td>${CATEGORIAS_MIX.map(c=>`<td style="padding:6px 8px;text-align:right;color:#475569;border-bottom:1px solid #f1f5f9">${f[c+'_pct']>0?f[c+'_pct'].toFixed(0)+'%':'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`)}
+        </div>
+        <div style="padding:12px 28px;font-size:10px;color:#94a3b8;text-align:right;border-top:1px solid #f1f5f9">Generado por Olvisión · ${new Date().toLocaleString('es-AR')}</div>`;
+    }
+
+    async function exportarAnalisisIA(){
+      const btn=document.getElementById('btn-exportar-analisis');
+      btn.disabled=true;btn.textContent='⏳ Generando imagen...';
+      generarTemplateAnalisis();
+      await new Promise(resolve=>setTimeout(resolve,150));
+      const canvas=await html2canvas(document.getElementById('tpl-analisis'),{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+      const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=`olvision-analisis-${histAnio}-${String(histMes+1).padStart(2,'0')}.png`;a.click();
+      URL.revokeObjectURL(url);
+      btn.disabled=false;btn.textContent='🤖 Exportar imagen para análisis IA';
+    }
+    // ── FIN EXPORTAR IMAGEN PARA ANÁLISIS IA ──────────────────
 
     async function descargarImagen(){
       if(!canvasBlob) return;
