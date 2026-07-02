@@ -200,8 +200,8 @@
         <button class="btn-primario" onclick="abrirModalCheque()" style="margin-bottom:18px">+ Nuevo cheque</button>
         <div class="filtros-section">
           <div class="estado-pills">
-            <button class="estado-pill activo" id="pill-todos"      onclick="setEstado('todos')">Todos</button>
-            <button class="estado-pill"         id="pill-pendiente" onclick="setEstado('pendiente')">🟡 Pend.</button>
+            <button class="estado-pill"         id="pill-todos"      onclick="setEstado('todos')">Todos</button>
+            <button class="estado-pill activo"  id="pill-pendiente" onclick="setEstado('pendiente')">🟡 Pend.</button>
             <button class="estado-pill"         id="pill-pagado"    onclick="setEstado('pagado')">✅ Pag.</button>
             <button class="estado-pill"         id="pill-agenda"    onclick="setEstado('agenda')">📋 Agenda</button>
           </div>
@@ -286,7 +286,7 @@
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cheques = [], destinatarios = [];
     const mesAbierto = {};
-    let filtroEstado = 'todos', filtroMes = '', filtroContacto = '';
+    let filtroEstado = 'pendiente', filtroMes = '', filtroContacto = '';
     const MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
     function formatPesos(n) { if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }
