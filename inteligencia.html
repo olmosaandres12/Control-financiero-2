@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olvisión — Centro de Inteligencia</title>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="icon" type="image/png" href="finanzas_logo.png" />
+  <link rel="apple-touch-icon" href="finanzas_logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cache.js"></script>
+  <script src="utils.js"></script>
+  <script src="motorAnalisis.js"></script>
+  <script src="reglasNegocio.js"></script>
+  <link rel="manifest" href="manifest.json" />
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <style>
+    .mes-selector { display:flex;align-items:center;justify-content:space-between;background:white;border-radius:16px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+    .mes-btn { background:none;border:none;font-size:22px;cursor:pointer;color:#1E3A8A;padding:4px 8px; }
+    .mes-btn:disabled { color:#cbd5e1;cursor:not-allowed; }
+    .mes-nombre { font-size:17px;font-weight:800;color:#1e293b; }
+
+    .seccion { margin-bottom:22px; }
+    .seccion-header { font-size:13px;font-weight:800;color:#1e293b;margin-bottom:10px;display:flex;align-items:center;gap:6px; }
+
+    /* CEO Score */
+    .ceo-score-card { background:#1E3A8A;border-radius:20px;padding:26px 20px;text-align:center;color:white;margin-bottom:8px; }
+    .ceo-score-valor { font-size:52px;font-weight:900;line-height:1; }
+    .ceo-score-nivel { font-size:15px;font-weight:800;margin-top:6px; }
+    .ceo-score-exp { font-size:12px;color:#c7d9fb;margin-top:10px;line-height:1.5; }
+    .ceo-score-detalle { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px; }
+    .ceo-factor { background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 10px;text-align:left; }
+    .ceo-factor-nombre { font-size:10px;color:#c7d9fb;text-transform:uppercase;letter-spacing:0.3px; }
+    .ceo-factor-barra { height:5px;background:rgba(255,255,255,0.15);border-radius:10px;overflow:hidden;margin-top:5px; }
+    .ceo-factor-fill { height:100%;background:#f9f4ab;border-radius:10px; }
+    .ceo-factor-val { font-size:11px;font-weight:800;margin-top:3px; }
+
+    /* Resumen */
+    .resumen-card { background:white;border-radius:16px;padding:18px 20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);font-size:14px;line-height:1.6;color:#334155; }
+
+    /* Alertas */
+    .alerta-card { background:white;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #94a3b8; }
+    .alerta-card.critico { border-left-color:#ef4444;background:#fef2f2; }
+    .alerta-card.atencion { border-left-color:#f59e0b;background:#fffbeb; }
+    .alerta-card.infoNivel { border-left-color:#3b82f6;background:#eff6ff; }
+    .alerta-msg { font-size:13px;font-weight:800;color:#1e293b; }
+    .alerta-causa { font-size:12px;color:#64748b;margin-top:3px; }
+
+    /* Oportunidades */
+    .oport-card { background:white;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #10b981; }
+    .oport-msg { font-size:13px;font-weight:800;color:#1e293b; }
+    .oport-det { font-size:12px;color:#059669;margin-top:3px;font-weight:700; }
+
+    /* Plan de acción */
+    .plan-item { display:flex;align-items:flex-start;gap:12px;background:white;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+    .plan-num { width:26px;height:26px;border-radius:50%;background:#1E3A8A;color:white;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .plan-texto { flex:1;font-size:13px;font-weight:700;color:#1e293b; }
+    .plan-estrellas { font-size:12px;color:#f59e0b;margin-top:4px; }
+
+    /* Comparación */
+    .comp-grid { display:grid;grid-template-columns:1fr;gap:8px; }
+    .comp-fila { background:white;border-radius:14px;padding:12px 16px;box-shadow:0 2px 6px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center; }
+    .comp-nombre { font-size:13px;font-weight:700;color:#475569; }
+    .comp-valor { text-align:right; }
+    .comp-actual { font-size:15px;font-weight:900;color:#1e293b; }
+    .comp-pct { font-size:12px;font-weight:800;margin-top:2px; }
+    .comp-pct.up { color:#10b981; }
+    .comp-pct.down { color:#ef4444; }
+    .comp-pct.eq { color:#94a3b8; }
+
+    /* Predicción */
+    .pred-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+    .pred-card { background:white;border-radius:14px;padding:14px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+    .pred-label { font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase; }
+    .pred-valor { font-size:17px;font-weight:900;color:#1E3A8A;margin-top:4px; }
+    .pred-confianza { text-align:center;font-size:12px;color:#94a3b8;margin-top:8px; }
+
+    /* KPIs semáforo */
+    .kpi-fila { display:flex;align-items:center;gap:12px;background:white;border-radius:14px;padding:12px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+    .kpi-emoji { font-size:20px; }
+    .kpi-info { flex:1; }
+    .kpi-nombre { font-size:13px;font-weight:800;color:#1e293b; }
+    .kpi-detalle { font-size:12px;color:#64748b;margin-top:2px; }
+    .kpi-actual { text-align:right;font-size:14px;font-weight:900;color:#1e293b; }
+
+    /* Vendedores */
+    .vend-card { background:white;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+    .vend-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:8px; }
+    .vend-nombre { font-size:15px;font-weight:800;color:#1e293b; }
+    .vend-monto { font-size:16px;font-weight:900;color:#1E3A8A; }
+    .vend-stats { display:flex;gap:14px;font-size:12px;color:#64748b;margin-bottom:8px; }
+    .vend-comentario { font-size:12px;color:#475569;background:#f8fafc;border-radius:10px;padding:8px 10px; }
+
+    .empty { text-align:center;padding:24px 16px;color:#94a3b8;font-size:13px;background:white;border-radius:14px; }
+
+    @media (min-width:768px){
+      .ceo-score-detalle { grid-template-columns:repeat(4,1fr); }
+      .pred-grid { grid-template-columns:repeat(4,1fr); }
+    }
+  </style>
+  <link rel="stylesheet" href="estetica.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="logo_app.png" alt="Olvisión" /></div>
+      <nav class="sidebar-nav">
+        <a class="snav-item" href="dashboard.html"><span class="snav-icon">🏠</span> Inicio</a>
+        <a class="snav-item" href="caja.html"><span class="snav-icon">🧾</span> Caja Diaria</a>
+        <a class="snav-item" href="gastos.html"><span class="snav-icon">💸</span> Gastos</a>
+        <a class="snav-item" href="cheques.html"><span class="snav-icon">🏦</span> Cheques</a>
+        <a class="snav-item" href="sueldos.html"><span class="snav-icon">👥</span> Sueldos</a>
+        <a class="snav-item" href="saldos.html"><span class="snav-icon">🔖</span> Saldos</a>
+        <a class="snav-item activo" href="inteligencia.html"><span class="snav-icon">🧠</span> Inteligencia</a>
+        <a class="snav-item" href="configuracion.html"><span class="snav-icon">⚙️</span> Config.</a>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button></div>
+    </aside>
+
+    <div class="app-content">
+      <nav class="nav">
+        <div class="nav-left">
+          <a class="nav-back" href="dashboard.html">‹</a>
+          <div>
+            <div class="nav-title">🧠 Centro de Inteligencia</div>
+            <div class="nav-sub">Informe ejecutivo automático</div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main">
+        <div class="mes-selector">
+          <button class="mes-btn" onclick="cambiarMes(-1)">‹</button>
+          <span class="mes-nombre" id="mes-label">—</span>
+          <button class="mes-btn" id="btn-mes-next" onclick="cambiarMes(1)">›</button>
+        </div>
+
+        <div id="sin-datos-aviso" style="display:none" class="empty">Este mes todavía no tiene operaciones cargadas.</div>
+
+        <div id="contenido-informe">
+          <div class="seccion">
+            <div class="seccion-header">🎯 CEO Score</div>
+            <div id="sec-ceo-score"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">📝 Resumen ejecutivo</div>
+            <div id="sec-resumen"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">🚨 Alertas</div>
+            <div id="sec-alertas"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">💡 Oportunidades</div>
+            <div id="sec-oportunidades"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">📋 Plan de acción</div>
+            <div id="sec-plan"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">📊 Comparación</div>
+            <div id="sec-comparacion"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">🔮 Predicción de cierre</div>
+            <div id="sec-prediccion"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">🚦 KPIs con semáforo</div>
+            <div id="sec-kpis"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">👥 Detalle por vendedor</div>
+            <div id="sec-vendedores"></div>
+          </div>
+
+          <div class="seccion">
+            <div class="seccion-header">🤖 Recomendaciones automáticas</div>
+            <div id="sec-recomendaciones"></div>
+          </div>
+        </div>
+      </main>
+
+      <nav class="bottom-nav">
+        <a class="bnav-item" href="dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
+        <a class="bnav-item" href="caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
+        <a class="bnav-item" href="gastos.html"><span class="bnav-icon">💸</span><span class="bnav-label">Gastos</span></a>
+        <a class="bnav-item activo" href="inteligencia.html"><span class="bnav-icon">🧠</span><span class="bnav-label">Inteligencia</span></a>
+        <a class="bnav-item" href="sueldos.html"><span class="bnav-icon">👥</span><span class="bnav-label">Sueldos</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    function salir(){ sessionStorage.removeItem('olvision_auth'); window.location.href='index.html'; }
+
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    function formatPesos(n){ if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }
+
+    let anioSel = new Date().getFullYear();
+    let mesSel = new Date().getMonth(); // 0-indexed
+    let empleados = [];
+
+    function cambiarMes(dir){
+      mesSel += dir;
+      if(mesSel > 11){ mesSel = 0; anioSel++; }
+      if(mesSel < 0){ mesSel = 11; anioSel--; }
+      const hoy = new Date();
+      if(anioSel > hoy.getFullYear() || (anioSel === hoy.getFullYear() && mesSel > hoy.getMonth())){
+        mesSel -= dir; if(mesSel > 11){ mesSel = 0; anioSel++; } if(mesSel < 0){ mesSel = 11; anioSel--; }
+        return;
+      }
+      cargarTodo();
+    }
+
+    async function cargarMesCompleto(anio, mes){
+      const mesStr = `${anio}-${String(mes+1).padStart(2,'0')}`;
+      const nAnio = mes===11 ? anio+1 : anio;
+      const nMes = mes===11 ? 1 : mes+2;
+      const mesSigStr = `${nAnio}-${String(nMes).padStart(2,'0')}`;
+      const [{data:r},{data:g}] = await Promise.all([
+        db.from('registros').select('*').gte('fecha',mesStr+'-01').lt('fecha',mesSigStr+'-01'),
+        db.from('gastos').select('*').gte('fecha',mesStr+'-01').lt('fecha',mesSigStr+'-01')
+      ]);
+      return { registros:r||[], gastos:g||[] };
+    }
+
+    async function cargarTodo(){
+      document.getElementById('mes-label').textContent = `${MESES[mesSel]} ${anioSel}`;
+      const hoy = new Date();
+      document.getElementById('btn-mes-next').disabled = (anioSel===hoy.getFullYear() && mesSel===hoy.getMonth());
+
+      const cacheKey = `intel_${anioSel}-${mesSel}`;
+      const cached = OlvisionCache.get(cacheKey);
+      if(cached){ pintarInforme(cached); }
+
+      if(!empleados.length){
+        const { data:emp } = await db.from('empleados').select('*').eq('activo',true).order('nombre');
+        empleados = emp || [];
+      }
+
+      const actual = await cargarMesCompleto(anioSel, mesSel);
+
+      let mesAntAnio = anioSel, mesAntMes = mesSel - 1;
+      if(mesAntMes < 0){ mesAntMes = 11; mesAntAnio--; }
+      const anterior = await cargarMesCompleto(mesAntAnio, mesAntMes);
+      const anioPasado = await cargarMesCompleto(anioSel-1, mesSel);
+
+      // Histórico para objetivos automáticos: hasta 3 meses antes del seleccionado
+      const historico = [];
+      let hAnio = mesAntAnio, hMes = mesAntMes;
+      for(let i=0; i<3; i++){
+        const { registros, gastos } = await cargarMesCompleto(hAnio, hMes);
+        if(registros.length) historico.push(calcularKPIsMes(registros, gastos, empleados));
+        hMes--; if(hMes<0){ hMes=11; hAnio--; }
+      }
+
+      const datos = {
+        registrosActual: actual.registros,
+        kpisActual: calcularKPIsMes(actual.registros, actual.gastos, empleados),
+        kpisAnterior: anterior.registros.length ? calcularKPIsMes(anterior.registros, anterior.gastos, empleados) : null,
+        kpisAnioPasado: anioPasado.registros.length ? calcularKPIsMes(anioPasado.registros, anioPasado.gastos, empleados) : null,
+        historico
+      };
+      OlvisionCache.set(cacheKey, datos);
+      pintarInforme(datos);
+    }
+
+    function pintarInforme(datos){
+      const kpis = datos.kpisActual;
+      const contenido = document.getElementById('contenido-informe');
+      const aviso = document.getElementById('sin-datos-aviso');
+
+      if(kpis.cantOrdenes === 0 && kpis.cantOpticas === 0 && (!datos.registrosActual || !datos.registrosActual.length)){
+        contenido.style.display = 'none';
+        aviso.style.display = 'block';
+        return;
+      }
+      contenido.style.display = 'block';
+      aviso.style.display = 'none';
+
+      const objetivosAuto = calcularObjetivosAutomaticos(datos.historico);
+      const objetivos = resolverObjetivos(objetivosAuto, null); // futuro: overrides manuales desde configuracion
+      const comparacion = compararMeses(kpis, datos.kpisAnterior, datos.kpisAnioPasado);
+      const ceoScore = calcularCEOScore(kpis, objetivos, null);
+
+      const ctx = { kpis, objetivos, comparacion, ceoScore, productos: kpis.participacionProductos };
+
+      const alertas = detectarAlertas(ctx);
+      const oportunidades = detectarOportunidades(kpis);
+      const plan = generarPlanAccion(ctx);
+      const recomendaciones = generarRecomendaciones(ctx);
+      const prediccion = predecirCierre(kpis, new Date(), anioSel, mesSel);
+      const resumen = generarResumen(kpis, ceoScore, alertas, comparacion);
+
+      renderCeoScore(ceoScore);
+      renderResumen(resumen);
+      renderAlertas(alertas);
+      renderOportunidades(oportunidades);
+      renderPlan(plan);
+      renderComparacion(comparacion, datos.kpisAnterior, datos.kpisAnioPasado);
+      renderPrediccion(prediccion);
+      renderKPIs(kpis, objetivos);
+      renderVendedores(kpis);
+      renderRecomendaciones(recomendaciones);
+    }
+
+    function renderCeoScore(ceo){
+      if(ceo.score === null){
+        document.getElementById('sec-ceo-score').innerHTML = `<div class="empty">${ceo.explicacion}</div>`;
+        return;
+      }
+      document.getElementById('sec-ceo-score').innerHTML = `
+        <div class="ceo-score-card">
+          <div class="ceo-score-valor">${ceo.emoji} ${ceo.score}</div>
+          <div class="ceo-score-nivel">${ceo.nivel}</div>
+          <div class="ceo-score-exp">${ceo.explicacion}</div>
+          <div class="ceo-score-detalle">
+            ${ceo.detalle.map(d => `<div class="ceo-factor"><div class="ceo-factor-nombre">${d.factor} (${d.peso}%)</div><div class="ceo-factor-barra"><div class="ceo-factor-fill" style="width:${Math.round(d.score)}%"></div></div><div class="ceo-factor-val">${Math.round(d.score)}/100</div></div>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    function renderResumen(texto){
+      document.getElementById('sec-resumen').innerHTML = `<div class="resumen-card">${texto}</div>`;
+    }
+
+    function renderAlertas(alertas){
+      const clase = n => n==='crítico' ? 'critico' : n==='atención' ? 'atencion' : 'infoNivel';
+      const emoji = n => n==='crítico' ? '🔴' : n==='atención' ? '🟠' : '🔵';
+      document.getElementById('sec-alertas').innerHTML = alertas.length===0
+        ? '<div class="empty">✅ No hay alertas este mes.</div>'
+        : alertas.map(a => `<div class="alerta-card ${clase(a.nivel)}"><div class="alerta-msg">${emoji(a.nivel)} ${a.mensaje}</div><div class="alerta-causa">Causa probable: ${a.causa}</div></div>`).join('');
+    }
+
+    function renderOportunidades(oportunidades){
+      document.getElementById('sec-oportunidades').innerHTML = oportunidades.length===0
+        ? '<div class="empty">Sin oportunidades detectadas este mes.</div>'
+        : oportunidades.map(o => `<div class="oport-card"><div class="oport-msg">${o.mensaje}</div><div class="oport-det">→ ${o.detalle}</div></div>`).join('');
+    }
+
+    function renderPlan(plan){
+      document.getElementById('sec-plan').innerHTML = plan.length===0
+        ? '<div class="empty">Sin acciones prioritarias este mes.</div>'
+        : plan.map((p,i) => `<div class="plan-item"><div class="plan-num">${i+1}</div><div><div class="plan-texto">${p.mensaje}</div><div class="plan-estrellas">${'★'.repeat(p.impacto)}${'☆'.repeat(5-p.impacto)}</div></div></div>`).join('');
+    }
+
+    function renderComparacion(comp, anterior, anioPasado){
+      const nombres = { facturacion:'Facturación', ticketPromedio:'Ticket promedio', cantOrdenes:'Órdenes', cobrado:'Cobrado', gastosAdmin:'Gastos' };
+      const esMoneda = k => k!=='cantOrdenes';
+      const flecha = d => d==='up' ? '↑' : d==='down' ? '↓' : '=';
+      const claseP = d => d==='up' ? 'up' : d==='down' ? 'down' : 'eq';
+
+      let html = '';
+      if(!anterior){
+        html += '<div class="empty">No hay datos del mes anterior para comparar.</div>';
+      } else {
+        html += '<div class="comp-grid">' + Object.keys(nombres).map(k => {
+          const c = comp[k]; if(!c) return '';
+          const valorFmt = esMoneda(k) ? formatPesos(c.valorActual) : Math.round(c.valorActual);
+          return `<div class="comp-fila"><span class="comp-nombre">${nombres[k]} vs mes anterior</span><div class="comp-valor"><div class="comp-actual">${valorFmt}</div><div class="comp-pct ${claseP(c.direccion)}">${flecha(c.direccion)} ${Math.abs(c.pct).toFixed(0)}%</div></div></div>`;
+        }).join('') + '</div>';
+      }
+      if(anioPasado && comp.vsAnioPasado){
+        html += '<div style="margin-top:12px" class="comp-grid">' + Object.keys(nombres).map(k => {
+          const c = comp.vsAnioPasado[k]; if(!c) return '';
+          const valorFmt = esMoneda(k) ? formatPesos(c.valorActual) : Math.round(c.valorActual);
+          return `<div class="comp-fila"><span class="comp-nombre">${nombres[k]} vs mismo mes año pasado</span><div class="comp-valor"><div class="comp-actual">${valorFmt}</div><div class="comp-pct ${claseP(c.direccion)}">${flecha(c.direccion)} ${Math.abs(c.pct).toFixed(0)}%</div></div></div>`;
+        }).join('') + '</div>';
+      } else {
+        html += '<div class="empty" style="margin-top:10px">No hay datos del mismo mes del año pasado para comparar.</div>';
+      }
+      document.getElementById('sec-comparacion').innerHTML = html;
+    }
+
+    function renderPrediccion(pred){
+      if(!pred){ document.getElementById('sec-prediccion').innerHTML = '<div class="empty">No hay datos suficientes para proyectar.</div>'; return; }
+      document.getElementById('sec-prediccion').innerHTML = `
+        <div class="pred-grid">
+          <div class="pred-card"><div class="pred-label">Facturación est.</div><div class="pred-valor">${formatPesos(pred.facturacionEstimada)}</div></div>
+          <div class="pred-card"><div class="pred-label">Órdenes est.</div><div class="pred-valor">${pred.ordenesEstimadas}</div></div>
+          <div class="pred-card"><div class="pred-label">Cobrado est.</div><div class="pred-valor">${formatPesos(pred.cobradoEstimado)}</div></div>
+          <div class="pred-card"><div class="pred-label">Utilidad est.</div><div class="pred-valor" style="color:#94a3b8;font-size:12px">No disponible<br>(requiere costo)</div></div>
+        </div>
+        <div class="pred-confianza">Confianza: <b>${pred.confianza}</b> · ${pred.diasTranscurridos} de ${pred.diasEnMes} días ${pred.esMesEnCurso ? 'transcurridos' : '(mes cerrado)'}</div>`;
+    }
+
+    function renderKPIs(kpis, objetivos){
+      if(!objetivos){ document.getElementById('sec-kpis').innerHTML = '<div class="empty">Los objetivos se calculan automáticamente a partir del segundo mes de uso.</div>'; return; }
+      const filas = [
+        { nombre:'Facturación', actual:kpis.facturacion, objetivo:objetivos.facturacion, fmt:formatPesos, invertido:false },
+        { nombre:'Ticket promedio', actual:kpis.ticketPromedio, objetivo:objetivos.ticketPromedio, fmt:formatPesos, invertido:false },
+        { nombre:'Órdenes', actual:kpis.cantOrdenes, objetivo:objetivos.cantOrdenes, fmt:n=>Math.round(n), invertido:false },
+        { nombre:'Cobranza', actual:kpis.cobranzaPct, objetivo:objetivos.cobranzaPct, fmt:n=>n.toFixed(0)+'%', invertido:false },
+        { nombre:'Dependencia comercial', actual:kpis.dependenciaPct, objetivo:objetivos.dependenciaPct, fmt:n=>n.toFixed(0)+'%', invertido:true },
+        { nombre:'Gastos', actual:kpis.gastosPct, objetivo:objetivos.gastosPct, fmt:n=>n.toFixed(0)+'%', invertido:true }
+      ];
+      document.getElementById('sec-kpis').innerHTML = filas.map(f => {
+        const s = semaforoKPI(f.actual, f.objetivo, f.invertido);
+        const falta = !f.invertido ? Math.max(0, f.objetivo - f.actual) : Math.max(0, f.actual - f.objetivo);
+        const textoFalta = !f.invertido
+          ? (falta>0 ? `Faltan ${f.fmt(falta)} para el objetivo` : 'Objetivo alcanzado')
+          : (falta>0 ? `${f.fmt(falta)} por encima del objetivo` : 'Dentro del objetivo');
+        return `<div class="kpi-fila"><div class="kpi-emoji">${s.emoji}</div><div class="kpi-info"><div class="kpi-nombre">${f.nombre}</div><div class="kpi-detalle">Objetivo: ${f.fmt(f.objetivo)} · ${textoFalta}</div></div><div class="kpi-actual">${f.fmt(f.actual)}</div></div>`;
+      }).join('');
+    }
+
+    function renderVendedores(kpis){
+      const vs = kpis.rankingVendedores || [];
+      document.getElementById('sec-vendedores').innerHTML = vs.length===0
+        ? '<div class="empty">Sin ventas asignadas a vendedores este mes.</div>'
+        : vs.map(v => {
+            const mixTop = Object.entries(v.mix).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([p,m])=>`${p} ${Math.round(m/v.monto*100)}%`).join(' · ');
+            return `<div class="vend-card">
+              <div class="vend-header"><span class="vend-nombre">${v.nombre}</span><span class="vend-monto">${formatPesos(v.monto)}</span></div>
+              <div class="vend-stats"><span>${v.cant} venta${v.cant!==1?'s':''}</span><span>Ticket ${formatPesos(v.ticket)}</span><span>${v.pct.toFixed(0)}% del total</span></div>
+              <div class="vend-stats" style="margin-bottom:8px">Mix: ${mixTop||'—'}</div>
+              <div class="vend-comentario">${comentarioVendedor(v)}</div>
+            </div>`;
+          }).join('');
+    }
+
+    function renderRecomendaciones(recs){
+      document.getElementById('sec-recomendaciones').innerHTML = recs.length===0
+        ? '<div class="empty">Sin recomendaciones automáticas este mes.</div>'
+        : recs.map(r => `<div class="plan-item"><div class="plan-num">${'★'.repeat(r.impacto)}</div><div class="plan-texto" style="font-weight:600">${r.mensaje}</div></div>`).join('');
+    }
+
+    cargarTodo();
+  </script>
+</body>
+</html>
