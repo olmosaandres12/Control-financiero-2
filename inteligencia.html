@@ -13,90 +13,128 @@
   <script src="utils.js"></script>
   <script src="motorAnalisis.js"></script>
   <script src="reglasNegocio.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="manifest" href="manifest.json" />
   <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
   <style>
-    .mes-selector { display:flex;align-items:center;justify-content:space-between;background:white;border-radius:16px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
-    .mes-btn { background:none;border:none;font-size:22px;cursor:pointer;color:#1E3A8A;padding:4px 8px; }
-    .mes-btn:disabled { color:#cbd5e1;cursor:not-allowed; }
-    .mes-nombre { font-size:17px;font-weight:800;color:#1e293b; }
+    /* ── Header sticky ── */
+    .intel-header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; background: white; border-radius: 16px; padding: 12px 16px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .intel-mes { display: flex; align-items: center; gap: 8px; }
+    .intel-mes-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #1E3A8A; padding: 2px 6px; }
+    .intel-mes-btn:disabled { color: #cbd5e1; cursor: not-allowed; }
+    .intel-mes-nombre { font-size: 15px; font-weight: 800; color: #1e293b; }
+    .btn-exportar-informe { background: #4f46e5; color: white; border: none; border-radius: 12px; padding: 9px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .btn-exportar-informe:disabled { opacity: .6; cursor: default; }
 
-    .seccion { margin-bottom:22px; }
-    .seccion-header { font-size:13px;font-weight:800;color:#1e293b;margin-bottom:10px;display:flex;align-items:center;gap:6px; }
+    /* ── Bento grid ── */
+    .bento-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .bento-row-4 { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 12px; }
+    .bento-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .bento-titulo { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
 
-    /* CEO Score */
-    .ceo-score-card { background:#1E3A8A;border-radius:20px;padding:26px 20px;text-align:center;color:white;margin-bottom:8px; }
-    .ceo-score-valor { font-size:52px;font-weight:900;line-height:1; }
-    .ceo-score-nivel { font-size:15px;font-weight:800;margin-top:6px; }
-    .ceo-score-exp { font-size:12px;color:#c7d9fb;margin-top:10px;line-height:1.5; }
-    .ceo-score-detalle { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px; }
-    .ceo-factor { background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 10px;text-align:left; }
-    .ceo-factor-nombre { font-size:10px;color:#c7d9fb;text-transform:uppercase;letter-spacing:0.3px; }
-    .ceo-factor-barra { height:5px;background:rgba(255,255,255,0.15);border-radius:10px;overflow:hidden;margin-top:5px; }
-    .ceo-factor-fill { height:100%;background:#f9f4ab;border-radius:10px; }
-    .ceo-factor-val { font-size:11px;font-weight:800;margin-top:3px; }
+    /* CEO Score card */
+    .score-valor-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+    .score-num { font-size: 34px; font-weight: 900; color: #1e293b; line-height: 1; }
+    .score-nivel { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+    .score-nivel.Excelente { background: #d1fae5; color: #065f46; }
+    .score-nivel.Bueno { background: #dbeafe; color: #1e40af; }
+    .score-nivel.Atencion, .score-nivel.Atención { background: #fef3c7; color: #92400e; }
+    .score-nivel.Critico, .score-nivel.Crítico { background: #fee2e2; color: #991b1b; }
+    .score-exp { font-size: 11px; color: #94a3b8; margin-bottom: 10px; line-height: 1.5; }
+    .chart-wrap-radar { position: relative; height: 190px; }
 
-    /* Resumen */
-    .resumen-card { background:white;border-radius:16px;padding:18px 20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);font-size:14px;line-height:1.6;color:#334155; }
+    /* Alertas por color */
+    .alertas-mini-lista { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .alerta-mini { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; font-size: 12.5px; line-height: 1.4; }
+    .alerta-mini.critico { background: #fef2f2; color: #991b1b; }
+    .alerta-mini.atencion { background: #fffbeb; color: #92400e; }
+    .alerta-mini.infoNivel { background: #eff6ff; color: #1e40af; }
+    .alerta-mini-emoji { flex-shrink: 0; }
 
-    /* Alertas */
-    .alerta-card { background:white;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #94a3b8; }
-    .alerta-card.critico { border-left-color:#ef4444;background:#fef2f2; }
-    .alerta-card.atencion { border-left-color:#f59e0b;background:#fffbeb; }
-    .alerta-card.infoNivel { border-left-color:#3b82f6;background:#eff6ff; }
-    .alerta-msg { font-size:13px;font-weight:800;color:#1e293b; }
-    .alerta-causa { font-size:12px;color:#64748b;margin-top:3px; }
+    /* KPI row */
+    .metric-card { background: #f8fafc; border-radius: 12px; padding: 12px 14px; }
+    .metric-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+    .metric-valor { font-size: 19px; font-weight: 900; color: #1e293b; }
+    .metric-valor.rojo { color: #ef4444; }
 
-    /* Oportunidades */
-    .oport-card { background:white;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #10b981; }
-    .oport-msg { font-size:13px;font-weight:800;color:#1e293b; }
-    .oport-det { font-size:12px;color:#059669;margin-top:3px;font-weight:700; }
+    /* Chart diario */
+    .chart-wrap-dias { position: relative; height: 150px; }
 
     /* Plan de acción */
-    .plan-item { display:flex;align-items:flex-start;gap:12px;background:white;border-radius:14px;padding:14px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
-    .plan-num { width:26px;height:26px;border-radius:50%;background:#1E3A8A;color:white;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-    .plan-texto { flex:1;font-size:13px;font-weight:700;color:#1e293b; }
-    .plan-estrellas { font-size:12px;color:#f59e0b;margin-top:4px; }
+    .plan-mini-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8fafc; gap: 10px; }
+    .plan-mini-item:last-child { border-bottom: none; }
+    .plan-mini-texto { font-size: 12.5px; font-weight: 700; color: #1e293b; }
+    .plan-mini-puntos { font-size: 11px; color: #4f46e5; white-space: nowrap; letter-spacing: 1px; }
 
-    /* Comparación */
-    .comp-grid { display:grid;grid-template-columns:1fr;gap:8px; }
-    .comp-fila { background:white;border-radius:14px;padding:12px 16px;box-shadow:0 2px 6px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center; }
-    .comp-nombre { font-size:13px;font-weight:700;color:#475569; }
-    .comp-valor { text-align:right; }
-    .comp-actual { font-size:15px;font-weight:900;color:#1e293b; }
-    .comp-pct { font-size:12px;font-weight:800;margin-top:2px; }
-    .comp-pct.up { color:#10b981; }
-    .comp-pct.down { color:#ef4444; }
-    .comp-pct.eq { color:#94a3b8; }
+    /* Vendedores mini */
+    .vend-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; }
+    .vend-mini-card { background: #f8fafc; border-radius: 12px; padding: 12px; }
+    .vend-mini-nombre { font-size: 12px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+    .vend-mini-monto { font-size: 15px; font-weight: 900; color: #1E3A8A; }
+    .vend-mini-pct { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .vend-mini-pct.alto { color: #ef4444; font-weight: 700; }
 
-    /* Predicción */
-    .pred-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
-    .pred-card { background:white;border-radius:14px;padding:14px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
-    .pred-label { font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase; }
-    .pred-valor { font-size:17px;font-weight:900;color:#1E3A8A;margin-top:4px; }
-    .pred-confianza { text-align:center;font-size:12px;color:#94a3b8;margin-top:8px; }
+    /* Toggle informe completo */
+    .detalle-toggle { background: white; border: 2px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; font-size: 14px; font-weight: 700; color: #1E3A8A; cursor: pointer; font-family: 'Nunito', sans-serif; width: 100%; text-align: left; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .detalle-panel { display: none; }
+    .detalle-panel.visible { display: block; }
 
-    /* KPIs semáforo */
-    .kpi-fila { display:flex;align-items:center;gap:12px;background:white;border-radius:14px;padding:12px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
-    .kpi-emoji { font-size:20px; }
-    .kpi-info { flex:1; }
-    .kpi-nombre { font-size:13px;font-weight:800;color:#1e293b; }
-    .kpi-detalle { font-size:12px;color:#64748b;margin-top:2px; }
-    .kpi-actual { text-align:right;font-size:14px;font-weight:900;color:#1e293b; }
+    .seccion { margin-bottom: 22px; }
+    .seccion-header { font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 10px; }
 
-    /* Vendedores */
-    .vend-card { background:white;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.05); }
-    .vend-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:8px; }
-    .vend-nombre { font-size:15px;font-weight:800;color:#1e293b; }
-    .vend-monto { font-size:16px;font-weight:900;color:#1E3A8A; }
-    .vend-stats { display:flex;gap:14px;font-size:12px;color:#64748b;margin-bottom:8px; }
-    .vend-comentario { font-size:12px;color:#475569;background:#f8fafc;border-radius:10px;padding:8px 10px; }
+    .resumen-card { background: white; border-radius: 16px; padding: 18px 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); font-size: 14px; line-height: 1.6; color: #334155; }
 
-    .empty { text-align:center;padding:24px 16px;color:#94a3b8;font-size:13px;background:white;border-radius:14px; }
+    .alerta-card { background: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 4px solid #94a3b8; }
+    .alerta-card.critico { border-left-color: #ef4444; background: #fef2f2; }
+    .alerta-card.atencion { border-left-color: #f59e0b; background: #fffbeb; }
+    .alerta-card.infoNivel { border-left-color: #3b82f6; background: #eff6ff; }
+    .alerta-msg { font-size: 13px; font-weight: 800; color: #1e293b; }
+    .alerta-causa { font-size: 12px; color: #64748b; margin-top: 3px; }
 
-    @media (min-width:768px){
-      .ceo-score-detalle { grid-template-columns:repeat(4,1fr); }
-      .pred-grid { grid-template-columns:repeat(4,1fr); }
+    .oport-card { background: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 4px solid #10b981; }
+    .oport-msg { font-size: 13px; font-weight: 800; color: #1e293b; }
+    .oport-det { font-size: 12px; color: #059669; margin-top: 3px; font-weight: 700; }
+
+    .comp-fila { background: white; border-radius: 14px; padding: 12px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .comp-nombre { font-size: 13px; font-weight: 700; color: #475569; }
+    .comp-valor { text-align: right; }
+    .comp-actual { font-size: 15px; font-weight: 900; color: #1e293b; }
+    .comp-pct { font-size: 12px; font-weight: 800; margin-top: 2px; }
+    .comp-pct.up { color: #10b981; }
+    .comp-pct.down { color: #ef4444; }
+    .comp-pct.eq { color: #94a3b8; }
+
+    .pred-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pred-card { background: white; border-radius: 14px; padding: 14px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .pred-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+    .pred-valor { font-size: 17px; font-weight: 900; color: #1E3A8A; margin-top: 4px; }
+    .pred-confianza { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 8px; }
+
+    .kpi-fila { display: flex; align-items: center; gap: 12px; background: white; border-radius: 14px; padding: 12px 16px; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .kpi-emoji { font-size: 20px; }
+    .kpi-info { flex: 1; }
+    .kpi-nombre { font-size: 13px; font-weight: 800; color: #1e293b; }
+    .kpi-detalle { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .kpi-actual { text-align: right; font-size: 14px; font-weight: 900; color: #1e293b; }
+
+    .vend-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .vend-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .vend-nombre { font-size: 15px; font-weight: 800; color: #1e293b; }
+    .vend-monto { font-size: 16px; font-weight: 900; color: #1E3A8A; }
+    .vend-stats { display: flex; gap: 14px; font-size: 12px; color: #64748b; margin-bottom: 8px; }
+    .vend-comentario { font-size: 12px; color: #475569; background: #f8fafc; border-radius: 10px; padding: 8px 10px; }
+
+    .rec-item { display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 14px; padding: 12px 16px; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); gap: 10px; }
+    .rec-texto { font-size: 12.5px; font-weight: 700; color: #1e293b; }
+    .rec-estrellas { font-size: 12px; color: #f59e0b; white-space: nowrap; }
+
+    .empty { text-align: center; padding: 24px 16px; color: #94a3b8; font-size: 13px; background: white; border-radius: 14px; }
+
+    @media (max-width: 640px) {
+      .bento-row-2 { grid-template-columns: 1fr; }
+      .bento-row-4 { grid-template-columns: repeat(2,1fr); }
+      .pred-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
   <link rel="stylesheet" href="estetica.css" />
@@ -130,64 +168,90 @@
       </nav>
 
       <main class="main">
-        <div class="mes-selector">
-          <button class="mes-btn" onclick="cambiarMes(-1)">‹</button>
-          <span class="mes-nombre" id="mes-label">—</span>
-          <button class="mes-btn" id="btn-mes-next" onclick="cambiarMes(1)">›</button>
+        <div class="intel-header">
+          <div class="intel-mes">
+            <button class="intel-mes-btn" onclick="cambiarMes(-1)">‹</button>
+            <span class="intel-mes-nombre" id="mes-label">—</span>
+            <button class="intel-mes-btn" id="btn-mes-next" onclick="cambiarMes(1)">›</button>
+          </div>
+          <button class="btn-exportar-informe" id="btn-exportar" onclick="exportarInformeImagen()">📤 Exportar</button>
         </div>
 
         <div id="sin-datos-aviso" style="display:none" class="empty">Este mes todavía no tiene operaciones cargadas.</div>
 
         <div id="contenido-informe">
-          <div class="seccion">
-            <div class="seccion-header">🎯 CEO Score</div>
-            <div id="sec-ceo-score"></div>
+
+          <!-- ══ DASHBOARD: DE UN VISTAZO ══ -->
+          <div id="bento-dashboard">
+
+            <div class="bento-row-2">
+              <div class="bento-card">
+                <div class="bento-titulo">🎯 CEO Score</div>
+                <div id="sec-ceo-score"></div>
+              </div>
+              <div class="bento-card">
+                <div class="bento-titulo">🚨 Alertas por prioridad</div>
+                <div id="sec-alertas-mini"></div>
+              </div>
+            </div>
+
+            <div class="bento-row-4" id="sec-kpis-mini"></div>
+
+            <div class="bento-row-2">
+              <div class="bento-card">
+                <div class="bento-titulo">📈 Facturación diaria</div>
+                <div class="chart-wrap-dias"><canvas id="chart-dias"></canvas></div>
+              </div>
+              <div class="bento-card">
+                <div class="bento-titulo">📋 Plan de acción</div>
+                <div id="sec-plan-mini"></div>
+              </div>
+            </div>
+
+            <div class="bento-card" style="margin-bottom:12px">
+              <div class="bento-titulo">👥 Vendedores</div>
+              <div id="sec-vendedores-mini"></div>
+            </div>
+
+          </div>
+          <!-- ══ FIN DASHBOARD ══ -->
+
+          <button class="detalle-toggle" onclick="toggleDetalle()">
+            <span>📖 Ver informe completo</span>
+            <span id="detalle-arrow">▼</span>
+          </button>
+
+          <div class="detalle-panel" id="detalle-panel">
+            <div class="seccion">
+              <div class="seccion-header">📝 Resumen ejecutivo</div>
+              <div id="sec-resumen"></div>
+            </div>
+            <div class="seccion">
+              <div class="seccion-header">💡 Oportunidades</div>
+              <div id="sec-oportunidades"></div>
+            </div>
+            <div class="seccion">
+              <div class="seccion-header">📊 Comparación</div>
+              <div id="sec-comparacion"></div>
+            </div>
+            <div class="seccion">
+              <div class="seccion-header">🔮 Predicción de cierre</div>
+              <div id="sec-prediccion"></div>
+            </div>
+            <div class="seccion">
+              <div class="seccion-header">🚦 KPIs con semáforo</div>
+              <div id="sec-kpis"></div>
+            </div>
+            <div class="seccion">
+              <div class="seccion-header">👥 Detalle por vendedor</div>
+              <div id="sec-vendedores"></div>
+            </div>
+            <div class="seccion">
+              <div class="seccion-header">🤖 Todas las recomendaciones</div>
+              <div id="sec-recomendaciones"></div>
+            </div>
           </div>
 
-          <div class="seccion">
-            <div class="seccion-header">📝 Resumen ejecutivo</div>
-            <div id="sec-resumen"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">🚨 Alertas</div>
-            <div id="sec-alertas"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">💡 Oportunidades</div>
-            <div id="sec-oportunidades"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">📋 Plan de acción</div>
-            <div id="sec-plan"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">📊 Comparación</div>
-            <div id="sec-comparacion"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">🔮 Predicción de cierre</div>
-            <div id="sec-prediccion"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">🚦 KPIs con semáforo</div>
-            <div id="sec-kpis"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">👥 Detalle por vendedor</div>
-            <div id="sec-vendedores"></div>
-          </div>
-
-          <div class="seccion">
-            <div class="seccion-header">🤖 Recomendaciones automáticas</div>
-            <div id="sec-recomendaciones"></div>
-          </div>
         </div>
       </main>
 
@@ -209,10 +273,19 @@
 
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     function formatPesos(n){ if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }
+    function formatPesosCorto(n){ if(!n||isNaN(n)) return '$0'; const abs=Math.abs(n); if(abs>=1000000) return '$'+(n/1000000).toFixed(2)+'M'; if(abs>=1000) return '$'+Math.round(n/1000)+'K'; return formatPesos(n); }
 
     let anioSel = new Date().getFullYear();
-    let mesSel = new Date().getMonth(); // 0-indexed
+    let mesSel = new Date().getMonth();
     let empleados = [];
+    let detalleAbierto = false;
+    let chartRadar = null, chartDias = null;
+
+    function toggleDetalle(){
+      detalleAbierto = !detalleAbierto;
+      document.getElementById('detalle-panel').classList.toggle('visible', detalleAbierto);
+      document.getElementById('detalle-arrow').textContent = detalleAbierto ? '▲' : '▼';
+    }
 
     function cambiarMes(dir){
       mesSel += dir;
@@ -259,7 +332,6 @@
       const anterior = await cargarMesCompleto(mesAntAnio, mesAntMes);
       const anioPasado = await cargarMesCompleto(anioSel-1, mesSel);
 
-      // Histórico para objetivos automáticos: hasta 3 meses antes del seleccionado
       const historico = [];
       let hAnio = mesAntAnio, hMes = mesAntMes;
       for(let i=0; i<3; i++){
@@ -273,7 +345,8 @@
         kpisActual: calcularKPIsMes(actual.registros, actual.gastos, empleados),
         kpisAnterior: anterior.registros.length ? calcularKPIsMes(anterior.registros, anterior.gastos, empleados) : null,
         kpisAnioPasado: anioPasado.registros.length ? calcularKPIsMes(anioPasado.registros, anioPasado.gastos, empleados) : null,
-        historico
+        historico,
+        serieDiaria: calcularSerieDiaria(actual.registros, anioSel, mesSel)
       };
       OlvisionCache.set(cacheKey, datos);
       pintarInforme(datos);
@@ -287,13 +360,15 @@
       if(kpis.cantOrdenes === 0 && kpis.cantOpticas === 0 && (!datos.registrosActual || !datos.registrosActual.length)){
         contenido.style.display = 'none';
         aviso.style.display = 'block';
+        document.getElementById('btn-exportar').disabled = true;
         return;
       }
       contenido.style.display = 'block';
       aviso.style.display = 'none';
+      document.getElementById('btn-exportar').disabled = false;
 
       const objetivosAuto = calcularObjetivosAutomaticos(datos.historico);
-      const objetivos = resolverObjetivos(objetivosAuto, null); // futuro: overrides manuales desde configuracion
+      const objetivos = resolverObjetivos(objetivosAuto, null);
       const comparacion = compararMeses(kpis, datos.kpisAnterior, datos.kpisAnioPasado);
       const ceoScore = calcularCEOScore(kpis, objetivos, null);
 
@@ -306,11 +381,15 @@
       const prediccion = predecirCierre(kpis, new Date(), anioSel, mesSel);
       const resumen = generarResumen(kpis, ceoScore, alertas, comparacion);
 
-      renderCeoScore(ceoScore);
+      renderCeoScoreMini(ceoScore);
+      renderAlertasMini(alertas);
+      renderKPIsMini(kpis);
+      renderChartDias(datos.serieDiaria);
+      renderPlanMini(plan);
+      renderVendedoresMini(kpis);
+
       renderResumen(resumen);
-      renderAlertas(alertas);
       renderOportunidades(oportunidades);
-      renderPlan(plan);
       renderComparacion(comparacion, datos.kpisAnterior, datos.kpisAnioPasado);
       renderPrediccion(prediccion);
       renderKPIs(kpis, objetivos);
@@ -318,44 +397,107 @@
       renderRecomendaciones(recomendaciones);
     }
 
-    function renderCeoScore(ceo){
+    // ═══ DASHBOARD (CUADRANTES) ═══════════════════════════════
+
+    function renderCeoScoreMini(ceo){
       if(ceo.score === null){
         document.getElementById('sec-ceo-score').innerHTML = `<div class="empty">${ceo.explicacion}</div>`;
+        if(chartRadar){ chartRadar.destroy(); chartRadar=null; }
         return;
       }
+      const nivelClase = ceo.nivel.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
       document.getElementById('sec-ceo-score').innerHTML = `
-        <div class="ceo-score-card">
-          <div class="ceo-score-valor">${ceo.emoji} ${ceo.score}</div>
-          <div class="ceo-score-nivel">${ceo.nivel}</div>
-          <div class="ceo-score-exp">${ceo.explicacion}</div>
-          <div class="ceo-score-detalle">
-            ${ceo.detalle.map(d => `<div class="ceo-factor"><div class="ceo-factor-nombre">${d.factor} (${d.peso}%)</div><div class="ceo-factor-barra"><div class="ceo-factor-fill" style="width:${Math.round(d.score)}%"></div></div><div class="ceo-factor-val">${Math.round(d.score)}/100</div></div>`).join('')}
-          </div>
-        </div>`;
+        <div class="score-valor-row">
+          <span class="score-num">${ceo.score}</span>
+          <span class="score-nivel ${nivelClase}">${ceo.emoji} ${ceo.nivel}</span>
+        </div>
+        <div class="score-exp">${ceo.explicacion}</div>
+        <div class="chart-wrap-radar"><canvas id="chart-radar"></canvas></div>`;
+
+      if(chartRadar) chartRadar.destroy();
+      chartRadar = new Chart(document.getElementById('chart-radar'), {
+        type: 'radar',
+        data: {
+          labels: ceo.detalle.map(d=>d.factor),
+          datasets: [{
+            data: ceo.detalle.map(d=>Math.round(d.score)),
+            backgroundColor: 'rgba(30,58,138,0.12)',
+            borderColor: '#1E3A8A',
+            pointBackgroundColor: '#1E3A8A',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display:false } },
+          scales: {
+            r: { min:0, max:100, ticks:{ display:false }, grid:{ color:'#e2e8f0' }, angleLines:{ color:'#e2e8f0' }, pointLabels:{ font:{ size:10 }, color:'#64748b' } }
+          }
+        }
+      });
     }
+
+    const RANGO_NIVEL = { 'crítico':0, 'atención':1, 'info':2 };
+    function renderAlertasMini(alertas){
+      const ordenadas = [...alertas].sort((a,b)=>(RANGO_NIVEL[a.nivel]??3)-(RANGO_NIVEL[b.nivel]??3));
+      const emoji = n => n==='crítico' ? '🔴' : n==='atención' ? '🟠' : '🔵';
+      const clase = n => n==='crítico' ? 'critico' : n==='atención' ? 'atencion' : 'infoNivel';
+      document.getElementById('sec-alertas-mini').innerHTML = ordenadas.length===0
+        ? '<div class="empty">✅ Sin alertas este mes.</div>'
+        : `<div class="alertas-mini-lista">${ordenadas.map(a=>`<div class="alerta-mini ${clase(a.nivel)}"><span class="alerta-mini-emoji">${emoji(a.nivel)}</span><span>${a.mensaje}</span></div>`).join('')}</div>`;
+    }
+
+    function renderKPIsMini(kpis){
+      document.getElementById('sec-kpis-mini').innerHTML = `
+        <div class="metric-card"><div class="metric-label">Facturación</div><div class="metric-valor">${formatPesosCorto(kpis.facturacion)}</div></div>
+        <div class="metric-card"><div class="metric-label">Ticket</div><div class="metric-valor">${formatPesos(kpis.ticketPromedio)}</div></div>
+        <div class="metric-card"><div class="metric-label">Órdenes</div><div class="metric-valor">${kpis.cantOrdenes}</div></div>
+        <div class="metric-card"><div class="metric-label">Dependencia</div><div class="metric-valor ${kpis.dependenciaPct>=40?'rojo':''}">${kpis.dependenciaPct.toFixed(0)}%</div></div>`;
+    }
+
+    function renderChartDias(serie){
+      if(chartDias) chartDias.destroy();
+      if(!serie || !serie.length) return;
+      chartDias = new Chart(document.getElementById('chart-dias'), {
+        type: 'bar',
+        data: {
+          labels: serie.map(d=>d.dia),
+          datasets: [{ data: serie.map(d=>d.monto), backgroundColor:'#1E3A8A', borderRadius:3, maxBarThickness:14 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => formatPesos(ctx.parsed.y) } } },
+          scales: {
+            x: { grid:{ display:false }, ticks:{ color:'#94a3b8', font:{ size:9 }, maxRotation:0, autoSkip:true, maxTicksLimit:10 } },
+            y: { display:false }
+          }
+        }
+      });
+    }
+
+    function renderPlanMini(plan){
+      document.getElementById('sec-plan-mini').innerHTML = plan.length===0
+        ? '<div class="empty">Sin acciones prioritarias.</div>'
+        : plan.slice(0,5).map(p=>`<div class="plan-mini-item"><span class="plan-mini-texto">${p.mensaje}</span><span class="plan-mini-puntos">${'●'.repeat(p.impacto)}${'○'.repeat(5-p.impacto)}</span></div>`).join('');
+    }
+
+    function renderVendedoresMini(kpis){
+      const vs = (kpis.rankingVendedores||[]).slice(0,4);
+      document.getElementById('sec-vendedores-mini').innerHTML = vs.length===0
+        ? '<div class="empty">Sin ventas asignadas a vendedores.</div>'
+        : `<div class="vend-mini-grid">${vs.map(v=>`<div class="vend-mini-card"><div class="vend-mini-nombre">${v.nombre}</div><div class="vend-mini-monto">${formatPesosCorto(v.monto)}</div><div class="vend-mini-pct ${v.pct>=40?'alto':''}">${v.pct.toFixed(0)}% del total</div></div>`).join('')}</div>`;
+    }
+
+    // ═══ INFORME COMPLETO ═════════════════════════════════════
 
     function renderResumen(texto){
       document.getElementById('sec-resumen').innerHTML = `<div class="resumen-card">${texto}</div>`;
-    }
-
-    function renderAlertas(alertas){
-      const clase = n => n==='crítico' ? 'critico' : n==='atención' ? 'atencion' : 'infoNivel';
-      const emoji = n => n==='crítico' ? '🔴' : n==='atención' ? '🟠' : '🔵';
-      document.getElementById('sec-alertas').innerHTML = alertas.length===0
-        ? '<div class="empty">✅ No hay alertas este mes.</div>'
-        : alertas.map(a => `<div class="alerta-card ${clase(a.nivel)}"><div class="alerta-msg">${emoji(a.nivel)} ${a.mensaje}</div><div class="alerta-causa">Causa probable: ${a.causa}</div></div>`).join('');
     }
 
     function renderOportunidades(oportunidades){
       document.getElementById('sec-oportunidades').innerHTML = oportunidades.length===0
         ? '<div class="empty">Sin oportunidades detectadas este mes.</div>'
         : oportunidades.map(o => `<div class="oport-card"><div class="oport-msg">${o.mensaje}</div><div class="oport-det">→ ${o.detalle}</div></div>`).join('');
-    }
-
-    function renderPlan(plan){
-      document.getElementById('sec-plan').innerHTML = plan.length===0
-        ? '<div class="empty">Sin acciones prioritarias este mes.</div>'
-        : plan.map((p,i) => `<div class="plan-item"><div class="plan-num">${i+1}</div><div><div class="plan-texto">${p.mensaje}</div><div class="plan-estrellas">${'★'.repeat(p.impacto)}${'☆'.repeat(5-p.impacto)}</div></div></div>`).join('');
     }
 
     function renderComparacion(comp, anterior, anioPasado){
@@ -368,20 +510,20 @@
       if(!anterior){
         html += '<div class="empty">No hay datos del mes anterior para comparar.</div>';
       } else {
-        html += '<div class="comp-grid">' + Object.keys(nombres).map(k => {
+        html += Object.keys(nombres).map(k => {
           const c = comp[k]; if(!c) return '';
           const valorFmt = esMoneda(k) ? formatPesos(c.valorActual) : Math.round(c.valorActual);
           return `<div class="comp-fila"><span class="comp-nombre">${nombres[k]} vs mes anterior</span><div class="comp-valor"><div class="comp-actual">${valorFmt}</div><div class="comp-pct ${claseP(c.direccion)}">${flecha(c.direccion)} ${Math.abs(c.pct).toFixed(0)}%</div></div></div>`;
-        }).join('') + '</div>';
+        }).join('');
       }
       if(anioPasado && comp.vsAnioPasado){
-        html += '<div style="margin-top:12px" class="comp-grid">' + Object.keys(nombres).map(k => {
+        html += Object.keys(nombres).map(k => {
           const c = comp.vsAnioPasado[k]; if(!c) return '';
           const valorFmt = esMoneda(k) ? formatPesos(c.valorActual) : Math.round(c.valorActual);
           return `<div class="comp-fila"><span class="comp-nombre">${nombres[k]} vs mismo mes año pasado</span><div class="comp-valor"><div class="comp-actual">${valorFmt}</div><div class="comp-pct ${claseP(c.direccion)}">${flecha(c.direccion)} ${Math.abs(c.pct).toFixed(0)}%</div></div></div>`;
-        }).join('') + '</div>';
+        }).join('');
       } else {
-        html += '<div class="empty" style="margin-top:10px">No hay datos del mismo mes del año pasado para comparar.</div>';
+        html += '<div class="empty">No hay datos del mismo mes del año pasado para comparar.</div>';
       }
       document.getElementById('sec-comparacion').innerHTML = html;
     }
@@ -436,7 +578,24 @@
     function renderRecomendaciones(recs){
       document.getElementById('sec-recomendaciones').innerHTML = recs.length===0
         ? '<div class="empty">Sin recomendaciones automáticas este mes.</div>'
-        : recs.map(r => `<div class="plan-item"><div class="plan-num">${'★'.repeat(r.impacto)}</div><div class="plan-texto" style="font-weight:600">${r.mensaje}</div></div>`).join('');
+        : recs.map(r => `<div class="rec-item"><span class="rec-texto">${r.mensaje}</span><span class="rec-estrellas">${'★'.repeat(r.impacto)}${'☆'.repeat(5-r.impacto)}</span></div>`).join('');
+    }
+
+    // ═══ EXPORTAR IMAGEN DEL DASHBOARD ═════════════════════════
+    async function exportarInformeImagen(){
+      const btn = document.getElementById('btn-exportar');
+      const original = btn.textContent;
+      btn.textContent = '⏳ Generando...'; btn.disabled = true;
+      try{
+        const canvas = await html2canvas(document.getElementById('bento-dashboard'), { scale:2, backgroundColor:'#f8fafc', useCORS:true, logging:false });
+        const link = document.createElement('a');
+        link.download = `olvision-inteligencia-${anioSel}-${String(mesSel+1).padStart(2,'0')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }catch(e){
+        alert('Error al generar la imagen: '+e.message);
+      }
+      btn.textContent = original; btn.disabled = false;
     }
 
     cargarTodo();
