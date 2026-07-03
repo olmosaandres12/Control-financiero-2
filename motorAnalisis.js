@@ -9,20 +9,27 @@
 //   calcularKPIsMes()
 //   calcularObjetivosAutomaticos() / resolverObjetivos()
 //   calcularCEOScore()
+//   ajustarCoherenciaScore()          [nuevo]
 //   generarResumen()
 //   detectarAlertas()
 //   detectarOportunidades()
 //   generarPlanAccion()
 //   generarRecomendaciones()
 //   compararMeses()
+//   compararConPromedio()             [nuevo]
+//   calcularCostoOportunidad()        [nuevo]
+//   detectarMemoriaHistorica()        [nuevo]
+//   generarPortadaEjecutiva()         [nuevo]
 //   predecirCierre()
 //   semaforoKPI()
 //   comentarioVendedor()
+//   calcularSerieDiaria()
 //
-// Depende de REGLAS_NEGOCIO, definido en reglasNegocio.js
+// Depende de REGLAS_NEGOCIO y REGLAS_RACHAS, definidos en reglasNegocio.js
 // (cargar ese script ANTES que este, o después — el orden no
 // importa porque las reglas se leen recién cuando se ejecuta
-// detectarAlertas()/generarRecomendaciones(), no al cargar el archivo).
+// detectarAlertas()/generarRecomendaciones()/detectarMemoriaHistorica(),
+// no al cargar el archivo).
 // ═══════════════════════════════════════════════════════════════
 
 // ── Constantes de negocio (únicas, no repetidas por reglas) ──────
@@ -195,7 +202,10 @@ function resolverObjetivos(objetivosAuto, overridesManual) {
 }
 
 // ── 3. CEO Score ────────────────────────────────────────────────
-function calcularCEOScore(kpis, objetivos, pesos) {
+// comparacion (opcional): resultado de compararMeses(), para citar % concretos
+// en la explicación ("bajó por la caída de facturación (-22%)..."). Si no se
+// pasa, la explicación queda igual que antes (compatible con llamadas viejas).
+function calcularCEOScore(kpis, objetivos, pesos, comparacion) {
   pesos = pesos || PESOS_CEO_SCORE_DEFAULT;
   if (!objetivos) {
     return {
@@ -212,13 +222,13 @@ function calcularCEOScore(kpis, objetivos, pesos) {
   const scoreGastos = clampIA(100 - Math.max(0, (kpis.gastosPct - 25)) * 3, 0, 100); // objetivo interno: gastos <=25%
 
   const detalle = [
-    { factor: 'Facturación', peso: pesos.facturacion, score: scoreFacturacion },
-    { factor: 'Órdenes', peso: pesos.ordenes, score: scoreOrdenes },
-    { factor: 'Ticket promedio', peso: pesos.ticket, score: scoreTicket },
-    { factor: 'Dependencia comercial', peso: pesos.dependencia, score: scoreDependencia },
-    { factor: 'Mix de productos', peso: pesos.mix, score: scoreMix },
-    { factor: 'Cobranza', peso: pesos.cobranza, score: scoreCobranza },
-    { factor: 'Gastos', peso: pesos.gastos, score: scoreGastos }
+    { factor: 'Facturación', peso: pesos.facturacion, score: scoreFacturacion, campoComparacion: 'facturacion' },
+    { factor: 'Órdenes', peso: pesos.ordenes, score: scoreOrdenes, campoComparacion: 'cantOrdenes' },
+    { factor: 'Ticket promedio', peso: pesos.ticket, score: scoreTicket, campoComparacion: 'ticketPromedio' },
+    { factor: 'Dependencia comercial', peso: pesos.dependencia, score: scoreDependencia, campoComparacion: null },
+    { factor: 'Mix de productos', peso: pesos.mix, score: scoreMix, campoComparacion: null },
+    { factor: 'Cobranza', peso: pesos.cobranza, score: scoreCobranza, campoComparacion: 'cobrado' },
+    { factor: 'Gastos', peso: pesos.gastos, score: scoreGastos, campoComparacion: 'gastosAdmin', invertido: true }
   ];
   const score = Math.round(detalle.reduce((s, d) => s + (d.peso / 100 * d.score), 0));
 
@@ -229,11 +239,83 @@ function calcularCEOScore(kpis, objetivos, pesos) {
   else { nivel = 'Crítico'; emoji = '🔴'; }
 
   const factorMasDebil = [...detalle].sort((a, b) => a.score - b.score)[0];
-  const fuertes = detalle.filter(d => d.score >= 70).map(d => d.factor);
-  const explicacion = `El puntaje se apoya en ${fuertes.length ? fuertes.join(', ') : 'ningún factor fuerte todavía'}. `
-    + `El punto más débil es "${factorMasDebil.factor}" (${Math.round(factorMasDebil.score)}/100).`;
+  const fuertes = detalle.filter(d => d.score >= 70);
+  const debiles = detalle.filter(d => d.score < 50);
+
+  // Un factor "fuerte" (score alto contra objetivo) puede igual estar en mala
+  // tendencia si el objetivo automático quedó bajo. No tiene sentido decir que
+  // "compensa" algo si en realidad también viene cayendo (o, para Gastos —
+  // donde menos es mejor— si viene subiendo). Se filtran antes de armar la frase.
+  const feo = f => {
+    const c = f.campoComparacion && comparacion ? comparacion[f.campoComparacion] : null;
+    if (!c) return false;
+    return f.invertido ? c.direccion === 'up' : c.direccion === 'down';
+  };
+  const fuertesEstables = fuertes.filter(f => !feo(f));
+
+  const conVariacion = factores => factores.slice(0, 3).map(f => {
+    const c = f.campoComparacion && comparacion ? comparacion[f.campoComparacion] : null;
+    if (c && c.direccion !== '=') {
+      const signo = c.direccion === 'down' ? '-' : '+';
+      return `${f.factor.toLowerCase()} (${signo}${Math.abs(c.pct).toFixed(0)}%)`;
+    }
+    return f.factor.toLowerCase();
+  });
+
+  const joinNatural = arr => {
+    if (arr.length === 0) return '';
+    if (arr.length === 1) return arr[0];
+    if (arr.length === 2) return arr[0] + ' y ' + arr[1];
+    return arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1];
+  };
+
+  let explicacion;
+  if (debiles.length) {
+    explicacion = `El puntaje ${score < 60 ? 'bajó' : 'se ve afectado'} principalmente por ${joinNatural(conVariacion(debiles))}.`;
+    if (fuertesEstables.length) explicacion += ` ${fuertesEstables.length === 1 ? 'Compensa' : 'Compensan'} parcialmente ${joinNatural(conVariacion(fuertesEstables))}.`;
+  } else if (fuertesEstables.length) {
+    explicacion = `El puntaje se apoya en ${joinNatural(conVariacion(fuertesEstables))}.`;
+  } else {
+    explicacion = 'El puntaje refleja un desempeño parejo, sin factores que se destaquen especialmente.';
+  }
+  explicacion += ` El punto más débil es "${factorMasDebil.factor}" (${Math.round(factorMasDebil.score)}/100).`;
 
   return { score, nivel, emoji, detalle, explicacion };
+}
+
+// ── 3b. Coherencia Score ↔ Alertas ─────────────────────────────
+// Nunca sube el nivel mostrado, solo lo puede bajar (techo). El número del
+// score NO se toca — solo la etiqueta (Excelente/Bueno/Atención/Crítico) para
+// que nunca diga "Excelente" habiendo alertas críticas activas.
+// Llamar DESPUÉS de tener las alertas ya calculadas: 
+//   const ceo = calcularCEOScore(...); 
+//   const alertas = detectarAlertas({...ctx, ceoScore: ceo});
+//   const ceoFinal = ajustarCoherenciaScore(ceo, alertas);
+const _NIVEL_SCORE_RANK = { 'Crítico': 0, 'Atención': 1, 'Bueno': 2, 'Excelente': 3 };
+const _RANK_NIVEL_SCORE = ['Crítico', 'Atención', 'Bueno', 'Excelente'];
+const _RANK_EMOJI_SCORE = ['🔴', '🟠', '🟡', '🟢'];
+
+function ajustarCoherenciaScore(ceoScore, alertas) {
+  if (!ceoScore || ceoScore.score === null) return ceoScore;
+  const criticas = (alertas || []).filter(a => a.nivel === 'crítico').length;
+  const altas = (alertas || []).filter(a => a.nivel === 'alto').length;
+
+  let techoRank = 3; // sin techo (puede ser Excelente)
+  if (criticas >= 2) techoRank = 1;       // como mucho "Atención"
+  else if (criticas === 1) techoRank = 2; // como mucho "Bueno"
+  else if (altas >= 3) techoRank = 2;     // como mucho "Bueno"
+
+  const rankOriginal = _NIVEL_SCORE_RANK[ceoScore.nivel] ?? 3;
+  const rankFinal = Math.min(rankOriginal, techoRank);
+  if (rankFinal === rankOriginal) return { ...ceoScore, nivelAjustado: false };
+
+  return {
+    ...ceoScore,
+    nivel: _RANK_NIVEL_SCORE[rankFinal],
+    emoji: _RANK_EMOJI_SCORE[rankFinal],
+    nivelAjustado: true,
+    explicacion: ceoScore.explicacion + ` El nivel mostrado se ajustó por la cantidad de alertas activas (${criticas} crítica${criticas !== 1 ? 's' : ''}${altas ? `, ${altas} de impacto alto` : ''}).`
+  };
 }
 
 // ── 4. Resumen ejecutivo (texto por reglas, sin IA) ────────────
@@ -271,7 +353,8 @@ function detectarAlertas(ctx) {
   if (typeof REGLAS_NEGOCIO === 'undefined') return [];
   return REGLAS_NEGOCIO.filter(r => r.alerta && _evaluarRegla(r, ctx)).map(r => ({
     id: r.id,
-    nivel: r.alerta.nivel,
+    nivel: r.nivel,       // 'crítico' | 'alto' | 'medio' | 'informativo'
+    impacto: r.impacto,   // 1-5, misma escala que usa el plan de acción
     mensaje: typeof r.alerta.mensaje === 'function' ? r.alerta.mensaje(ctx) : r.alerta.mensaje,
     causa: typeof r.alerta.causa === 'function' ? r.alerta.causa(ctx) : r.alerta.causa
   }));
@@ -282,7 +365,10 @@ function generarRecomendaciones(ctx) {
   return REGLAS_NEGOCIO.filter(r => r.recomendacion && _evaluarRegla(r, ctx)).map(r => ({
     id: r.id,
     mensaje: typeof r.recomendacion.mensaje === 'function' ? r.recomendacion.mensaje(ctx) : r.recomendacion.mensaje,
-    impacto: r.recomendacion.impacto
+    impacto: r.impacto,             // ★ 1-5
+    dificultad: r.dificultad,       // 1-5 (1 = fácil/rápido, 5 = difícil/largo)
+    tiempoEstimado: r.tiempoEstimado,
+    nivel: r.nivel
   })).sort((a, b) => b.impacto - a.impacto);
 }
 
@@ -296,7 +382,10 @@ function generarPlanAccion(ctx, maxItems) {
 }
 
 // ── 6. Oportunidades (estimaciones "qué pasaría si") ───────────
-function detectarOportunidades(kpis) {
+// maxItems opcional: si se pasa, devuelve solo las N de mayor impacto
+// (pedido: "mostrar siempre las tres de mayor impacto"). Sin el parámetro,
+// devuelve todas — mismo comportamiento que antes, no rompe nada existente.
+function detectarOportunidades(kpis, maxItems) {
   const oportunidades = [];
   if (kpis.ticketPromedio > 0 && kpis.cantOrdenes > 0) {
     const extra = kpis.ticketPromedio * 0.10 * kpis.cantOrdenes;
@@ -315,7 +404,8 @@ function detectarOportunidades(kpis) {
     const extra = contacto.monto * 0.15;
     oportunidades.push({ mensaje: 'Si crecieran un 15% las ventas de lentes de contacto', estimado: extra, detalle: `ingreso adicional estimado de ${formatPesosIA(extra)}` });
   }
-  return oportunidades;
+  oportunidades.sort((a, b) => b.estimado - a.estimado);
+  return maxItems ? oportunidades.slice(0, maxItems) : oportunidades;
 }
 
 // ── 7. Comparación de meses ─────────────────────────────────────
@@ -338,6 +428,47 @@ function compararMeses(actual, anterior, mismoMesAnioPasado) {
   return { ...(vsAnterior || {}), vsAnioPasado: mismoMesAnioPasado ? comparar(actual, mismoMesAnioPasado) : null };
 }
 
+// ── 7b. Comparación contra el promedio de N meses (Tendencias) ─
+// historico: array de calcularKPIsMes(), más reciente primero (mismo orden
+// que ya arma inteligencia.html para calcularObjetivosAutomaticos).
+// cantMeses: 3 o 6, según qué tendencia se pida.
+// Reutiliza los mismos campos que compararMeses, sin duplicar la fórmula.
+function compararConPromedio(actual, historico, cantMeses) {
+  if (!historico || !historico.length) return null;
+  const ultimos = historico.slice(0, cantMeses);
+  if (!ultimos.length) return null;
+  const campos = ['facturacion', 'ticketPromedio', 'cantOrdenes', 'cobrado', 'gastosAdmin'];
+  const out = {};
+  campos.forEach(c => {
+    const prom = ultimos.reduce((s, m) => s + (m[c] || 0), 0) / ultimos.length;
+    const va = actual[c] || 0;
+    let pct = 0, direccion = '=';
+    if (prom > 0) pct = ((va - prom) / prom) * 100;
+    else if (va > 0) pct = 100;
+    if (pct > 1) direccion = 'up'; else if (pct < -1) direccion = 'down';
+    out[c] = { pct, direccion, promedio: prom, valorActual: va };
+  });
+  return out;
+}
+
+// ── 7c. Costo de oportunidad ────────────────────────────────────
+// "Cuánto se dejó de facturar por vender con un ticket más bajo que el
+// promedio reciente." Solo aparece cuando hay una caída real (si no, null).
+function calcularCostoOportunidad(kpis, historico) {
+  if (!historico || !historico.length || kpis.cantOrdenes <= 0) return null;
+  const ultimos3 = historico.slice(0, 3);
+  const promTicket = ultimos3.reduce((s, m) => s + (m.ticketPromedio || 0), 0) / ultimos3.length;
+  if (promTicket <= 0 || kpis.ticketPromedio >= promTicket) return null;
+  const gapTicket = promTicket - kpis.ticketPromedio;
+  const monto = gapTicket * kpis.cantOrdenes;
+  return {
+    monto,
+    ticketPromedioHistorico: promTicket,
+    ticketActual: kpis.ticketPromedio,
+    mensaje: `Este mes se dejaron de facturar aproximadamente ${formatPesosIA(monto)} debido a la disminución del ticket promedio respecto al promedio de los últimos tres meses.`
+  };
+}
+
 // ── 8. Predicción de cierre ─────────────────────────────────────
 function predecirCierre(kpis, fechaHoy, anio, mes) {
   const diasEnMes = new Date(anio, mes + 1, 0).getDate();
@@ -355,12 +486,17 @@ function predecirCierre(kpis, fechaHoy, anio, mes) {
   else if (pctTranscurrido >= 0.7) confianza = 'alta';
   else if (pctTranscurrido >= 0.3) confianza = 'media';
 
+  // confianzaPct: versión numérica (0-100) del mismo concepto, para mostrar
+  // "Confianza 91%" como pide el informe ejecutivo. Se agrega sin tocar
+  // `confianza` (texto) para no romper la pantalla que ya está en producción.
+  const confianzaPct = !esMesEnCurso ? 99 : Math.round(Math.min(97, 35 + pctTranscurrido * 65));
+
   return {
     esMesEnCurso,
     facturacionEstimada: Math.round(ritmoFacturacion * diasEnMes),
     ordenesEstimadas: Math.round(ritmoOrdenes * diasEnMes),
     cobradoEstimado: Math.round(ritmoCobrado * diasEnMes),
-    confianza, diasTranscurridos: diaActual, diasEnMes,
+    confianza, confianzaPct, diasTranscurridos: diaActual, diasEnMes,
     utilidadEstimada: null // no disponible: requiere datos de costo por venta
   };
 }
@@ -403,4 +539,60 @@ function calcularSerieDiaria(registrosMes, anio, mes) {
   return Object.keys(porDia).sort().map(fecha => ({
     fecha, dia: parseInt(fecha.split('-')[2], 10), monto: porDia[fecha]
   }));
+}
+
+// ── 10. Memoria histórica (rachas de varios meses) ─────────────
+// serieHistorica: array de calcularKPIsMes(), ORDENADO DE MÁS VIEJO A MÁS
+// NUEVO, con el mes actual como último elemento (orden inverso al que usa
+// calcularObjetivosAutomaticos/compararConPromedio — ojo al armarlo).
+// Depende de REGLAS_RACHAS (reglasNegocio.js): cada regla define su propia
+// condición y mensaje, así que agregar una racha nueva no toca esta función.
+function detectarMemoriaHistorica(serieHistorica) {
+  if (typeof REGLAS_RACHAS === 'undefined' || !serieHistorica || serieHistorica.length < 2) return [];
+  const rachas = [];
+  REGLAS_RACHAS.forEach(regla => {
+    let cant = 0;
+    for (let i = serieHistorica.length - 1; i >= 0; i--) {
+      const actual = serieHistorica[i];
+      const anterior = i > 0 ? serieHistorica[i - 1] : null;
+      let cumple;
+      try { cumple = !!regla.condicion(actual, anterior); } catch (e) { cumple = false; }
+      if (cumple) cant++; else break;
+    }
+    if (cant >= (regla.minMeses || 3)) {
+      rachas.push({ id: regla.id, meses: cant, mensaje: regla.mensaje(cant) });
+    }
+  });
+  return rachas;
+}
+
+// ── 11. Portada ejecutiva ───────────────────────────────────────
+// Pura composición: no calcula nada nuevo, solo arma un resumen tipo "informe
+// gerencial" con datos que ya salieron de calcularCEOScore/detectarAlertas/
+// generarPlanAccion. Llamar con el score YA ajustado por ajustarCoherenciaScore.
+function generarPortadaEjecutiva(kpis, ceoScoreAjustado, alertas, plan, mesLabel) {
+  const loMejor = [];
+  if (kpis.cobranzaPct >= 85) loMejor.push('Buena cobranza.');
+  const factorTicket = (ceoScoreAjustado.detalle || []).find(d => d.factor === 'Ticket promedio');
+  if (factorTicket && factorTicket.score >= 70) loMejor.push('Ticket estable o por encima del objetivo.');
+  if (kpis.mixOpticoPct >= 50) loMejor.push('Buen mix de productos ópticos.');
+  if (kpis.dependenciaPct < 40) loMejor.push('Dependencia comercial bajo control.');
+  if (!loMejor.length) loMejor.push('Sin destacados particulares este mes.');
+
+  const riesgos = (alertas || [])
+    .filter(a => a.nivel === 'crítico' || a.nivel === 'alto')
+    .slice(0, 4)
+    .map(a => a.mensaje);
+
+  const prioridades = (plan || []).slice(0, 3).map(p => p.mensaje);
+
+  return {
+    mesLabel,
+    estadoGeneral: ceoScoreAjustado.nivel,
+    estadoEmoji: ceoScoreAjustado.emoji,
+    score: ceoScoreAjustado.score,
+    loMejor,
+    riesgos: riesgos.length ? riesgos : ['Sin riesgos relevantes detectados este mes.'],
+    prioridades: prioridades.length ? prioridades : ['Sin prioridades puntuales este mes.']
+  };
 }
