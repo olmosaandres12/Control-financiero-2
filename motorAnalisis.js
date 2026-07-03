@@ -382,3 +382,25 @@ function comentarioVendedor(v) {
   if (v.pct < 10) return `${v.nombre} tiene baja participación (${v.pct.toFixed(0)}%). Revisar involucramiento comercial.`;
   return `${v.nombre} tiene una participación equilibrada (${v.pct.toFixed(0)}%).`;
 }
+
+// ── Serie diaria de facturación (para el gráfico de barras por día) ────
+// Devuelve un array con TODOS los días del mes (aunque no haya ventas ese día),
+// para que el gráfico muestre huecos reales en vez de saltarlos.
+function calcularSerieDiaria(registrosMes, anio, mes) {
+  const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+  const porDia = {};
+  for (let d = 1; d <= diasEnMes; d++) {
+    const fecha = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    porDia[fecha] = 0;
+  }
+  (registrosMes || []).forEach(r => {
+    if (parseFloat(r.egreso) > 0) return;
+    const p = normalizarProductoIA(r.producto);
+    if (p === 'Saldo') return;
+    if (porDia[r.fecha] === undefined) return;
+    porDia[r.fecha] += (parseFloat(r.total) || 0);
+  });
+  return Object.keys(porDia).sort().map(fecha => ({
+    fecha, dia: parseInt(fecha.split('-')[2], 10), monto: porDia[fecha]
+  }));
+}
