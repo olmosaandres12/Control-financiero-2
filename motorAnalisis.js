@@ -34,6 +34,11 @@
 
 // ── Constantes de negocio (únicas, no repetidas por reglas) ──────
 const PRODUCTOS_OPTICOS_IA = ['Recetado', 'Reposicion C.', 'PAMI', 'Pase'];
+// Trabajos que requieren vendedor asignado (generan comisión). Distinto de
+// PRODUCTOS_OPTICOS_IA (que se usa para ticket óptico / multifocales) porque
+// acá además entra "Sol" — confirmado por Andrés: los 5 comisionables son
+// recetado, PAMI, reposición de cristales, sol y pases.
+const PRODUCTOS_COMISIONABLES_IA = ['Recetado', 'PAMI', 'Reposicion C.', 'Sol', 'Pase'];
 const TIPO_MULTIFOCAL_IA = 'progresivo'; // confirmado por Andrés: multifocal = progresivo
 
 // Pesos del CEO Score sin el factor Margen (no hay datos de costo todavía).
@@ -106,13 +111,24 @@ function calcularKPIsMes(registrosMes, gastosMes, empleados) {
   const multifocalesPct = conTipo > 0 ? (multifocales / conTipo * 100) : 0;
   const fotocromaticosPct = conTipo > 0 ? (fotocromaticos / conTipo * 100) : 0;
 
-  const sinVendedor = ventasReales.filter(r => !r.vendedor).length;
-  const productosSinVendedorPct = cantOrdenes > 0 ? (sinVendedor / cantOrdenes * 100) : 0;
+  // Cobertura comercial: SOLO entre trabajos comisionables (recetado, PAMI,
+  // reposición de cristales, sol, pases). Los no comisionables (líquidos,
+  // accesorios, reparaciones chicas, etc.) no requieren vendedor y quedan
+  // completamente afuera de este cálculo — antes se mezclaba todo junto y
+  // generaba falsas alertas de "facturación sin asignar".
+  const comisionables = ventasReales.filter(r => PRODUCTOS_COMISIONABLES_IA.includes(r.producto));
+  const cantComisionables = comisionables.length;
+  const comisionablesConVendedor = comisionables.filter(r => !!r.vendedor).length;
+  const comisionablesSinVendedor = cantComisionables - comisionablesConVendedor;
+  const coberturaComercialPct = cantComisionables > 0 ? (comisionablesConVendedor / cantComisionables * 100) : 100;
 
-  // Ranking por vendedor (por facturado)
+  // Ranking por vendedor (por facturado). Solo vendedores REALES: las ventas
+  // sin vendedor asignado ya no se agrupan como si fueran un vendedor más
+  // (antes "Sin asignar" podía terminar siendo el "vendedorLider" y disparar
+  // una alerta de dependencia comercial falsa: "Sin asignar concentra XX%").
   const porVendedor = {};
-  ventasReales.forEach(r => {
-    const v = r.vendedor || 'Sin asignar';
+  ventasReales.filter(r => !!r.vendedor).forEach(r => {
+    const v = r.vendedor;
     if (!porVendedor[v]) porVendedor[v] = { monto: 0, cant: 0, mix: {} };
     porVendedor[v].monto += (parseFloat(r.total) || 0);
     porVendedor[v].cant += 1;
@@ -160,7 +176,8 @@ function calcularKPIsMes(registrosMes, gastosMes, empleados) {
   return {
     facturacion, cobrado, saldoPendiente, egresosCaja, gastosAdmin, netoCaja,
     cantOrdenes, ticketPromedio, cantOpticas, ticketOptico, mixOpticoPct,
-    multifocalesPct, fotocromaticosPct, productosSinVendedorPct,
+    multifocalesPct, fotocromaticosPct,
+    cantComisionables, comisionablesConVendedor, comisionablesSinVendedor, coberturaComercialPct,
     dependenciaPct, vendedorLider, cobranzaPct, gastosPct,
     rankingVendedores, participacionProductos, formaPagoArr, formaPagoMax,
     diasSinVentasConsecutivos
@@ -216,7 +233,13 @@ function calcularCEOScore(kpis, objetivos, pesos, comparacion) {
   const scoreFacturacion = objetivos.facturacion > 0 ? Math.min(100, kpis.facturacion / objetivos.facturacion * 100) : 0;
   const scoreOrdenes = objetivos.cantOrdenes > 0 ? Math.min(100, kpis.cantOrdenes / objetivos.cantOrdenes * 100) : 0;
   const scoreTicket = objetivos.ticketPromedio > 0 ? Math.min(100, kpis.ticketPromedio / objetivos.ticketPromedio * 100) : 0;
-  const scoreDependencia = clampIA(100 - Math.max(0, (kpis.dependenciaPct - 30)) * 2, 0, 100);
+  // "Dependencia comercial" combina dos riesgos bajo el mismo peso (sin
+  // agregar un factor nuevo, sin tocar pesos): concentración en un solo
+  // vendedor (como antes) y cobertura comercial (comisionables sin vendedor).
+  // Se toma el peor de los dos. Si la cobertura es 100%, no resta nada.
+  const scoreConcentracion = clampIA(100 - Math.max(0, (kpis.dependenciaPct - 30)) * 2, 0, 100);
+  const scoreCobertura = clampIA(kpis.coberturaComercialPct, 0, 100);
+  const scoreDependencia = Math.min(scoreConcentracion, scoreCobertura);
   const scoreMix = clampIA(kpis.mixOpticoPct / 60 * 100, 0, 100); // objetivo interno: 60% ópticos
   const scoreCobranza = clampIA(kpis.cobranzaPct, 0, 100);
   const scoreGastos = clampIA(100 - Math.max(0, (kpis.gastosPct - 25)) * 3, 0, 100); // objetivo interno: gastos <=25%
