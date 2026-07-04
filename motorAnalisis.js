@@ -20,6 +20,8 @@
 //   calcularCostoOportunidad()        [nuevo]
 //   detectarMemoriaHistorica()        [nuevo]
 //   generarPortadaEjecutiva()         [nuevo]
+//   generarCEOBrief()                 [nuevo]
+//   generarSaludNegocio()             [nuevo]
 //   predecirCierre()
 //   semaforoKPI()
 //   comentarioVendedor()
@@ -52,6 +54,14 @@ const PESOS_CEO_SCORE_DEFAULT = {
   cobranza: 6,
   gastos: 5
 };
+
+// Umbrales de dependencia comercial — ÚNICA fuente de verdad, usada por
+// calcularCEOScore(), las reglas de alerta (reglasNegocio.js) y
+// generarSaludNegocio(), para que nunca se contradigan entre sí.
+// 0-50 verde · 50-65 amarillo · 65-80 naranja (alerta) · +80 rojo (alerta)
+const DEPENDENCIA_UMBRAL_AMARILLO = 50;
+const DEPENDENCIA_UMBRAL_NARANJA = 65;
+const DEPENDENCIA_UMBRAL_ROJO = 80;
 
 function clampIA(n, min, max) { return Math.max(min, Math.min(max, n)); }
 function formatPesosIA(n) { if (!n || isNaN(n)) return '$0'; return '$' + Math.round(n).toLocaleString('es-AR'); }
@@ -352,7 +362,7 @@ function generarResumen(kpis, ceoScore, alertas, comparacion) {
     const verbo = c.direccion === 'up' ? 'creció' : c.direccion === 'down' ? 'cayó' : 'se mantuvo estable';
     frases.push(`La facturación ${verbo}${c.direccion !== '=' ? ' un ' + Math.abs(c.pct).toFixed(0) + '%' : ''} respecto al mes anterior.`);
   }
-  if (kpis.dependenciaPct >= 40 && kpis.vendedorLider) {
+  if (kpis.dependenciaPct >= DEPENDENCIA_UMBRAL_NARANJA && kpis.vendedorLider) {
     frases.push(`Hay una dependencia comercial alta: ${kpis.vendedorLider.nombre} concentra el ${kpis.dependenciaPct.toFixed(0)}% de las ventas.`);
   }
   if (kpis.cantOpticas >= 5 && kpis.multifocalesPct < 10) {
@@ -396,7 +406,7 @@ function generarRecomendaciones(ctx) {
 }
 
 function generarPlanAccion(ctx, maxItems) {
-  maxItems = maxItems || 6;
+  maxItems = maxItems || 5; // "máximo 5 acciones concretas"
   const recs = generarRecomendaciones(ctx);
   const vistos = new Set();
   const plan = [];
@@ -599,7 +609,7 @@ function generarPortadaEjecutiva(kpis, ceoScoreAjustado, alertas, plan, mesLabel
   const factorTicket = (ceoScoreAjustado.detalle || []).find(d => d.factor === 'Ticket promedio');
   if (factorTicket && factorTicket.score >= 70) loMejor.push('Ticket estable o por encima del objetivo.');
   if (kpis.mixOpticoPct >= 50) loMejor.push('Buen mix de productos ópticos.');
-  if (kpis.dependenciaPct < 40) loMejor.push('Dependencia comercial bajo control.');
+  if (kpis.dependenciaPct < DEPENDENCIA_UMBRAL_AMARILLO) loMejor.push('Dependencia comercial bajo control.');
   if (!loMejor.length) loMejor.push('Sin destacados particulares este mes.');
 
   const riesgos = (alertas || [])
@@ -618,4 +628,104 @@ function generarPortadaEjecutiva(kpis, ceoScoreAjustado, alertas, plan, mesLabel
     riesgos: riesgos.length ? riesgos : ['Sin riesgos relevantes detectados este mes.'],
     prioridades: prioridades.length ? prioridades : ['Sin prioridades puntuales este mes.']
   };
+}
+
+// ── 12. CEO Brief ────────────────────────────────────────────────
+// Composición pura: no calcula nada nuevo. Reutiliza ceoScore.detalle (para
+// el "cuello de botella" = el factor con peor puntaje), comparacion (para el
+// ticket), plan[0] (para la prioridad de la semana) y kpis ya calculados.
+// Llamar con el score YA ajustado por ajustarCoherenciaScore().
+const _MAPA_CUELLO_BOTELLA = {
+  'Facturación': 'la baja generación de ventas',
+  'Órdenes': 'la baja cantidad de operaciones',
+  'Ticket promedio': 'el ticket promedio bajo',
+  'Dependencia comercial': 'la alta dependencia comercial',
+  'Mix de productos': 'el mix de productos poco balanceado',
+  'Cobranza': 'la cobranza lenta',
+  'Gastos': 'los gastos administrativos elevados'
+};
+
+function generarCEOBrief(kpis, ceoScoreAjustado, plan, comparacion) {
+  if (ceoScoreAjustado.score === null) {
+    return { score: null, nivel: ceoScoreAjustado.nivel, emoji: ceoScoreAjustado.emoji, bullets: [ceoScoreAjustado.explicacion], prioridadSemana: 'Todavía no hay historial suficiente.' };
+  }
+  const bullets = [];
+
+  const factFacturacion = (ceoScoreAjustado.detalle || []).find(d => d.factor === 'Facturación');
+  if (factFacturacion) {
+    if (factFacturacion.score < 50) bullets.push('La facturación se encuentra muy por debajo del objetivo mensual.');
+    else if (factFacturacion.score < 80) bullets.push('La facturación está por debajo del objetivo mensual.');
+    else bullets.push('La facturación está en línea o por encima del objetivo mensual.');
+  }
+
+  if (comparacion && comparacion.ticketPromedio) {
+    const c = comparacion.ticketPromedio;
+    if (c.direccion === 'down') bullets.push(`El ticket promedio cayó ${Math.abs(c.pct).toFixed(0)}% respecto al mes anterior.`);
+    else if (c.direccion === 'up') bullets.push(`El ticket promedio mejoró ${Math.abs(c.pct).toFixed(0)}% respecto al mes anterior.`);
+  }
+
+  if (kpis.cantComisionables > 0) {
+    if (kpis.coberturaComercialPct >= 95) bullets.push('La calidad del registro comercial es excelente.');
+    else if (kpis.coberturaComercialPct >= 80) bullets.push('La calidad del registro comercial es buena, con algún trabajo sin vendedor asignado.');
+    else bullets.push('Hay varios trabajos comisionables sin vendedor asignado — conviene revisar la carga diaria.');
+  }
+
+  if (kpis.cobranzaPct >= 85) bullets.push('La cobranza permanece saludable.');
+  else if (kpis.cobranzaPct >= 70) bullets.push('La cobranza es aceptable, con margen para mejorar.');
+  else bullets.push('La cobranza está débil este mes.');
+
+  const debil = [...(ceoScoreAjustado.detalle || [])].sort((a, b) => a.score - b.score)[0];
+  if (debil) {
+    bullets.push(`El cuello de botella principal es ${_MAPA_CUELLO_BOTELLA[debil.factor] || debil.factor.toLowerCase()}.`);
+  }
+
+  const prioridadSemana = (plan && plan.length) ? plan[0].mensaje : 'Sin prioridades puntuales esta semana.';
+
+  return {
+    score: ceoScoreAjustado.score,
+    nivel: ceoScoreAjustado.nivel,
+    emoji: ceoScoreAjustado.emoji,
+    bullets,
+    prioridadSemana
+  };
+}
+
+// ── 13. Salud del Negocio ────────────────────────────────────────
+// Estados de semáforo (máximo 5) sobre las 5 dimensiones centrales del
+// negocio. Usa los MISMOS umbrales que ya usa calcularCEOScore (25% gastos,
+// objetivo de ticket/facturación, DEPENDENCIA_UMBRAL_*) para que este bloque
+// nunca diga algo distinto de lo que dice el Score o las alertas.
+function generarSaludNegocio(kpis, objetivos) {
+  const estados = [];
+
+  if (kpis.cantComisionables > 0) {
+    if (kpis.coberturaComercialPct >= 95) estados.push({ emoji: '🟢', texto: 'Cobertura comercial excelente.' });
+    else if (kpis.coberturaComercialPct >= 80) estados.push({ emoji: '🟡', texto: 'Cobertura comercial aceptable, con trabajos sin vendedor.' });
+    else estados.push({ emoji: '🔴', texto: 'Cobertura comercial baja: muchos trabajos sin vendedor.' });
+  }
+
+  if (kpis.cobranzaPct >= 85) estados.push({ emoji: '🟢', texto: 'Cobranza saludable.' });
+  else if (kpis.cobranzaPct >= 70) estados.push({ emoji: '🟡', texto: 'Cobranza aceptable.' });
+  else estados.push({ emoji: '🔴', texto: 'Cobranza débil.' });
+
+  if (objetivos && objetivos.ticketPromedio > 0) {
+    const pct = kpis.ticketPromedio / objetivos.ticketPromedio * 100;
+    if (pct >= 100) estados.push({ emoji: '🟢', texto: 'Ticket promedio en objetivo.' });
+    else if (pct >= 80) estados.push({ emoji: '🟡', texto: 'Ticket promedio bajo.' });
+    else estados.push({ emoji: '🔴', texto: 'Ticket promedio muy bajo.' });
+  }
+
+  if (objetivos && objetivos.facturacion > 0) {
+    const pct = kpis.facturacion / objetivos.facturacion * 100;
+    if (pct >= 100) estados.push({ emoji: '🟢', texto: 'Facturación en objetivo.' });
+    else if (pct >= 70) estados.push({ emoji: '🟡', texto: 'Facturación por debajo del objetivo.' });
+    else estados.push({ emoji: '🔴', texto: 'Facturación crítica.' });
+  }
+
+  if (kpis.dependenciaPct < DEPENDENCIA_UMBRAL_AMARILLO) estados.push({ emoji: '🟢', texto: 'Dependencia comercial baja.' });
+  else if (kpis.dependenciaPct < DEPENDENCIA_UMBRAL_NARANJA) estados.push({ emoji: '🟡', texto: 'Dependencia comercial moderada.' });
+  else if (kpis.dependenciaPct < DEPENDENCIA_UMBRAL_ROJO) estados.push({ emoji: '🟠', texto: 'Dependencia comercial alta.' });
+  else estados.push({ emoji: '🔴', texto: 'Dependencia comercial crítica.' });
+
+  return estados.slice(0, 5);
 }
