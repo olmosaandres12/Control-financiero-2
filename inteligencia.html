@@ -448,11 +448,18 @@
     }
 
     function renderKPIsMini(kpis){
+      const subtextoBase = kpis.cantComisionables > 0
+        ? `${kpis.comisionablesConVendedor} de ${kpis.cantComisionables} trabajos asignados`
+        : 'Sin trabajos comisionables este mes';
+      const subtextoAlerta = kpis.comisionablesSinVendedor > 0
+        ? `<div style="font-size:11px;color:#ef4444;font-weight:700;margin-top:2px">⚠ ${kpis.comisionablesSinVendedor} trabajo${kpis.comisionablesSinVendedor!==1?'s':''} sin vendedor</div>`
+        : '';
       document.getElementById('sec-kpis-mini').innerHTML = `
         <div class="metric-card"><div class="metric-label">Facturación</div><div class="metric-valor">${formatPesosCorto(kpis.facturacion)}</div></div>
         <div class="metric-card"><div class="metric-label">Ticket</div><div class="metric-valor">${formatPesos(kpis.ticketPromedio)}</div></div>
         <div class="metric-card"><div class="metric-label">Órdenes</div><div class="metric-valor">${kpis.cantOrdenes}</div></div>
-        <div class="metric-card"><div class="metric-label">Dependencia</div><div class="metric-valor ${kpis.dependenciaPct>=40?'rojo':''}">${kpis.dependenciaPct.toFixed(0)}%</div></div>`;
+        <div class="metric-card"><div class="metric-label">Dependencia</div><div class="metric-valor ${kpis.dependenciaPct>=40?'rojo':''}">${kpis.dependenciaPct.toFixed(0)}%</div></div>
+        <div class="metric-card"><div class="metric-label">Cobertura Comercial</div><div class="metric-valor ${kpis.comisionablesSinVendedor>0?'rojo':''}">${kpis.coberturaComercialPct.toFixed(0)}%</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">${subtextoBase}</div>${subtextoAlerta}</div>`;
     }
 
     function renderChartDias(serie){
