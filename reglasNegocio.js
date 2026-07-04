@@ -63,21 +63,21 @@ const REGLAS_NEGOCIO = [
     nivel: 'alto', impacto: 4, dificultad: 3, tiempoEstimado: '2-3 semanas',
     condicion: ctx => ctx.comparacion?.ticketPromedio?.direccion === 'down' && Math.abs(ctx.comparacion.ticketPromedio.pct) >= 10,
     alerta: { mensaje: ctx => `El ticket promedio cayó ${Math.abs(ctx.comparacion.ticketPromedio.pct).toFixed(0)}% respecto al mes anterior.`, causa: 'Menos ventas de productos de mayor valor (multifocales, tratamientos premium).' },
-    recomendacion: { mensaje: 'Trabajar upselling: tratamientos, marcas premium y segundo par.' }
+    recomendacion: { mensaje: 'Ofrecer un tratamiento premium (antirreflejo, fotocromático o Blue HD) en cada presupuesto.' }
   },
   {
     id: 'ticket_por_debajo_objetivo',
     nivel: 'medio', impacto: 3, dificultad: 3, tiempoEstimado: '2-3 semanas',
     condicion: ctx => ctx.objetivos?.ticketPromedio > 0 && ctx.kpis.ticketPromedio < ctx.objetivos.ticketPromedio,
     alerta: { mensaje: ctx => `El ticket promedio ($${Math.round(ctx.kpis.ticketPromedio).toLocaleString('es-AR')}) está por debajo del objetivo ($${Math.round(ctx.objetivos.ticketPromedio).toLocaleString('es-AR')}).`, causa: 'Ventas concentradas en productos de menor valor.' },
-    recomendacion: { mensaje: 'Trabajar upselling en el mostrador: tratamientos, marcas premium.' }
+    recomendacion: { mensaje: 'Ofrecer Blue HD u otro tratamiento premium en todos los presupuestos.' }
   },
   {
     id: 'ordenes_bajaron',
     nivel: 'alto', impacto: 4, dificultad: 2, tiempoEstimado: '2 semanas',
     condicion: ctx => ctx.comparacion?.cantOrdenes?.direccion === 'down' && Math.abs(ctx.comparacion.cantOrdenes.pct) >= 10,
     alerta: { mensaje: ctx => `La cantidad de órdenes bajó ${Math.abs(ctx.comparacion.cantOrdenes.pct).toFixed(0)}% respecto al mes anterior.`, causa: 'Menos tráfico de clientes o menor conversión.' },
-    recomendacion: { mensaje: 'Reforzar puntos de contacto: reseñas de Google, recordatorios de control anual.' }
+    recomendacion: { mensaje: 'Contactar presupuestos pendientes de las últimas semanas y pedir reseñas de Google a clientes recientes.' }
   },
 
   // ── Cobranza / saldos ───────────────────────────────────────
@@ -86,7 +86,7 @@ const REGLAS_NEGOCIO = [
     nivel: 'medio', impacto: 3, dificultad: 1, tiempoEstimado: 'unos días',
     condicion: ctx => ctx.kpis.facturacion > 0 && (ctx.kpis.saldoPendiente / ctx.kpis.facturacion * 100) >= 15,
     alerta: { mensaje: ctx => `Los saldos pendientes representan el ${(ctx.kpis.saldoPendiente / ctx.kpis.facturacion * 100).toFixed(0)}% de la facturación del mes.`, causa: 'Señas altas sin completar el cobro, o clientes que no vuelven a pagar el resto.' },
-    recomendacion: { mensaje: 'Enviar recordatorios de cobro a los saldos más antiguos.' }
+    recomendacion: { mensaje: 'Contactar a los clientes con saldos pendientes más antiguos.' }
   },
   {
     id: 'cobranza_baja',
@@ -98,11 +98,21 @@ const REGLAS_NEGOCIO = [
 
   // ── Dependencia comercial / equipo ──────────────────────────
   {
-    id: 'dependencia_alta',
+    id: 'dependencia_alta_naranja',
+    nivel: 'alto', impacto: 4, dificultad: 4, tiempoEstimado: '1-2 meses',
+    // Umbrales compartidos con calcularCEOScore/generarSaludNegocio (motorAnalisis.js).
+    // Por debajo de DEPENDENCIA_UMBRAL_NARANJA (65%) no es un problema real,
+    // no se genera ninguna alerta.
+    condicion: ctx => ctx.kpis.dependenciaPct >= DEPENDENCIA_UMBRAL_NARANJA && ctx.kpis.dependenciaPct < DEPENDENCIA_UMBRAL_ROJO,
+    alerta: { mensaje: ctx => `${ctx.kpis.vendedorLider?.nombre || 'Un vendedor'} concentra el ${ctx.kpis.dependenciaPct.toFixed(0)}% de la facturación.`, causa: 'Empieza a ser una dependencia comercial importante de una sola persona.' },
+    recomendacion: { mensaje: 'Capacitar a un segundo vendedor y derivar parte de la cartera de clientes.' }
+  },
+  {
+    id: 'dependencia_alta_roja',
     nivel: 'crítico', impacto: 5, dificultad: 4, tiempoEstimado: '1-2 meses',
-    condicion: ctx => ctx.kpis.dependenciaPct >= 40,
-    alerta: { mensaje: ctx => `${ctx.kpis.vendedorLider?.nombre || 'Un vendedor'} concentra el ${ctx.kpis.dependenciaPct.toFixed(0)}% de la facturación.`, causa: 'Alta dependencia de una sola persona para sostener el negocio.' },
-    recomendacion: { mensaje: 'Capacitar a otro vendedor para distribuir mejor la carga comercial.' }
+    condicion: ctx => ctx.kpis.dependenciaPct >= DEPENDENCIA_UMBRAL_ROJO,
+    alerta: { mensaje: ctx => `${ctx.kpis.vendedorLider?.nombre || 'Un vendedor'} concentra el ${ctx.kpis.dependenciaPct.toFixed(0)}% de la facturación.`, causa: 'Dependencia comercial crítica de una sola persona para sostener el negocio.' },
+    recomendacion: { mensaje: 'Capacitar a un segundo vendedor y derivar parte de la cartera de clientes con urgencia.' }
   },
   {
     id: 'comisionables_sin_vendedor',
@@ -147,14 +157,14 @@ const REGLAS_NEGOCIO = [
     nivel: 'medio', impacto: 5, dificultad: 3, tiempoEstimado: '2 semanas',
     condicion: ctx => ctx.kpis.cantOpticas >= 5 && ctx.kpis.multifocalesPct < 10,
     alerta: { mensaje: ctx => `Solo el ${ctx.kpis.multifocalesPct.toFixed(0)}% de las órdenes ópticas fueron multifocales (progresivos).`, causa: 'Baja recomendación activa de multifocales por parte del equipo de venta.' },
-    recomendacion: { mensaje: 'Capacitar al equipo en argumentación y venta de multifocales.' }
+    recomendacion: { mensaje: 'Publicar un posteo o Reel explicando los beneficios de los multifocales para présbitas.' }
   },
   {
     id: 'baja_fotocromatico',
     nivel: 'medio', impacto: 3, dificultad: 2, tiempoEstimado: '1-2 semanas',
     condicion: ctx => ctx.kpis.cantOpticas >= 5 && ctx.kpis.fotocromaticosPct < 15,
     alerta: { mensaje: ctx => `Solo el ${ctx.kpis.fotocromaticosPct.toFixed(0)}% de las órdenes incluyó tratamiento fotocromático.`, causa: 'Poca oferta activa de fotocromáticos en el mostrador.' },
-    recomendacion: { mensaje: 'Armar una campaña puntual de fotocromáticos (exhibición + mención directa en cada venta).' }
+    recomendacion: { mensaje: 'Ofrecer el tratamiento fotocromático en todos los presupuestos de recetados.' }
   },
   {
     id: 'mix_optico_bajo',
@@ -191,7 +201,7 @@ const REGLAS_NEGOCIO = [
     nivel: 'alto', impacto: 3, dificultad: 1, tiempoEstimado: 'inmediato',
     condicion: ctx => ctx.kpis.diasSinVentasConsecutivos >= 3,
     alerta: { mensaje: ctx => `Llevás ${ctx.kpis.diasSinVentasConsecutivos} días consecutivos sin ventas cargadas.`, causa: 'Puede ser un problema real de tráfico, o que no se está cargando la caja al día.' },
-    recomendacion: { mensaje: 'Verificar si es una baja real de tráfico o una demora en la carga diaria de caja.' }
+    recomendacion: { mensaje: 'Revisar los pedidos críticos y confirmar que la caja esté cargada al día.' }
   },
   {
     id: 'concentracion_forma_pago',
@@ -207,14 +217,14 @@ const REGLAS_NEGOCIO = [
     nivel: 'crítico', impacto: 5, dificultad: 3, tiempoEstimado: 'esta semana',
     condicion: ctx => ctx.ceoScore && ctx.ceoScore.score !== null && ctx.ceoScore.score < 40,
     alerta: { mensaje: ctx => `El CEO Score está en nivel crítico (${ctx.ceoScore.score}/100).`, causa: 'Varios indicadores por debajo del objetivo al mismo tiempo.' },
-    recomendacion: { mensaje: 'Priorizar las 2-3 alertas de mayor impacto de este informe antes de sumar nuevas iniciativas.' }
+    recomendacion: { mensaje: 'Revisar los pedidos críticos y priorizar las 2-3 alertas de mayor impacto antes de sumar nuevas iniciativas.' }
   },
   {
     id: 'buen_ceo_score',
     nivel: 'informativo', impacto: 2, dificultad: 1, tiempoEstimado: 'unos días',
     condicion: ctx => ctx.ceoScore && ctx.ceoScore.score !== null && ctx.ceoScore.score >= 80,
     alerta: { mensaje: ctx => `El negocio está en un mes excelente (CEO Score ${ctx.ceoScore.score}/100).`, causa: 'Buen desempeño combinado en varios indicadores.' },
-    recomendacion: { mensaje: 'Aprovechar el buen momento para pedir reseñas de Google y reforzar la marca.' }
+    recomendacion: { mensaje: 'Solicitar 5 reseñas de Google a los últimos clientes satisfechos.' }
   },
   {
     id: 'mejora_vs_anio_pasado',
@@ -274,8 +284,8 @@ const REGLAS_RACHAS = [
   {
     id: 'racha_dependencia_alta',
     minMeses: 2,
-    condicion: (mesActual) => mesActual.dependenciaPct >= 40,
-    mensaje: cant => `La dependencia comercial se mantiene por encima del 40% desde hace ${cant} meses.`
+    condicion: (mesActual) => mesActual.dependenciaPct >= DEPENDENCIA_UMBRAL_NARANJA,
+    mensaje: cant => `La dependencia comercial se mantiene alta (65% o más) desde hace ${cant} meses.`
   },
   {
     id: 'racha_facturacion_cayendo',
