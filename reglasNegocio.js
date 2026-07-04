@@ -105,11 +105,14 @@ const REGLAS_NEGOCIO = [
     recomendacion: { mensaje: 'Capacitar a otro vendedor para distribuir mejor la carga comercial.' }
   },
   {
-    id: 'productos_sin_vendedor',
-    nivel: 'informativo', impacto: 2, dificultad: 1, tiempoEstimado: 'inmediato',
-    condicion: ctx => ctx.kpis.productosSinVendedorPct >= 5,
-    alerta: { mensaje: ctx => `El ${ctx.kpis.productosSinVendedorPct.toFixed(0)}% de las operaciones no tiene vendedor asignado.`, causa: 'Carga rápida sin completar el campo vendedor.' },
-    recomendacion: { mensaje: 'Reforzar la carga completa del campo "Vendedor" en cada operación, para no perder trazabilidad de comisiones ni de performance.' }
+    id: 'comisionables_sin_vendedor',
+    nivel: 'medio', impacto: 3, dificultad: 1, tiempoEstimado: 'inmediato',
+    condicion: ctx => ctx.kpis.comisionablesSinVendedor > 0,
+    alerta: {
+      mensaje: ctx => `Exist${ctx.kpis.comisionablesSinVendedor !== 1 ? 'en' : 'e'} ${ctx.kpis.comisionablesSinVendedor} trabajo${ctx.kpis.comisionablesSinVendedor !== 1 ? 's' : ''} comisionable${ctx.kpis.comisionablesSinVendedor !== 1 ? 's' : ''} sin vendedor asignado.`,
+      causa: 'Carga rápida sin completar el campo vendedor en ventas que sí generan comisión.'
+    },
+    recomendacion: { mensaje: 'Completar el vendedor en cada venta comisionable (recetados, PAMI, reposición, sol, pases) para no perder trazabilidad de comisiones.' }
   },
   {
     id: 'vendedor_bajo_volumen',
