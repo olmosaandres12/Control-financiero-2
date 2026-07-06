@@ -13,6 +13,10 @@
   <script src="utils.js"></script>
   <script src="motorAnalisis.js"></script>
   <script src="reglasNegocio.js"></script>
+  <script src="js/motores/motorRentabilidad.js"></script>
+  <script src="js/motores/reglasRentabilidad.js"></script>
+  <script src="js/motores/datosRentabilidad.js"></script>
+  <script src="utils.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="manifest" href="manifest.json" />
@@ -131,6 +135,27 @@
 
     .empty { text-align: center; padding: 24px 16px; color: #94a3b8; font-size: 13px; background: white; border-radius: 14px; }
 
+    /* ── Estructura fija mensual (Motor de Rentabilidad — Fase 3) ── */
+    .btn-estructura-fija { background: #0ea5e9; color: white; border: none; border-radius: 12px; padding: 9px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .ef-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: flex-end; justify-content: center; }
+    .ef-overlay.visible { display: flex; }
+    .ef-modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; }
+    .ef-modal-titulo { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 4px; text-align: center; }
+    .ef-modal-sub { font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 10px; line-height: 1.5; }
+    .ef-margen-box { background: #eff6ff; border-radius: 12px; padding: 12px 14px; margin: 14px 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .ef-margen-box input { width: 64px; padding: 8px; border: 1.5px solid #bfdbfe; border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; text-align: center; }
+    .ef-categoria-header { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 6px; }
+    .ef-item-row { display: flex; align-items: center; gap: 8px; background: #f8fafc; border-radius: 10px; padding: 9px 12px; margin-bottom: 6px; }
+    .ef-item-row.inactivo { opacity: 0.5; }
+    .ef-item-nombre { flex: 1; font-size: 13px; font-weight: 700; color: #1e293b; }
+    .ef-item-monto { font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; }
+    .ef-item-btn { background: none; border: none; font-size: 14px; cursor: pointer; padding: 2px 4px; }
+    .ef-form { background: #f0f4ff; border: 2px solid #c7d4f5; border-radius: 14px; padding: 14px; margin-top: 16px; }
+    .ef-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .ef-form input, .ef-form select { width: 100%; padding: 9px 10px; border: 1.5px solid #d0d9f0; border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 13px; box-sizing: border-box; }
+    .ef-total-row { display: flex; justify-content: space-between; padding: 12px 0 4px; margin-top: 8px; border-top: 2px solid #f1f5f9; font-size: 14px; font-weight: 900; color: #1E3A8A; }
+    .ef-empty-mes { text-align: center; padding: 16px; color: #94a3b8; font-size: 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 12px; }
+
     @media (max-width: 640px) {
       .bento-row-2 { grid-template-columns: 1fr; }
       .bento-row-4 { grid-template-columns: repeat(2,1fr); }
@@ -174,7 +199,10 @@
             <span class="intel-mes-nombre" id="mes-label">—</span>
             <button class="intel-mes-btn" id="btn-mes-next" onclick="cambiarMes(1)">›</button>
           </div>
-          <button class="btn-exportar-informe" id="btn-exportar" onclick="exportarInformeImagen()">📤 Exportar</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn-estructura-fija" onclick="abrirModalEstructuraFija()">⚙️ Estructura fija</button>
+            <button class="btn-exportar-informe" id="btn-exportar" onclick="exportarInformeImagen()">📤 Exportar</button>
+          </div>
         </div>
 
         <div id="sin-datos-aviso" style="display:none" class="empty">Este mes todavía no tiene operaciones cargadas.</div>
@@ -272,6 +300,49 @@
         <a class="bnav-item activo" href="inteligencia.html"><span class="bnav-icon">🧠</span><span class="bnav-label">Inteligencia</span></a>
         <a class="bnav-item" href="sueldos.html"><span class="bnav-icon">👥</span><span class="bnav-label">Sueldos</span></a>
       </nav>
+    </div>
+  </div>
+
+  <!-- MODAL: ESTRUCTURA FIJA MENSUAL (Motor de Rentabilidad — Fase 3) -->
+  <div class="ef-overlay" id="overlay-estructura-fija" onclick="cerrarEstructuraFijaFuera(event)">
+    <div class="ef-modal">
+      <div class="ef-modal-titulo">⚙️ Estructura fija mensual</div>
+      <div class="ef-modal-sub" id="ef-mes-label">—</div>
+      <div class="ef-modal-sub" style="color:#1E3A8A;font-weight:700">Esto es lo que la óptica necesita cubrir cada mes (planificado) — no son los gastos reales que ya pagaste, eso sigue viviendo en 💸 Gastos.</div>
+
+      <div class="ef-margen-box">
+        <span style="font-size:12px;font-weight:700;color:#1e40af">Margen bruto estimado</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="number" id="ef-margen-input" min="0" max="100" step="1" />
+          <span style="font-size:13px;font-weight:800;color:#1e40af">%</span>
+          <button class="btn-guardar" style="padding:8px 12px;font-size:12px;margin:0;width:auto" onclick="guardarMargenUI()">Guardar</button>
+        </div>
+      </div>
+
+      <div id="ef-sin-datos" style="display:none">
+        <div class="ef-empty-mes">Este mes todavía no tiene estructura fija cargada.</div>
+        <button class="btn-guardar" style="margin-bottom:14px" onclick="duplicarDesdeAnteriorUI()">📋 Copiar del mes anterior</button>
+      </div>
+
+      <div id="ef-lista-por-categoria"></div>
+
+      <div class="ef-total-row"><span>Total estructura fija</span><span id="ef-total">$0</span></div>
+
+      <div class="ef-form">
+        <input type="hidden" id="ef-editando-id" value="" />
+        <div class="ef-form-row">
+          <select id="ef-form-categoria"></select>
+          <input type="text" id="ef-form-nombre" placeholder="Nombre (ej: Alquiler local)" />
+        </div>
+        <div class="ef-form-row">
+          <input type="text" data-miles="true" id="ef-form-monto" placeholder="Monto $" inputmode="numeric" oninput="fmtMiles(this)" />
+          <input type="text" id="ef-form-categoria-nueva" placeholder="...o categoría nueva" style="display:none" />
+        </div>
+        <button class="btn-guardar" style="margin:0 0 8px" onclick="guardarItemEstructuraFijaUI()">＋ Agregar / Guardar ítem</button>
+        <button class="btn-cancelar" style="margin:0" onclick="cancelarEdicionItemUI()">Cancelar edición</button>
+      </div>
+
+      <button class="btn-cancelar" style="margin-top:16px" onclick="cerrarModalEstructuraFija()">Cerrar</button>
     </div>
   </div>
 
@@ -651,6 +722,163 @@
       }
       btn.textContent = original; btn.disabled = false;
     }
+
+    // ═══ ESTRUCTURA FIJA MENSUAL (Motor de Rentabilidad — Fase 3) ══
+    // Todo lo que sigue solo habla con datosRentabilidad.js — nunca hace
+    // fetch directo a Supabase acá adentro, mismo criterio que el resto
+    // de la página.
+    let gastosFijosModal = [];
+    let categoriasModal = [];
+    let periodoModal = null;
+
+    function getPeriodoActual(){ return `${anioSel}-${String(mesSel+1).padStart(2,'0')}`; }
+
+    async function abrirModalEstructuraFija(){
+      periodoModal = getPeriodoActual();
+      document.getElementById('ef-mes-label').textContent = `${MESES[mesSel]} ${anioSel}`;
+      const ctx = await cargarContextoRentabilidad(db, periodoModal);
+      gastosFijosModal = ctx.gastosFijos;
+      categoriasModal = ctx.categorias.length ? ctx.categorias : ['Alquiler','Sueldos','Luz','Agua','Internet','Publicidad','Sistemas','Contador','Impuestos','Limpieza','Otros'];
+      document.getElementById('ef-margen-input').value = ctx.margenPct;
+      poblarSelectCategoriasModal();
+      limpiarFormItemModal();
+      renderListaEstructuraFija();
+      document.getElementById('overlay-estructura-fija').classList.add('visible');
+    }
+
+    function poblarSelectCategoriasModal(){
+      const sel = document.getElementById('ef-form-categoria');
+      sel.innerHTML = categoriasModal.map(c=>`<option value="${c}">${c}</option>`).join('') + `<option value="__nueva__">➕ Otra categoría...</option>`;
+      sel.onchange = () => {
+        document.getElementById('ef-form-categoria-nueva').style.display = sel.value==='__nueva__' ? 'block' : 'none';
+      };
+    }
+
+    function renderListaEstructuraFija(){
+      const cont = document.getElementById('ef-lista-por-categoria');
+      document.getElementById('ef-sin-datos').style.display = gastosFijosModal.length===0 ? 'block' : 'none';
+
+      const porCategoria = {};
+      gastosFijosModal.forEach(g=>{
+        const cat = g.categoria || 'Otros';
+        if(!porCategoria[cat]) porCategoria[cat] = [];
+        porCategoria[cat].push(g);
+      });
+
+      cont.innerHTML = Object.keys(porCategoria).sort().map(cat=>{
+        const filas = porCategoria[cat].map(g=>`
+          <div class="ef-item-row ${g.activo===false?'inactivo':''}">
+            <span class="ef-item-nombre">${g.nombre}</span>
+            <span class="ef-item-monto">${formatPesos(g.monto)}</span>
+            <button class="ef-item-btn" onclick="toggleActivoItemUI('${g.id}', ${g.activo===false})" title="${g.activo===false?'Activar':'Desactivar'}">${g.activo===false?'⭕':'✅'}</button>
+            <button class="ef-item-btn" onclick="editarItemEstructuraFijaUI('${g.id}')" title="Editar">✏️</button>
+            <button class="ef-item-btn" onclick="eliminarItemEstructuraFijaUI('${g.id}')" title="Eliminar">🗑️</button>
+          </div>`).join('');
+        return `<div class="ef-categoria-header">${cat}</div>${filas}`;
+      }).join('');
+
+      const total = gastosFijosModal.filter(g=>g.activo!==false).reduce((s,g)=>s+(parseFloat(g.monto)||0),0);
+      document.getElementById('ef-total').textContent = formatPesos(total);
+    }
+
+    function limpiarFormItemModal(){
+      document.getElementById('ef-editando-id').value = '';
+      document.getElementById('ef-form-nombre').value = '';
+      document.getElementById('ef-form-monto').value = '';
+      document.getElementById('ef-form-categoria-nueva').value = '';
+      document.getElementById('ef-form-categoria-nueva').style.display = 'none';
+      const sel = document.getElementById('ef-form-categoria');
+      if(sel) sel.selectedIndex = 0;
+    }
+
+    function cancelarEdicionItemUI(){ limpiarFormItemModal(); }
+
+    function editarItemEstructuraFijaUI(id){
+      const g = gastosFijosModal.find(x=>String(x.id)===String(id));
+      if(!g) return;
+      document.getElementById('ef-editando-id').value = g.id;
+      document.getElementById('ef-form-nombre').value = g.nombre;
+      setVal(document.getElementById('ef-form-monto'), g.monto);
+      const sel = document.getElementById('ef-form-categoria');
+      let encontrada = false;
+      for(let i=0;i<sel.options.length;i++){ if(sel.options[i].value===g.categoria){ sel.selectedIndex=i; encontrada=true; break; } }
+      if(!encontrada){
+        sel.value = '__nueva__';
+        document.getElementById('ef-form-categoria-nueva').style.display = 'block';
+        document.getElementById('ef-form-categoria-nueva').value = g.categoria;
+      }
+    }
+
+    async function guardarItemEstructuraFijaUI(){
+      const idEditando = document.getElementById('ef-editando-id').value;
+      const nombre = document.getElementById('ef-form-nombre').value.trim();
+      const monto = getVal(document.getElementById('ef-form-monto'));
+      const selCat = document.getElementById('ef-form-categoria').value;
+      const categoria = selCat==='__nueva__' ? document.getElementById('ef-form-categoria-nueva').value.trim() : selCat;
+
+      if(!nombre){ alert('Ingresá un nombre'); return; }
+      if(!categoria){ alert('Ingresá o elegí una categoría'); return; }
+      if(!monto || monto<=0){ alert('Ingresá el monto'); return; }
+
+      if(selCat==='__nueva__' && !categoriasModal.includes(categoria)){
+        categoriasModal.push(categoria);
+        await guardarCategoriasGastosFijos(db, categoriasModal);
+        poblarSelectCategoriasModal();
+      }
+
+      const res = idEditando
+        ? await actualizarGastoFijo(db, idEditando, { nombre, monto, categoria })
+        : await crearGastoFijo(db, { periodo: periodoModal, nombre, monto, categoria });
+
+      if(!res.ok){ alert('Error: '+res.error); return; }
+
+      limpiarFormItemModal();
+      gastosFijosModal = await cargarGastosFijos(db, periodoModal);
+      renderListaEstructuraFija();
+    }
+
+    async function toggleActivoItemUI(id, nuevoActivo){
+      const res = await toggleActivoGastoFijo(db, id, nuevoActivo);
+      if(!res.ok){ alert('Error: '+res.error); return; }
+      gastosFijosModal = await cargarGastosFijos(db, periodoModal);
+      renderListaEstructuraFija();
+    }
+
+    async function eliminarItemEstructuraFijaUI(id){
+      if(!confirm('¿Eliminar este ítem de la estructura fija?')) return;
+      const res = await eliminarGastoFijo(db, id);
+      if(!res.ok){ alert('Error: '+res.error); return; }
+      gastosFijosModal = await cargarGastosFijos(db, periodoModal);
+      renderListaEstructuraFija();
+    }
+
+    async function guardarMargenUI(){
+      const pct = parseFloat(document.getElementById('ef-margen-input').value);
+      if(isNaN(pct) || pct<0 || pct>100){ alert('Ingresá un % válido entre 0 y 100'); return; }
+      const res = await guardarMargenBrutoEstimado(db, pct);
+      if(!res.ok){ alert('Error: '+res.error); return; }
+      alert('✅ Margen bruto estimado guardado');
+    }
+
+    async function duplicarDesdeAnteriorUI(){
+      let mesAntAnio=anioSel, mesAntMes=mesSel-1;
+      if(mesAntMes<0){ mesAntMes=11; mesAntAnio--; }
+      const periodoAnterior = `${mesAntAnio}-${String(mesAntMes+1).padStart(2,'0')}`;
+      const res = await duplicarGastosFijosDesdeMesAnterior(db, periodoAnterior, periodoModal);
+      if(!res.ok){ alert(res.error); return; }
+      gastosFijosModal = await cargarGastosFijos(db, periodoModal);
+      renderListaEstructuraFija();
+      alert(`✅ Se copiaron ${res.cantidad} ítem(s) de ${periodoAnterior}`);
+    }
+
+    function cerrarModalEstructuraFija(){
+      document.getElementById('overlay-estructura-fija').classList.remove('visible');
+      limpiarFormItemModal();
+    }
+    function cerrarEstructuraFijaFuera(e){
+      if(e.target===document.getElementById('overlay-estructura-fija')) cerrarModalEstructuraFija();
+    }
+    // ═══ FIN ESTRUCTURA FIJA MENSUAL ══════════════════════════
 
     cargarTodo();
   </script>
