@@ -22,6 +22,9 @@
 //   generarPortadaEjecutiva()         [nuevo]
 //   generarCEOBrief()                 [nuevo]
 //   generarSaludNegocio()             [nuevo]
+//   generarMetaDelMes()                [Sprint 1]
+//   generarProyeccionCierre()          [Sprint 1]
+//   generarMotorComercial()            [Sprint 1]
 //   predecirCierre()
 //   semaforoKPI()
 //   comentarioVendedor()
@@ -728,4 +731,57 @@ function generarSaludNegocio(kpis, objetivos) {
   else estados.push({ emoji: '🔴', texto: 'Dependencia comercial crítica.' });
 
   return estados.slice(0, 5);
+}
+
+// ── 14. Meta del Mes (Sprint 1 — "OLVISIÓN OS") ─────────────────
+// objetivoFacturacion: número plano, ya resuelto por resolverObjetivos()
+// (auto + override manual desde `configuracion.meta_facturacion_mensual`,
+// leído en inteligencia.html). prediccion: resultado de predecirCierre(),
+// se reusa tal cual para los días restantes — no se recalcula fecha nada.
+//
+// No llama a motorRentabilidad.js (motores hermanos, no se llaman entre
+// sí): la fórmula de avance/faltante es la misma idea que
+// calcularAvanceEquilibrio() de ese motor, repetida acá en 2 líneas para
+// que este archivo siga pudiendo cargarse solo.
+function generarMetaDelMes(kpis, objetivoFacturacion, prediccion) {
+  if (!objetivoFacturacion || objetivoFacturacion <= 0) return null;
+  const actual = kpis.facturacion || 0;
+  const pctAvance = Math.min(999, (actual / objetivoFacturacion) * 100);
+  const faltante = Math.max(0, objetivoFacturacion - actual);
+  const diasRestantes = prediccion ? Math.max(0, prediccion.diasEnMes - prediccion.diasTranscurridos) : null;
+  const ritmoDiarioNecesario = (diasRestantes && diasRestantes > 0) ? (faltante / diasRestantes) : null;
+  return { objetivo: objetivoFacturacion, actual, pctAvance, faltante, diasRestantes, ritmoDiarioNecesario };
+}
+
+// ── 15. Proyección de cierre ─────────────────────────────────────
+// Reusa predecirCierre() tal cual — el promedio diario de ventas ya está
+// calculado ahí, acá solo se interpreta contra la meta.
+function generarProyeccionCierre(prediccion, objetivoFacturacion) {
+  if (!prediccion) return null;
+  const facturacionProyectada = prediccion.facturacionEstimada;
+  let probabilidad = null;
+  if (objetivoFacturacion > 0) {
+    const ratio = facturacionProyectada / objetivoFacturacion;
+    if (ratio >= 1) probabilidad = { nivel: 'alta', texto: 'Probabilidad alta de cumplir el objetivo.' };
+    else if (ratio >= 0.85) probabilidad = { nivel: 'media', texto: 'Probabilidad media de cumplir el objetivo.' };
+    else probabilidad = { nivel: 'baja', texto: 'Probabilidad baja de cumplir el objetivo.' };
+  }
+  const diferencia = objetivoFacturacion > 0 ? (facturacionProyectada - objetivoFacturacion) : null;
+  return { facturacionProyectada, objetivo: objetivoFacturacion, diferencia, probabilidad, confianzaPct: prediccion.confianzaPct };
+}
+
+// ── 16. Motor Comercial ───────────────────────────────────────────
+// Traduce la meta de facturación en cantidad de órdenes, usando el ticket
+// promedio actual. Misma idea que calcularOrdenesNecesarias() de
+// motorRentabilidad.js, repetida acá por la misma razón de independencia
+// entre motores hermanos explicada arriba.
+function generarMotorComercial(kpis, objetivoFacturacion) {
+  const ticketPromedioActual = kpis.ticketPromedio || 0;
+  const ordenesActuales = kpis.cantOrdenes || 0;
+  if (!objetivoFacturacion || objetivoFacturacion <= 0 || ticketPromedioActual <= 0) {
+    return { ordenesActuales, ticketPromedioActual, ordenesNecesarias: null, ordenesFaltantes: null };
+  }
+  const ordenesNecesarias = Math.ceil(objetivoFacturacion / ticketPromedioActual);
+  const ordenesFaltantes = Math.max(0, ordenesNecesarias - ordenesActuales);
+  return { ordenesActuales, ticketPromedioActual, ordenesNecesarias, ordenesFaltantes };
 }
