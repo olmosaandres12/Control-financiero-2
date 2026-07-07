@@ -135,6 +135,40 @@
 
     .empty { text-align: center; padding: 24px 16px; color: #94a3b8; font-size: 13px; background: white; border-radius: 14px; }
 
+    /* ── Sprint 1: Meta del Mes / Prioridad del Día / Proyección / Motor Comercial ── */
+    .meta-mes-card { background: #1E3A8A; border-radius: 20px; padding: 22px 24px; color: white; margin-bottom: 12px; }
+    .meta-mes-titulo { font-size: 11px; font-weight: 800; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .meta-mes-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; margin-bottom: 16px; }
+    .meta-mes-item .mm-label { font-size: 11px; color: #93c5fd; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+    .meta-mes-item .mm-valor { font-size: 20px; font-weight: 900; }
+    .meta-progreso-bar { background: rgba(255,255,255,0.15); border-radius: 20px; height: 12px; overflow: hidden; margin-bottom: 8px; }
+    .meta-progreso-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg,#60a5fa,#93c5fd); transition: width .4s; }
+    .meta-progreso-label { font-size: 12px; color: #c7d9fb; text-align: right; margin-bottom: 14px; }
+    .meta-ritmo-box { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 14px; font-size: 13px; line-height: 1.5; }
+    .meta-ritmo-box b { font-size: 17px; }
+
+    .prioridad-dia-card { background: white; border: 2px solid #1E3A8A; border-radius: 20px; padding: 22px 24px; margin-bottom: 12px; text-align: center; }
+    .prioridad-dia-label { font-size: 11px; font-weight: 800; color: #1E3A8A; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .prioridad-dia-texto { font-size: 19px; font-weight: 800; color: #1e293b; line-height: 1.4; }
+
+    .proy-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px; }
+    .proy-item { background: #f8fafc; border-radius: 12px; padding: 12px; text-align: center; }
+    .proy-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; }
+    .proy-valor { font-size: 16px; font-weight: 900; color: #1e293b; }
+    .proy-valor.rojo { color: #ef4444; }
+    .proy-valor.verde { color: #10b981; }
+    .proy-prob { border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 700; text-align: center; }
+    .proy-prob.alta { background: #d1fae5; color: #065f46; }
+    .proy-prob.media { background: #fef3c7; color: #92400e; }
+    .proy-prob.baja { background: #fee2e2; color: #991b1b; }
+
+    .motor-com-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 12px; }
+    .motor-com-item { background: #f8fafc; border-radius: 12px; padding: 12px; text-align: center; }
+    .motor-com-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; }
+    .motor-com-valor { font-size: 18px; font-weight: 900; color: #1e293b; }
+    .motor-com-valor.rojo { color: #ef4444; }
+    .motor-com-nota { background: #eff6ff; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #1e40af; text-align: center; }
+
     /* ── Estructura fija mensual (Motor de Rentabilidad — Fase 3) ── */
     .btn-estructura-fija { background: #0ea5e9; color: white; border: none; border-radius: 12px; padding: 9px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
     .ef-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: flex-end; justify-content: center; }
@@ -212,6 +246,17 @@
           <!-- ══ DASHBOARD: DE UN VISTAZO ══ -->
           <div id="bento-dashboard">
 
+            <!-- Sprint 1: lo más importante, arriba de todo -->
+            <div class="meta-mes-card" id="card-meta-mes" style="display:none">
+              <div class="meta-mes-titulo">🎯 Meta del mes</div>
+              <div id="sec-meta-mes"></div>
+            </div>
+
+            <div class="prioridad-dia-card">
+              <div class="prioridad-dia-label">🎯 Prioridad del día</div>
+              <div class="prioridad-dia-texto" id="sec-prioridad-dia">—</div>
+            </div>
+
             <div class="bento-card" id="card-ceo-brief" style="margin-bottom:12px">
               <div class="bento-titulo">🧭 CEO Brief</div>
               <div id="sec-ceo-brief"></div>
@@ -225,6 +270,17 @@
               <div class="bento-card">
                 <div class="bento-titulo">🚨 Alertas por prioridad</div>
                 <div id="sec-alertas-mini"></div>
+              </div>
+            </div>
+
+            <div class="bento-row-2" id="fila-proyeccion-motor" style="display:none">
+              <div class="bento-card">
+                <div class="bento-titulo">🔮 Proyección de cierre</div>
+                <div id="sec-proyeccion-cierre"></div>
+              </div>
+              <div class="bento-card">
+                <div class="bento-titulo">📐 Motor comercial</div>
+                <div id="sec-motor-comercial"></div>
               </div>
             </div>
 
@@ -392,6 +448,18 @@
       return { registros:r||[], gastos:g||[] };
     }
 
+    // Meta del mes: configurable desde `configuracion` (clave
+    // 'meta_facturacion_mensual'), NO hardcodeada. Si no hay ninguna
+    // cargada todavía, devuelve null y las cards de Meta/Proyección/Motor
+    // Comercial simplemente no se muestran (en vez de mostrar un objetivo
+    // inventado).
+    async function cargarMetaMensualManual(db){
+      const { data, error } = await db.from('configuracion').select('valor').eq('clave','meta_facturacion_mensual').maybeSingle();
+      if(error || !data) return null;
+      const val = parseFloat(data.valor);
+      return isNaN(val) ? null : val;
+    }
+
     async function cargarTodo(){
       document.getElementById('mes-label').textContent = `${MESES[mesSel]} ${anioSel}`;
       const hoy = new Date();
@@ -427,7 +495,8 @@
         kpisAnterior: anterior.registros.length ? calcularKPIsMes(anterior.registros, anterior.gastos, empleados) : null,
         kpisAnioPasado: anioPasado.registros.length ? calcularKPIsMes(anioPasado.registros, anioPasado.gastos, empleados) : null,
         historico,
-        serieDiaria: calcularSerieDiaria(actual.registros, anioSel, mesSel)
+        serieDiaria: calcularSerieDiaria(actual.registros, anioSel, mesSel),
+        metaManual: await cargarMetaMensualManual(db)
       };
       OlvisionCache.set(cacheKey, datos);
       pintarInforme(datos);
@@ -449,7 +518,12 @@
       document.getElementById('btn-exportar').disabled = false;
 
       const objetivosAuto = calcularObjetivosAutomaticos(datos.historico);
-      const objetivos = resolverObjetivos(objetivosAuto, null);
+      // Gancho que ya existía (resolverObjetivos) — antes siempre se llamaba
+      // con null. Ahora, si hay una meta cargada en Configuración, pasa a
+      // ser el objetivo de TODO el sistema (CEO Score, KPIs con semáforo,
+      // y las 3 cards nuevas de este sprint), sin tocar ninguna otra función.
+      const overridesManual = datos.metaManual ? { facturacion: datos.metaManual } : null;
+      const objetivos = resolverObjetivos(objetivosAuto, overridesManual);
       const comparacion = compararMeses(kpis, datos.kpisAnterior, datos.kpisAnioPasado);
       const ceoScoreCrudo = calcularCEOScore(kpis, objetivos, null, comparacion);
 
@@ -468,6 +542,23 @@
       const resumen = generarResumen(kpis, ceoScore, alertas, comparacion);
       const brief = generarCEOBrief(kpis, ceoScore, plan, comparacion);
       const saludNegocio = generarSaludNegocio(kpis, objetivos);
+
+      // Sprint 1: Meta del Mes / Proyección / Motor Comercial solo existen
+      // si hay una meta configurada (datos.metaManual) — sin objetivo
+      // manual, objetivos.facturacion es el auto-calculado y estas 3 cards
+      // no se muestran (en vez de mostrar una meta que nadie definió).
+      const metaDelMes = datos.metaManual ? generarMetaDelMes(kpis, objetivos.facturacion, prediccion) : null;
+      const proyeccionCierre = datos.metaManual ? generarProyeccionCierre(prediccion, objetivos.facturacion) : null;
+      const motorComercial = datos.metaManual ? generarMotorComercial(kpis, objetivos.facturacion) : null;
+      // Prioridad del día: la MISMA lista de generarPlanAccion(), solo que
+      // acá se muestra nada más que la primera (mayor impacto) — cero
+      // lógica nueva, es plan[0].
+      const prioridadDelDia = plan.length ? plan[0].mensaje : 'Sin prioridades puntuales hoy.';
+
+      renderMetaMes(metaDelMes);
+      renderPrioridadDia(prioridadDelDia);
+      renderProyeccionCierre(proyeccionCierre);
+      renderMotorComercial(motorComercial);
 
       renderCEOBrief(brief);
       renderSaludNegocio(saludNegocio);
@@ -513,6 +604,61 @@
       document.getElementById('sec-salud-negocio').innerHTML = (!estados || estados.length===0)
         ? '<div class="empty">Sin datos suficientes.</div>'
         : `<div style="display:flex;flex-direction:column;gap:8px">${estados.map(e=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b"><span>${e.emoji}</span><span>${e.texto}</span></div>`).join('')}</div>`;
+    }
+
+    // ═══ SPRINT 1: META DEL MES / PRIORIDAD / PROYECCIÓN / MOTOR COMERCIAL ══
+
+    function renderMetaMes(meta){
+      const card = document.getElementById('card-meta-mes');
+      if(!meta){ card.style.display = 'none'; return; }
+      card.style.display = 'block';
+      const pctBarra = Math.min(100, meta.pctAvance);
+      document.getElementById('sec-meta-mes').innerHTML = `
+        <div class="meta-mes-grid">
+          <div class="meta-mes-item"><div class="mm-label">Objetivo</div><div class="mm-valor">${formatPesos(meta.objetivo)}</div></div>
+          <div class="meta-mes-item"><div class="mm-label">Facturación actual</div><div class="mm-valor">${formatPesos(meta.actual)}</div></div>
+        </div>
+        <div class="meta-progreso-bar"><div class="meta-progreso-fill" style="width:${pctBarra}%"></div></div>
+        <div class="meta-progreso-label">${meta.pctAvance.toFixed(0)}% de avance · Restan ${formatPesos(meta.faltante)}</div>
+        <div class="meta-ritmo-box">
+          ${meta.ritmoDiarioNecesario!==null
+            ? `Necesitás facturar aproximadamente <b>${formatPesos(meta.ritmoDiarioNecesario)}</b> por día para llegar al objetivo (${meta.diasRestantes} días restantes).`
+            : 'El mes ya terminó o no hay días restantes para proyectar.'}
+        </div>`;
+    }
+
+    function renderPrioridadDia(texto){
+      document.getElementById('sec-prioridad-dia').textContent = texto;
+    }
+
+    function renderProyeccionCierre(proy){
+      const fila = document.getElementById('fila-proyeccion-motor');
+      if(!proy){ if(!document.getElementById('sec-motor-comercial').innerHTML) fila.style.display='none'; document.getElementById('sec-proyeccion-cierre').innerHTML=''; return; }
+      fila.style.display = 'grid';
+      const claseDif = proy.diferencia===null ? '' : (proy.diferencia>=0 ? 'verde':'rojo');
+      document.getElementById('sec-proyeccion-cierre').innerHTML = `
+        <div class="proy-grid">
+          <div class="proy-item"><div class="proy-label">Proyectada</div><div class="proy-valor">${formatPesos(proy.facturacionProyectada)}</div></div>
+          <div class="proy-item"><div class="proy-label">Meta</div><div class="proy-valor">${formatPesos(proy.objetivo)}</div></div>
+          <div class="proy-item"><div class="proy-label">Diferencia</div><div class="proy-valor ${claseDif}">${proy.diferencia>=0?'+':''}${formatPesos(proy.diferencia)}</div></div>
+        </div>
+        ${proy.probabilidad ? `<div class="proy-prob ${proy.probabilidad.nivel}">${proy.probabilidad.texto}</div>` : ''}`;
+    }
+
+    function renderMotorComercial(motor){
+      const fila = document.getElementById('fila-proyeccion-motor');
+      if(!motor){ document.getElementById('sec-motor-comercial').innerHTML=''; return; }
+      fila.style.display = 'grid';
+      document.getElementById('sec-motor-comercial').innerHTML = `
+        <div class="motor-com-grid">
+          <div class="motor-com-item"><div class="motor-com-label">Órdenes actuales</div><div class="motor-com-valor">${motor.ordenesActuales}</div></div>
+          <div class="motor-com-item"><div class="motor-com-label">Meta estimada</div><div class="motor-com-valor">${motor.ordenesNecesarias ?? '—'}</div></div>
+        </div>
+        <div class="motor-com-nota">
+          ${motor.ordenesNecesarias!==null
+            ? `Con el ticket promedio actual (${formatPesos(motor.ticketPromedioActual)}), necesitás vender <b>${motor.ordenesFaltantes}</b> órdenes más.`
+            : 'Todavía no hay ticket promedio o meta suficiente para proyectar.'}
+        </div>`;
     }
 
     // ═══ DASHBOARD (CUADRANTES) ═══════════════════════════════
