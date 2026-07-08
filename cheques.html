@@ -70,6 +70,11 @@
     .filtro-sel.activo { border-color: #1E3A8A; color: #1E3A8A; background-color: #eff6ff; }
     .btn-limpiar-f { background: #f1f5f9; color: #94a3b8; border: none; border-radius: 12px; padding: 9px 11px; font-size: 14px; font-weight: 900; cursor: pointer; flex-shrink: 0; line-height: 1; font-family: 'Nunito', sans-serif; }
     .btn-limpiar-f.activo { background: #fee2e2; color: #dc2626; }
+    .filtro-fecha-row { display: flex; gap: 7px; align-items: center; margin-top: 7px; }
+    .filtro-fecha-label { font-size: 11px; font-weight: 700; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
+    .filtro-fecha-input { flex: 1; padding: 8px 8px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; background: white; min-width: 0; }
+    .filtro-fecha-input.activo { border-color: #1E3A8A; color: #1E3A8A; background-color: #eff6ff; }
+    .filtro-fecha-sep { color: #cbd5e1; font-size: 12px; flex-shrink: 0; }
     .filtro-resultado { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px; padding: 7px 12px; background: #f8fafc; border-radius: 10px; display: none; text-align: center; }
     .filtro-resultado.visible { display: block; }
     .filtro-resultado span { color: #1E3A8A; }
@@ -85,6 +90,8 @@
     .cr-dot.warm { background: #f59e0b; }
     .cr-dot.ok   { background: #86efac; }
     .cr-dot.paid { background: #10b981; }
+    .cr-avatar { display: none; }
+    .cr-col { display: none; }
     .cr-info { flex: 1; min-width: 0; }
     .cr-nombre { font-size: 14px; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cr-sub { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
@@ -160,6 +167,16 @@
       .overlay { align-items: center; }
       .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
       .contactos-grid { display: grid; grid-template-columns: 1fr 1fr; }
+      .cheque-row { flex-wrap: wrap; }
+      .cr-avatar { display: flex; width: 38px; height: 38px; border-radius: 50%; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+      .cr-avatar.hot  { background: #fee2e2; color: #b91c1c; }
+      .cr-avatar.warm { background: #fef9c3; color: #854f0b; }
+      .cr-avatar.ok   { background: #d1fae5; color: #065f46; }
+      .cr-avatar.paid { background: #d1fae5; color: #065f46; }
+      .cr-sub { display: none; }
+      .cr-col { display: block; min-width: 90px; }
+      .cr-col-label { font-size: 11px; color: #94a3b8; font-weight: 700; display: block; }
+      .cr-col-val { font-size: 13px; font-weight: 800; color: #1e293b; display: block; margin-top: 2px; }
     }
   </style>
 <link rel="stylesheet" href="estetica.css" /></head>
@@ -210,6 +227,12 @@
             <select class="filtro-sel" id="f-mes" onchange="aplicarFiltros()"><option value="">Mes</option></select>
             <select class="filtro-sel" id="f-contacto" onchange="aplicarFiltros()"><option value="">Contacto</option></select>
             <button class="btn-limpiar-f" id="btn-limpiar" onclick="limpiarFiltros()">✕</button>
+          </div>
+          <div class="filtro-fecha-row" id="filtros-fecha">
+            <span class="filtro-fecha-label">Emisión</span>
+            <input type="date" class="filtro-fecha-input" id="f-emision-desde" onchange="aplicarFiltros()" />
+            <span class="filtro-fecha-sep">–</span>
+            <input type="date" class="filtro-fecha-input" id="f-emision-hasta" onchange="aplicarFiltros()" />
           </div>
           <div class="filtro-resultado" id="filtro-res"></div>
         </div>
@@ -287,7 +310,7 @@
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cheques = [], destinatarios = [];
     const mesAbierto = {};
-    let filtroEstado = 'pendiente', filtroMes = '', filtroContacto = '';
+    let filtroEstado = 'pendiente', filtroMes = '', filtroContacto = '', filtroEmisionDesde = '', filtroEmisionHasta = '';
     const MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
     function formatPesos(n) { if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-AR'); }
@@ -297,6 +320,7 @@
     function chipClase(dias) { if(dias<=5) return 'hot'; if(dias<=15) return 'warm'; return 'ok'; }
     function badgeTexto(dias) { if(dias<0) return `Venció hace ${Math.abs(dias)}d`; if(dias===0) return '¡Cobra HOY!'; if(dias<=5) return `En ${dias} día${dias!==1?'s':''}`; return `En ${dias} días`; }
     function mesLabel(ym) { const[y,m]=ym.split('-'); return MESES_ES[parseInt(m,10)-1]+' '+y; }
+    function iniciales(nombre) { if(!nombre) return '?'; return nombre.trim().split(/\s+/).slice(0,2).map(w=>w[0].toUpperCase()).join(''); }
 
     async function cargar() {
       const cachedC=OlvisionCache.get('cheques_data'), cachedD=OlvisionCache.get('destinatarios_data');
@@ -367,6 +391,7 @@
       document.getElementById('panel-cheques').style.display=esAgenda?'none':'block';
       document.getElementById('panel-agenda').style.display=esAgenda?'block':'none';
       document.getElementById('filtros-extra').style.display=esAgenda?'none':'flex';
+      document.getElementById('filtros-fecha').style.display=esAgenda?'none':'flex';
       document.getElementById('filtro-res').classList.remove('visible');
       if(!esAgenda) renderLista();
     }
@@ -374,22 +399,61 @@
     function aplicarFiltros(){
       filtroMes=document.getElementById('f-mes').value;
       filtroContacto=document.getElementById('f-contacto').value;
+      filtroEmisionDesde=document.getElementById('f-emision-desde').value;
+      filtroEmisionHasta=document.getElementById('f-emision-hasta').value;
       document.getElementById('f-mes').className='filtro-sel'+(filtroMes?' activo':'');
       document.getElementById('f-contacto').className='filtro-sel'+(filtroContacto?' activo':'');
-      document.getElementById('btn-limpiar').className='btn-limpiar-f'+(filtroMes||filtroContacto?' activo':'');
+      document.getElementById('f-emision-desde').className='filtro-fecha-input'+(filtroEmisionDesde?' activo':'');
+      document.getElementById('f-emision-hasta').className='filtro-fecha-input'+(filtroEmisionHasta?' activo':'');
+      document.getElementById('btn-limpiar').className='btn-limpiar-f'+(filtroMes||filtroContacto||filtroEmisionDesde||filtroEmisionHasta?' activo':'');
       renderLista();
     }
 
-    function limpiarFiltros(){filtroMes=filtroContacto='';document.getElementById('f-mes').selectedIndex=0;document.getElementById('f-contacto').selectedIndex=0;document.getElementById('f-mes').className='filtro-sel';document.getElementById('f-contacto').className='filtro-sel';document.getElementById('btn-limpiar').className='btn-limpiar-f';document.getElementById('filtro-res').classList.remove('visible');renderLista();}
+    function limpiarFiltros(){
+      filtroMes=filtroContacto=filtroEmisionDesde=filtroEmisionHasta='';
+      document.getElementById('f-mes').selectedIndex=0;
+      document.getElementById('f-contacto').selectedIndex=0;
+      document.getElementById('f-emision-desde').value='';
+      document.getElementById('f-emision-hasta').value='';
+      document.getElementById('f-mes').className='filtro-sel';
+      document.getElementById('f-contacto').className='filtro-sel';
+      document.getElementById('f-emision-desde').className='filtro-fecha-input';
+      document.getElementById('f-emision-hasta').className='filtro-fecha-input';
+      document.getElementById('btn-limpiar').className='btn-limpiar-f';
+      document.getElementById('filtro-res').classList.remove('visible');
+      renderLista();
+    }
 
-    function getChequesVista(){let items=cheques;if(filtroEstado==='pendiente')items=items.filter(c=>c.estado==='PENDIENTE');else if(filtroEstado==='pagado')items=items.filter(c=>c.estado==='PAGADO');if(filtroMes)items=items.filter(c=>c.fecha_cobro&&c.fecha_cobro.slice(0,7)===filtroMes);if(filtroContacto)items=items.filter(c=>c.a_quien===filtroContacto);return items;}
+    function getChequesVista(){
+      let items=cheques;
+      if(filtroEstado==='pendiente')items=items.filter(c=>c.estado==='PENDIENTE');
+      else if(filtroEstado==='pagado')items=items.filter(c=>c.estado==='PAGADO');
+      if(filtroMes)items=items.filter(c=>c.fecha_cobro&&c.fecha_cobro.slice(0,7)===filtroMes);
+      if(filtroContacto)items=items.filter(c=>c.a_quien===filtroContacto);
+      if(filtroEmisionDesde)items=items.filter(c=>c.fecha_emision&&c.fecha_emision>=filtroEmisionDesde);
+      if(filtroEmisionHasta)items=items.filter(c=>c.fecha_emision&&c.fecha_emision<=filtroEmisionHasta);
+      return items;
+    }
 
     function renderLista(){
       const lista=document.getElementById('lista-cheques');
       const items=getChequesVista();
-      const hayFiltro=filtroEstado!=='todos'||filtroMes||filtroContacto;
+      const hayFiltro=filtroEstado!=='todos'||filtroMes||filtroContacto||filtroEmisionDesde||filtroEmisionHasta;
       const resDiv=document.getElementById('filtro-res');
-      if(filtroMes||filtroContacto){const partes=[];if(filtroMes)partes.push(mesLabel(filtroMes));if(filtroContacto)partes.push(filtroContacto);resDiv.innerHTML=`Mostrando <span>${items.length}</span> cheque${items.length!==1?'s':''} · ${partes.join(' · ')}`;resDiv.classList.add('visible');}else{resDiv.classList.remove('visible');}
+      if(filtroMes||filtroContacto||filtroEmisionDesde||filtroEmisionHasta){
+        const partes=[];
+        if(filtroMes)partes.push(mesLabel(filtroMes));
+        if(filtroContacto)partes.push(filtroContacto);
+        if(filtroEmisionDesde||filtroEmisionHasta){
+          const d=filtroEmisionDesde?formatFecha(filtroEmisionDesde):'…';
+          const h=filtroEmisionHasta?formatFecha(filtroEmisionHasta):'…';
+          partes.push(`Emisión ${d} – ${h}`);
+        }
+        resDiv.innerHTML=`Mostrando <span>${items.length}</span> cheque${items.length!==1?'s':''} · ${partes.join(' · ')}`;
+        resDiv.classList.add('visible');
+      }else{
+        resDiv.classList.remove('visible');
+      }
       if(!items.length){lista.innerHTML=`<div class="empty">${hayFiltro?'🔍 Sin resultados':'Sin cheques'}</div>`;return;}
       lista.innerHTML=items.map(c=>{
         const dias=diasHasta(c.fecha_cobro);
@@ -400,7 +464,7 @@
         else if(dias<=15){rowCls='pendiente';dotCls='warm';badgeCls='warm';bTxt=badgeTexto(dias);}
         else{rowCls='pendiente';dotCls='ok';badgeCls='ok';bTxt=badgeTexto(dias);}
         const sub=[`📅 ${formatFecha(c.fecha_cobro)}`,c.numero_cheque?`#${c.numero_cheque}`:null].filter(Boolean).join(' · ');
-        return `<div class="cheque-row ${rowCls}" onclick="abrirDetalle('${c.id}')"><div class="cr-dot ${dotCls}"></div><div class="cr-info"><div class="cr-nombre">${c.a_quien}</div><div class="cr-sub">${sub}</div></div><div class="cr-der"><div class="cr-monto">${formatPesos(c.monto)}</div><span class="cr-badge ${badgeCls}">${bTxt}</span></div><span class="cr-chevron">›</span></div>`;
+        return `<div class="cheque-row ${rowCls}" onclick="abrirDetalle('${c.id}')"><div class="cr-dot ${dotCls}"></div><div class="cr-avatar ${dotCls}">${iniciales(c.a_quien)}</div><div class="cr-info"><div class="cr-nombre">${c.a_quien}</div><div class="cr-sub">${sub}</div></div><div class="cr-col cr-col-emision"><span class="cr-col-label">Emisión</span><span class="cr-col-val">${formatFecha(c.fecha_emision)}</span></div><div class="cr-col cr-col-pago"><span class="cr-col-label">Pago</span><span class="cr-col-val">${formatFecha(c.fecha_cobro)}</span></div><div class="cr-der"><div class="cr-monto">${formatPesos(c.monto)}</div><span class="cr-badge ${badgeCls}">${bTxt}</span></div><span class="cr-chevron">›</span></div>`;
       }).join('');
     }
 
