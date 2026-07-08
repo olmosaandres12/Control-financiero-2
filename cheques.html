@@ -70,9 +70,10 @@
     .filtro-sel.activo { border-color: #1E3A8A; color: #1E3A8A; background-color: #eff6ff; }
     .btn-limpiar-f { background: #f1f5f9; color: #94a3b8; border: none; border-radius: 12px; padding: 9px 11px; font-size: 14px; font-weight: 900; cursor: pointer; flex-shrink: 0; line-height: 1; font-family: 'Nunito', sans-serif; }
     .btn-limpiar-f.activo { background: #fee2e2; color: #dc2626; }
-    .filtro-fecha-row { display: flex; gap: 7px; align-items: center; margin-top: 7px; }
-    .filtro-fecha-label { font-size: 11px; font-weight: 700; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
-    .filtro-fecha-input { flex: 1; padding: 8px 8px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; background: white; min-width: 0; }
+    .filtro-fecha-row { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+    .filtro-fecha-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .filtro-fecha-inputs { display: flex; gap: 7px; align-items: center; }
+    .filtro-fecha-input { flex: 1; padding: 9px 8px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; background: white; min-width: 0; }
     .filtro-fecha-input.activo { border-color: #1E3A8A; color: #1E3A8A; background-color: #eff6ff; }
     .filtro-fecha-sep { color: #cbd5e1; font-size: 12px; flex-shrink: 0; }
     .filtro-resultado { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px; padding: 7px 12px; background: #f8fafc; border-radius: 10px; display: none; text-align: center; }
@@ -232,9 +233,11 @@
           </div>
           <div class="filtro-fecha-row" id="filtros-fecha">
             <span class="filtro-fecha-label">Emisión</span>
-            <input type="date" class="filtro-fecha-input" id="f-emision-desde" onchange="aplicarFiltros()" />
-            <span class="filtro-fecha-sep">–</span>
-            <input type="date" class="filtro-fecha-input" id="f-emision-hasta" onchange="aplicarFiltros()" />
+            <div class="filtro-fecha-inputs">
+              <input type="date" class="filtro-fecha-input" id="f-emision-desde" onchange="aplicarFiltros()" />
+              <span class="filtro-fecha-sep">–</span>
+              <input type="date" class="filtro-fecha-input" id="f-emision-hasta" onchange="aplicarFiltros()" />
+            </div>
           </div>
           <div class="filtro-resultado" id="filtro-res"></div>
         </div>
