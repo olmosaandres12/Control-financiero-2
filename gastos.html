@@ -69,6 +69,18 @@
     .anual-total-monto { font-size: 18px; font-weight: 900; color: #1E3A8A; }
     .anual-loading { text-align: center; color: #94a3b8; font-size: 14px; padding: 20px; }
 
+    .lab-label { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; margin-top: -4px; }
+    #lab-block { display: none; }
+    #lab-block.show { display: block; margin-top: 10px; }
+    .lab-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .lab-chip { padding: 9px 14px; border-radius: 20px; border: 2px solid #e2e8f0; font-size: 13px; font-weight: 700; color: #1e293b; background: white; cursor: pointer; font-family: inherit; }
+    .lab-chip.selected { background: #ecfeff; border-color: #0891b2; color: #0891b2; }
+    .lab-chip.add-new { color: #1E3A8A; border-style: dashed; }
+    .add-lab-form { display: none; gap: 8px; margin-top: 8px; }
+    .add-lab-form.show { display: flex; }
+    .add-lab-form input { flex: 1; padding: 10px 12px; border-radius: 12px; border: 2px solid #e2e8f0; font-family: inherit; font-size: 14px; }
+    .add-lab-form button { padding: 0 16px; border-radius: 12px; border: none; background: #1E3A8A; color: white; font-weight: 700; font-size: 13px; cursor: pointer; }
+
     @media (min-width: 768px) {
       .cats-grid { grid-template-columns: repeat(4, 1fr); }
     }
@@ -150,6 +162,8 @@
           <button class="filtro-btn" onclick="filtrar('Costos Admin.', this)">📋 Costos Admin.</button>
           <button class="filtro-btn" onclick="filtrar('Retiro Andres', this)">👤 Retiro Andres</button>
           <button class="filtro-btn" onclick="filtrar('Retiro Luisito', this)">👤 Retiro Luisito</button>
+          <button class="filtro-btn" onclick="filtrar('Laboratorio', this)">🔬 Laboratorio</button>
+          <button class="filtro-btn" onclick="filtrar('Sueldos', this)">💰 Sueldos</button>
         </div>
 
         <div class="export-row">
@@ -189,13 +203,23 @@
       <div class="campo"><label>Fecha</label><input type="date" id="f-fecha" /></div>
       <div class="campo"><label>Descripción</label><input type="text" id="f-desc" placeholder="Ej: Pago de alquiler" autocomplete="off" /></div>
       <div class="campo"><label>Categoría</label>
-        <select id="f-cat">
+        <select id="f-cat" onchange="onCategoriaChange()">
           <option value="">Seleccionar</option>
           <option>Gastos admin</option>
           <option>Costos Admin.</option>
           <option>Retiro Andres</option>
           <option>Retiro Luisito</option>
+          <option>Laboratorio</option>
+          <option>Sueldos</option>
         </select>
+      </div>
+      <div id="lab-block">
+        <div class="lab-label">¿Qué laboratorio?</div>
+        <div class="lab-chip-row" id="lab-chips"></div>
+        <div class="add-lab-form" id="add-lab-form">
+          <input type="text" id="new-lab-name" placeholder="Nombre del laboratorio" autocomplete="off" />
+          <button type="button" onclick="agregarLaboratorio()">Agregar</button>
+        </div>
       </div>
       <div class="campo"><label>Monto $</label><input type="text" data-miles="true" id="f-monto" placeholder="0" inputmode="numeric" oninput="fmtMiles(this)" /></div>
       <div class="campo"><label>Forma de pago</label>
@@ -237,7 +261,9 @@
       { nombre: 'Gastos admin', icon: '🏢' },
       { nombre: 'Costos Admin.', icon: '📋' },
       { nombre: 'Retiro Andres', icon: '👤' },
-      { nombre: 'Retiro Luisito', icon: '👤' }
+      { nombre: 'Retiro Luisito', icon: '👤' },
+      { nombre: 'Laboratorio', icon: '🔬' },
+      { nombre: 'Sueldos', icon: '💰' }
     ];
 
     let mesActual = new Date().getMonth();
@@ -246,6 +272,8 @@
     let filtroActual = 'Todos';
     let editandoId = null;
     let anualAbierto = false;
+    let labs = [];
+    let labSeleccionado = null;
 
     function getMesStr() {
       return `${anioActual}-${String(mesActual + 1).padStart(2, '0')}`;
@@ -306,6 +334,71 @@
       gastos = data || [];
       OlvisionCache.set(cacheKey, gastos);
       renderTodo();
+    }
+
+    async function cargarLaboratorios() {
+      const cached = OlvisionCache.get('laboratorios_data');
+      if (cached && cached.length) labs = cached;
+      const { data } = await db.from('configuracion').select('valor').eq('clave', 'laboratorios').maybeSingle();
+      if (data && data.valor) {
+        labs = data.valor.split(',').map(s => s.trim()).filter(Boolean);
+        OlvisionCache.set('laboratorios_data', labs);
+      } else if (!labs.length) {
+        labs = ['Sol', 'Bichara', 'Mister'];
+        await db.from('configuracion').upsert({ clave: 'laboratorios', valor: labs.join(',') });
+        OlvisionCache.set('laboratorios_data', labs);
+      }
+    }
+
+    function onCategoriaChange() {
+      const cat = document.getElementById('f-cat').value;
+      const block = document.getElementById('lab-block');
+      if (cat === 'Laboratorio') {
+        block.classList.add('show');
+        renderLabChips();
+      } else {
+        block.classList.remove('show');
+        document.getElementById('add-lab-form').classList.remove('show');
+      }
+    }
+
+    function renderLabChips() {
+      const wrap = document.getElementById('lab-chips');
+      wrap.innerHTML = '';
+      labs.forEach(l => {
+        const chip = document.createElement('div');
+        chip.className = 'lab-chip' + (labSeleccionado === l ? ' selected' : '');
+        chip.textContent = l;
+        chip.onclick = () => {
+          labSeleccionado = l;
+          document.getElementById('add-lab-form').classList.remove('show');
+          renderLabChips();
+        };
+        wrap.appendChild(chip);
+      });
+      const addChip = document.createElement('div');
+      addChip.className = 'lab-chip add-new';
+      addChip.textContent = '+ Agregar';
+      addChip.onclick = () => {
+        document.getElementById('add-lab-form').classList.add('show');
+        document.getElementById('new-lab-name').focus();
+      };
+      wrap.appendChild(addChip);
+    }
+
+    async function agregarLaboratorio() {
+      const input = document.getElementById('new-lab-name');
+      const nombre = input.value.trim();
+      if (!nombre) return;
+      if (!labs.includes(nombre)) {
+        labs.push(nombre);
+        await db.from('configuracion').upsert({ clave: 'laboratorios', valor: labs.join(',') });
+        OlvisionCache.set('laboratorios_data', labs);
+      }
+      labSeleccionado = nombre;
+      input.value = '';
+      document.getElementById('add-lab-form').classList.remove('show');
+      renderLabChips();
     }
 
     function gastosFiltrados() {
@@ -397,9 +490,18 @@
       editandoId = id;
       document.getElementById('modal-titulo').textContent = '✏️ Editar gasto';
       document.getElementById('f-fecha').value = g.fecha || '';
-      document.getElementById('f-desc').value = g.descripcion || '';
       setVal(document.getElementById('f-monto'), g.monto);
       document.getElementById('f-obs').value = g.observacion || '';
+
+      labSeleccionado = null;
+      let descParaCampo = g.descripcion || '';
+      if (g.categoria === 'Laboratorio' && descParaCampo.includes(' — ')) {
+        const partes = descParaCampo.split(' — ');
+        labSeleccionado = partes[0];
+        descParaCampo = partes.slice(1).join(' — ');
+      }
+      document.getElementById('f-desc').value = descParaCampo;
+
       const catSel = document.getElementById('f-cat');
       for (let i = 0; i < catSel.options.length; i++) {
         if (catSel.options[i].text === g.categoria) { catSel.selectedIndex = i; break; }
@@ -408,6 +510,7 @@
       for (let i = 0; i < formaSel.options.length; i++) {
         if (formaSel.options[i].text === g.forma_pago) { formaSel.selectedIndex = i; break; }
       }
+      onCategoriaChange();
       document.getElementById('overlay').classList.add('visible');
     }
 
@@ -422,6 +525,9 @@
     function limpiarForm() {
       ['f-desc', 'f-monto', 'f-obs'].forEach(id => document.getElementById(id).value = '');
       ['f-cat', 'f-forma'].forEach(id => document.getElementById(id).selectedIndex = 0);
+      labSeleccionado = null;
+      document.getElementById('lab-block').classList.remove('show');
+      document.getElementById('add-lab-form').classList.remove('show');
     }
 
     async function guardar() {
@@ -434,6 +540,9 @@
 
       if (!desc) { alert('Ingresá una descripción'); return; }
       if (!monto || isNaN(monto)) { alert('Ingresá el monto'); return; }
+      if (categoria === 'Laboratorio' && !labSeleccionado) { alert('Elegí qué laboratorio es'); return; }
+
+      const descFinal = (categoria === 'Laboratorio' && labSeleccionado) ? `${labSeleccionado} — ${desc}` : desc;
 
       const btn = document.querySelector('.btn-guardar');
       btn.textContent = 'Guardando...'; btn.disabled = true;
@@ -441,12 +550,12 @@
       let error;
       if (editandoId) {
         ({ error } = await db.from('gastos').update({
-          fecha, descripcion: desc, categoria, monto, forma_pago, observacion,
+          fecha, descripcion: descFinal, categoria, monto, forma_pago, observacion,
           mes: fecha.substring(0, 7)
         }).eq('id', editandoId));
       } else {
         ({ error } = await db.from('gastos').insert([{
-          fecha, descripcion: desc, categoria, monto, forma_pago, observacion,
+          fecha, descripcion: descFinal, categoria, monto, forma_pago, observacion,
           mes: fecha.substring(0, 7)
         }]));
       }
@@ -623,6 +732,7 @@
 
     actualizarHeader();
     cargar();
+    cargarLaboratorios();
   </script>
 </body>
 </html>
