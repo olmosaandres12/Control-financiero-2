@@ -190,6 +190,20 @@
     .ef-total-row { display: flex; justify-content: space-between; padding: 12px 0 4px; margin-top: 8px; border-top: 2px solid #f1f5f9; font-size: 14px; font-weight: 900; color: #1E3A8A; }
     .ef-empty-mes { text-align: center; padding: 16px; color: #94a3b8; font-size: 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 12px; }
 
+    /* ── Radiografía (rango de fechas + mercadería + vendedoras) ── */
+    .btn-radiografia { background: #7c3aed; color: white; border: none; border-radius: 12px; padding: 9px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .rd-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: flex-end; justify-content: center; }
+    .rd-overlay.visible { display: flex; }
+    .rd-modal { background: white; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 680px; max-height: 92vh; overflow-y: auto; }
+    .rd-modal-titulo { font-size: 18px; font-weight: 800; color: #1e293b; text-align: center; }
+    .rd-modal-sub { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 4px; }
+    .rd-fecha-input { padding: 8px 10px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 13px; color: #1e293b; }
+    .rd-stat { background: #f8fafc; border-radius: 12px; padding: 12px; text-align: center; }
+    .rd-stat-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; }
+    .rd-stat-valor { font-size: 16px; font-weight: 900; color: #1e293b; margin-top: 4px; }
+    .rd-seccion-titulo { font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; }
+    .rd-row { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 10px; padding: 7px 12px; margin-bottom: 5px; font-size: 12px; color: #1e293b; }
+
     @media (max-width: 640px) {
       .bento-row-2 { grid-template-columns: 1fr; }
       .bento-row-4 { grid-template-columns: repeat(2,1fr); }
@@ -233,7 +247,8 @@
             <span class="intel-mes-nombre" id="mes-label">—</span>
             <button class="intel-mes-btn" id="btn-mes-next" onclick="cambiarMes(1)">›</button>
           </div>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-radiografia" onclick="abrirModalRadiografia()">📊 Radiografía</button>
             <button class="btn-estructura-fija" onclick="abrirModalEstructuraFija()">⚙️ Estructura fija</button>
             <button class="btn-exportar-informe" id="btn-exportar" onclick="exportarInformeImagen()">📤 Exportar</button>
           </div>
@@ -399,6 +414,57 @@
       </div>
 
       <button class="btn-cancelar" style="margin-top:16px" onclick="cerrarModalEstructuraFija()">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: RADIOGRAFÍA (rango de fechas + mercadería + vendedoras) -->
+  <div class="rd-overlay" id="overlay-radiografia" onclick="cerrarRadiografiaFuera(event)">
+    <div class="rd-modal">
+      <div class="rd-modal-titulo">📊 Radiografía del negocio</div>
+      <div class="rd-modal-sub">Elegí un rango de fechas para ver mercadería más vendida y desempeño</div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0">
+        <span style="font-size:13px;font-weight:700;color:#64748b">📅 Desde</span>
+        <input type="date" id="rd-desde" class="rd-fecha-input" onchange="cargarRadiografia()" />
+        <span style="font-size:13px;font-weight:700;color:#64748b">Hasta</span>
+        <input type="date" id="rd-hasta" class="rd-fecha-input" onchange="cargarRadiografia()" />
+      </div>
+      <div id="rd-resumen-mini" style="font-size:12px;color:#94a3b8;margin-bottom:14px">Elegí un rango para comenzar</div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">
+        <div class="rd-stat"><div class="rd-stat-label">Ticket promedio</div><div class="rd-stat-valor" id="rd-ticket">$0</div></div>
+        <div class="rd-stat"><div class="rd-stat-label">Total facturado</div><div class="rd-stat-valor" id="rd-total">$0</div></div>
+        <div class="rd-stat"><div class="rd-stat-label">Operaciones</div><div class="rd-stat-valor" id="rd-ops">0</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+        <div>
+          <div class="rd-seccion-titulo">👁️ Top 10 lentes de contacto</div>
+          <div id="rd-ranking-lentes"></div>
+        </div>
+        <div>
+          <div class="rd-seccion-titulo">💧 Top 5 líquidos</div>
+          <div id="rd-ranking-liquidos"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+        <div>
+          <div class="rd-seccion-titulo">🔧 Desglose Taller</div>
+          <div id="rd-desglose-taller"></div>
+        </div>
+        <div>
+          <div class="rd-seccion-titulo">🎀 Desglose Accesorio</div>
+          <div id="rd-desglose-accesorio"></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <div class="rd-seccion-titulo">👥 Ranking vendedoras del período</div>
+        <div id="rd-ranking-vendedoras"></div>
+      </div>
+
+      <button class="btn-cancelar" onclick="cerrarModalRadiografia()">Cerrar</button>
     </div>
   </div>
 
@@ -868,6 +934,131 @@
       }
       btn.textContent = original; btn.disabled = false;
     }
+
+    // ═══ RADIOGRAFÍA (rango de fechas + mercadería + vendedoras) ══════
+    // Reutiliza la misma lógica de agregación que ya usamos en caja.html
+    // (detalle_producto por Taller/Accesorio/Liquidos/Lentes), pero acá
+    // trabaja sobre un rango libre de fechas en vez de un mes fijo.
+    function sumarDiaISO_RD(fechaStr, dias){
+      const d = new Date(fechaStr+'T12:00:00');
+      d.setDate(d.getDate()+dias);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function formatFechaRD(f){ if(!f) return '—'; const [y,m,d]=f.split('-'); return `${d}/${m}/${y}`; }
+
+    function contarSubtiposRD(regsCategoria, producto){
+      const contador = {};
+      regsCategoria.forEach(r=>{
+        if(!r.detalle_producto) return;
+        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
+        const total = parseFloat(r.total)||0;
+        if(producto==='Taller' || producto==='Accesorio'){
+          (d.items||[]).forEach(item=>{
+            if(!contador[item]) contador[item]={cantidad:0,monto:0};
+            contador[item].cantidad+=1; contador[item].monto+=total;
+          });
+        }
+      });
+      return Object.entries(contador).map(([nombre,v])=>({nombre,cantidad:v.cantidad,monto:v.monto})).sort((a,b)=>b.cantidad-a.cantidad);
+    }
+
+    function rankingLiquidosGlobalRD(regs){
+      const contador = {};
+      regs.forEach(r=>{
+        if(!r.detalle_producto) return;
+        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
+        let items=[];
+        if(r.producto==='Liquidos') items=d.items||[];
+        else if(r.producto==='Lentes') items=d.liquidos||[];
+        items.forEach(it=>{
+          const nombre=`${it.producto||'—'} ${it.presentacion||''}`.trim();
+          if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+          contador[nombre].cantidad+=(parseInt(it.cantidad)||1);
+          contador[nombre].monto+=(parseFloat(it.precio)||0);
+        });
+      });
+      return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,5);
+    }
+
+    function rankingLentesContactoRD(regs){
+      const contador = {};
+      regs.filter(r=>r.producto==='Lentes').forEach(r=>{
+        if(!r.detalle_producto) return;
+        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
+        const nombre=d.marca||'Sin marca';
+        if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+        contador[nombre].cantidad+=1;
+        contador[nombre].monto+=(parseFloat(d.precioLente)||0);
+      });
+      return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10);
+    }
+
+    async function abrirModalRadiografia(){
+      const y=anioSel, m=mesSel;
+      const desde = `${y}-${String(m+1).padStart(2,'0')}-01`;
+      const ultimoDia = new Date(y, m+1, 0).getDate();
+      const hasta = `${y}-${String(m+1).padStart(2,'0')}-${String(ultimoDia).padStart(2,'0')}`;
+      document.getElementById('rd-desde').value = desde;
+      document.getElementById('rd-hasta').value = hasta;
+      document.getElementById('overlay-radiografia').classList.add('visible');
+      await cargarRadiografia();
+    }
+    function cerrarModalRadiografia(){ document.getElementById('overlay-radiografia').classList.remove('visible'); }
+    function cerrarRadiografiaFuera(e){ if(e.target===document.getElementById('overlay-radiografia')) cerrarModalRadiografia(); }
+
+    async function cargarRadiografia(){
+      const desde = document.getElementById('rd-desde').value;
+      const hasta = document.getElementById('rd-hasta').value;
+      if(!desde || !hasta) return;
+      const hastaSig = sumarDiaISO_RD(hasta, 1);
+      document.getElementById('rd-resumen-mini').textContent = 'Cargando...';
+      const { data } = await db.from('registros').select('*').gte('fecha',desde).lt('fecha',hastaSig).order('fecha',{ascending:true});
+      const regs = data || [];
+      document.getElementById('rd-resumen-mini').textContent = `${formatFechaRD(desde)} — ${formatFechaRD(hasta)} · ${regs.length} operaciones`;
+      renderRadiografia(regs);
+    }
+
+    function renderRadiografia(regs){
+      const ventas = regs.filter(r=>(parseFloat(r.egreso)||0)===0 && r.producto!=='Saldo');
+      const totalFacturado = ventas.reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+      const cantOps = ventas.length;
+      const ticketProm = cantOps>0 ? totalFacturado/cantOps : 0;
+      document.getElementById('rd-ticket').textContent = formatPesos(ticketProm);
+      document.getElementById('rd-total').textContent = formatPesos(totalFacturado);
+      document.getElementById('rd-ops').textContent = cantOps;
+
+      const rc = rankingLentesContactoRD(regs);
+      const rl = rankingLiquidosGlobalRD(regs);
+      document.getElementById('rd-ranking-lentes').innerHTML = rc.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : rc.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
+      document.getElementById('rd-ranking-liquidos').innerHTML = rl.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : rl.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
+
+      const tallerItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Taller'), 'Taller');
+      const accItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Accesorio'), 'Accesorio');
+      const totalTaller = tallerItems.reduce((s,i)=>s+i.cantidad,0);
+      const totalAcc = accItems.reduce((s,i)=>s+i.cantidad,0);
+
+      document.getElementById('rd-desglose-taller').innerHTML = tallerItems.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : tallerItems.map(i=>{ const p = totalTaller>0?(i.cantidad/totalTaller*100):0; return `<div class="rd-row"><span>${i.nombre}</span><span style="font-weight:700">${i.cantidad} · ${p.toFixed(0)}% · ${formatPesos(i.monto)}</span></div>`; }).join('');
+      document.getElementById('rd-desglose-accesorio').innerHTML = accItems.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : accItems.map(i=>{ const p = totalAcc>0?(i.cantidad/totalAcc*100):0; return `<div class="rd-row"><span>${i.nombre}</span><span style="font-weight:700">${i.cantidad} · ${p.toFixed(0)}% · ${formatPesos(i.monto)}</span></div>`; }).join('');
+
+      const nombresVend = empleados.length>0 ? empleados.map(e=>e.nombre) : ['Sandra','Valentina','Andres','Luis'];
+      const rankingVend = nombresVend.map(v=>({
+        nombre: v,
+        monto: ventas.filter(r=>r.vendedor===v).reduce((s,r)=>s+(parseFloat(r.total)||0),0),
+        cant: ventas.filter(r=>r.vendedor===v).length
+      })).filter(v=>v.cant>0).sort((a,b)=>b.monto-a.monto);
+      document.getElementById('rd-ranking-vendedoras').innerHTML = rankingVend.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : rankingVend.map((v,idx)=>`<div class="rd-row"><span>${idx+1}. ${v.nombre}</span><span style="font-weight:700">${v.cant} op · ${formatPesos(v.monto)}</span></div>`).join('');
+    }
+    // ═══ FIN RADIOGRAFÍA ══════════════════════════════════════════════
 
     // ═══ ESTRUCTURA FIJA MENSUAL (Motor de Rentabilidad — Fase 3) ══
     // Todo lo que sigue solo habla con datosRentabilidad.js — nunca hace
