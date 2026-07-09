@@ -166,13 +166,14 @@
     .asist-buscador { display: flex; gap: 8px; margin-bottom: 16px; }
     .asist-buscador input[type="date"] { flex: 1; background: white; border: none; border-radius: 12px; padding: 10px 12px; font-family: 'Nunito', sans-serif; font-size: 14px; color: #1e293b; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
     .asist-buscador button { background: #1E3A8A; color: white; border: none; border-radius: 12px; padding: 0 16px; font-size: 16px; cursor: pointer; }
-    .asist-resumen { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+    .asist-resumen { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 16px; }
     .asist-res-card { background: white; border-radius: 14px; padding: 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
     .asist-res-card.clicable { cursor: pointer; }
     .asist-res-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .asist-res-val { font-size: 20px; font-weight: 900; color: #1e293b; }
     .asist-res-val.verde { color: #10b981; }
     .asist-res-val.naranja { color: #f59e0b; }
+    .asist-res-val.morado { color: #7c3aed; }
     .asist-res-val.gris { color: #94a3b8; }
     .asist-faltantes-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
     .asist-falt-item { display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px; padding: 10px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; font-size: 13px; font-weight: 700; color: #1e293b; }
@@ -183,13 +184,22 @@
     .asist-cal-celda.ok { background: #d1fae5; }
     .asist-cal-celda.tarde1 { background: #fef3c7; }
     .asist-cal-celda.tarde2 { background: #fee2e2; }
+    .asist-cal-celda.falta { background: #ede9fe; }
     .asist-cal-celda.futuro { opacity: 0.4; cursor: default; box-shadow: none; }
     .asist-cal-celda.no-laboral { opacity: 0.3; background: none; box-shadow: none; cursor: default; }
     .asist-cal-num { font-size: 13px; font-weight: 800; color: #1e293b; }
     .asist-cal-hora { font-size: 9px; color: #64748b; font-weight: 700; }
+    .asist-cal-falta-txt { font-size: 9px; color: #6d28d9; font-weight: 800; }
     .asist-leyenda { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 20px; }
     .asist-leyenda span { display: flex; align-items: center; gap: 4px; }
     .asist-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+    /* ── ESTADO ASISTENCIA (modal) ── */
+    .asist-estado-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+    .asist-estado-btn { flex: 1; background: #f1f5f9; border: none; border-radius: 12px; padding: 12px 6px; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; color: #64748b; cursor: pointer; }
+    .asist-estado-btn.activo-asistio { background: #d1fae5; color: #065f46; }
+    .asist-estado-btn.activo-falto { background: #fee2e2; color: #991b1b; }
+    .aviso-falta-modal { background: #fee2e2; color: #991b1b; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px; text-align: center; }
 
     @media (min-width: 768px) {
       .overlay { align-items: center; }
@@ -197,6 +207,7 @@
       .hist-grid { grid-template-columns: repeat(3, 1fr); }
       .hist-resumen { grid-template-columns: repeat(4, 1fr); }
       .com-prod-grid { grid-template-columns: repeat(3, 1fr); }
+      .asist-resumen { grid-template-columns: repeat(4, 1fr); }
     }
   </style>
 <link rel="stylesheet" href="estetica.css" /></head>
@@ -277,6 +288,7 @@
           <div class="asist-resumen">
             <div class="asist-res-card"><div class="asist-res-label">A tiempo</div><div class="asist-res-val verde" id="asist-ok">0</div></div>
             <div class="asist-res-card"><div class="asist-res-label">Tarde</div><div class="asist-res-val naranja" id="asist-tarde">0</div></div>
+            <div class="asist-res-card"><div class="asist-res-label">Faltó</div><div class="asist-res-val morado" id="asist-falto">0</div></div>
             <div class="asist-res-card clicable" id="asist-card-faltantes" onclick="toggleFaltantesAsist()"><div class="asist-res-label">Sin cargar</div><div class="asist-res-val gris" id="asist-faltan">0</div></div>
           </div>
           <div id="asist-lista-faltantes" style="display:none" class="asist-faltantes-lista"></div>
@@ -286,6 +298,7 @@
             <span><span class="asist-dot" style="background:#d1fae5"></span> A horario</span>
             <span><span class="asist-dot" style="background:#fef3c7"></span> Hasta 15 min tarde</span>
             <span><span class="asist-dot" style="background:#fee2e2"></span> Más de 15 min tarde</span>
+            <span><span class="asist-dot" style="background:#ede9fe"></span> Faltó</span>
           </div>
         </div>
 
@@ -461,6 +474,13 @@
         <label>Horario de entrada esperado</label>
         <input type="time" id="emp-horario" value="09:30" />
       </div>
+      <div class="campo" style="margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:700;color:#475569">
+          <input type="checkbox" id="emp-registra-asistencia" style="width:18px;height:18px;cursor:pointer;accent-color:#1E3A8A" />
+          Registra asistencia
+        </label>
+        <small style="color:#94a3b8;font-size:12px">Solo los que tengan esto tildado aparecen en la pestaña Asistencia</small>
+      </div>
       <button class="btn-guardar" id="emp-btn-guardar" onclick="guardarEmpleado()">✅ Crear empleado</button>
       <button class="btn-cancelar" onclick="cerrarModal('overlay-empleado')">Cancelar</button>
     </div>
@@ -472,7 +492,12 @@
       <div class="modal-titulo" id="asist-titulo">Registrar llegada</div>
       <div class="modal-sub" id="asist-sub">—</div>
       <input type="hidden" id="asist-fecha" />
-      <div class="campo"><label>Hora de entrada</label><input type="time" id="asist-hora" /></div>
+      <div class="asist-estado-toggle">
+        <button type="button" class="asist-estado-btn" id="asist-btn-asistio" onclick="setEstadoAsist('asistio')">✅ Asistió</button>
+        <button type="button" class="asist-estado-btn" id="asist-btn-falto" onclick="setEstadoAsist('falto')">❌ Faltó</button>
+      </div>
+      <div id="asist-aviso-falta" class="aviso-falta-modal" style="display:none">Se registra como día faltado, sin horario de entrada.</div>
+      <div class="campo" id="asist-campo-hora"><label>Hora de entrada</label><input type="time" id="asist-hora" /></div>
       <div class="campo"><label>Notas (opcional)</label><input type="text" id="asist-notas" placeholder="Ej: avisó que llegaba tarde" autocomplete="off" /></div>
       <button class="btn-guardar" onclick="guardarAsistencia()">✅ Guardar</button>
       <button class="btn-cancelar" onclick="eliminarAsistenciaDia()" style="background:#fef2f2;color:#ef4444">🗑️ Borrar registro del día</button>
@@ -500,6 +525,7 @@
     function getComPct(nombre) { return getEmpleado(nombre)?.comision_pct || 0; }
     function getEmpleadosConSueldo() { return empleados.filter(e => e.tiene_sueldo && e.activo); }
     function getEmpleadosActivos() { return empleados.filter(e => e.activo); }
+    function getEmpleadosConAsistencia() { return empleados.filter(e => e.registra_asistencia && e.activo); }
 
     let mesActual = new Date().getMonth(), anioActual = new Date().getFullYear();
     const _d = new Date(); _d.setDate(1); _d.setMonth(_d.getMonth()-1);
@@ -680,6 +706,7 @@
               <span class="emp-badge ${e.activo?'verde':'gris'}">${e.activo?'✅ Activo':'⛔ Inactivo'}</span>
               ${e.tiene_sueldo ? '<span class="emp-badge azul">💰 Sueldo</span>' : ''}
               ${e.comision_pct > 0 ? `<span class="emp-badge celeste">📊 ${e.comision_pct}%</span>` : ''}
+              ${e.registra_asistencia ? '<span class="emp-badge celeste">📅 Asistencia</span>' : ''}
             </div>
           </div>
           <div class="emp-acciones">
@@ -701,6 +728,7 @@
       document.getElementById('emp-sueldo').value = '';
       document.getElementById('emp-comision').value = '0';
       document.getElementById('emp-horario').value = '09:30';
+      document.getElementById('emp-registra-asistencia').checked = false;
       document.getElementById('emp-btn-guardar').textContent = '✅ Crear empleado';
       document.getElementById('overlay-empleado').classList.add('visible');
     }
@@ -715,6 +743,7 @@
       setVal(document.getElementById('emp-sueldo'), e.sueldo_quincena);
       document.getElementById('emp-comision').value = e.comision_pct;
       document.getElementById('emp-horario').value = e.horario_entrada || '09:30';
+      document.getElementById('emp-registra-asistencia').checked = !!e.registra_asistencia;
       document.getElementById('emp-btn-guardar').textContent = '💾 Guardar cambios';
       document.getElementById('overlay-empleado').classList.add('visible');
     }
@@ -730,14 +759,15 @@
       const sueldo_quincena = tiene_sueldo ? (getVal(document.getElementById('emp-sueldo')) || 0) : 0;
       const comision_pct = parseFloat(document.getElementById('emp-comision').value) || 0;
       const horario_entrada = document.getElementById('emp-horario').value || '09:30';
+      const registra_asistencia = document.getElementById('emp-registra-asistencia').checked;
       if (!nombre) { alert('Ingresá el nombre'); return; }
       const btn = document.getElementById('emp-btn-guardar');
       btn.textContent = 'Guardando...'; btn.disabled = true;
       if (id) {
-        const { error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada }).eq('id', id);
+        const { error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, registra_asistencia }).eq('id', id);
         if (error) { alert('Error: ' + error.message); btn.textContent='💾 Guardar cambios'; btn.disabled=false; return; }
       } else {
-        const { error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, activo: true }]);
+        const { error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, registra_asistencia, activo: true }]);
         if (error) { alert('Error: ' + error.message); btn.textContent='✅ Crear empleado'; btn.disabled=false; return; }
       }
       cerrarModal('overlay-empleado');
@@ -816,14 +846,16 @@
     let asistMes = new Date().getMonth(), asistAnio = new Date().getFullYear();
     let asistDatos = [];
     let asistFaltantesArr = [];
+    let asistEstadoActual = 'asistio';
 
     function getPeriodoAsist(){ return `${asistAnio}-${String(asistMes+1).padStart(2,'0')}`; }
     function getPeriodoAsistLabel(){ return `${MESES[asistMes]} ${asistAnio}`; }
 
     function renderPillsAsist(){
       const cont = document.getElementById('asist-pills');
-      const lista = getEmpleadosActivos();
+      const lista = getEmpleadosConAsistencia();
       if((!asistEmpleadaActual || !lista.some(e=>e.nombre===asistEmpleadaActual)) && lista.length>0) asistEmpleadaActual = lista[0].nombre;
+      if(lista.length===0) asistEmpleadaActual = null;
       cont.innerHTML = lista.map(e => `<button class="asist-pill ${e.nombre===asistEmpleadaActual?'activo':''}" onclick="seleccionarEmpAsist('${e.nombre}')">${e.nombre}</button>`).join('');
     }
 
@@ -846,7 +878,8 @@
       return e?.horario_entrada || '09:30';
     }
 
-    function estadoAsist(nombre, hora){
+    function estadoAsist(nombre, hora, falto){
+      if(falto) return 'falta';
       if(!hora) return 'vacio';
       const diff = toMinAsist(hora) - toMinAsist(getHorarioEsperado(nombre));
       if(diff<=0) return 'ok';
@@ -857,7 +890,7 @@
     async function cargarAsistencia(){
       document.getElementById('asist-mes-nombre').textContent = getPeriodoAsistLabel();
       renderPillsAsist();
-      if(!asistEmpleadaActual){ document.getElementById('asist-cal-grid').innerHTML=''; return; }
+      if(!asistEmpleadaActual){ document.getElementById('asist-cal-grid').innerHTML='<div class="empty">No hay empleados con asistencia habilitada.<br>Andá a 👤 Personal y tildá "Registra asistencia".</div>'; return; }
       const periodo = getPeriodoAsist();
       const periodoSig = getMesSig(asistMes,asistAnio);
       const cacheKey = 'asistencia_'+asistEmpleadaActual+'_'+periodo;
@@ -877,12 +910,13 @@
       const hoy = new Date(); hoy.setHours(0,0,0,0);
       let html='';
       for(let i=0;i<offset;i++) html += '<div></div>';
-      let ok=0, tarde=0, faltan=0;
+      let ok=0, tarde=0, faltan=0, faltoCount=0;
       const faltantesArr = [];
       for(let d=1; d<=diasEnMes; d++){
         const fecha = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const reg = asistDatos.find(r=>r.fecha===fecha);
         const hora = reg?.hora_entrada || null;
+        const falto = !!reg?.falto;
         const fechaObj = new Date(asistAnio, asistMes, d);
         const esNoLaboral = fechaObj.getDay()===0;
         const esFuturo = fechaObj > hoy;
@@ -890,19 +924,22 @@
         if(esNoLaboral){ cls += ' no-laboral'; }
         else if(esFuturo){ cls += ' futuro'; }
         else {
-          const est = estadoAsist(asistEmpleadaActual, hora);
+          const est = estadoAsist(asistEmpleadaActual, hora, falto);
           if(est==='ok'){ cls+=' ok'; ok++; }
           else if(est==='tarde1'){ cls+=' tarde1'; tarde++; }
           else if(est==='tarde2'){ cls+=' tarde2'; tarde++; }
+          else if(est==='falta'){ cls+=' falta'; faltoCount++; }
           else { faltan++; faltantesArr.push(d); }
         }
         const clickable = !(esNoLaboral||esFuturo);
         const onclickAttr = clickable ? `onclick="abrirModalAsistencia('${fecha}')"` : '';
-        html += `<div class="${cls}" ${onclickAttr}><span class="asist-cal-num">${d}</span>${hora?`<span class="asist-cal-hora">${hora}</span>`:''}</div>`;
+        const subTxt = falto ? `<span class="asist-cal-falta-txt">Faltó</span>` : (hora?`<span class="asist-cal-hora">${hora}</span>`:'');
+        html += `<div class="${cls}" ${onclickAttr}><span class="asist-cal-num">${d}</span>${subTxt}</div>`;
       }
       grid.innerHTML = html;
       document.getElementById('asist-ok').textContent = ok;
       document.getElementById('asist-tarde').textContent = tarde;
+      document.getElementById('asist-falto').textContent = faltoCount;
       document.getElementById('asist-faltan').textContent = faltan;
       asistFaltantesArr = faltantesArr;
       const listaEl = document.getElementById('asist-lista-faltantes');
@@ -924,6 +961,16 @@
       }).join('');
     }
 
+    function setEstadoAsist(estado){
+      asistEstadoActual = estado;
+      const btnAsistio = document.getElementById('asist-btn-asistio');
+      const btnFalto = document.getElementById('asist-btn-falto');
+      btnAsistio.classList.toggle('activo-asistio', estado==='asistio');
+      btnFalto.classList.toggle('activo-falto', estado==='falto');
+      document.getElementById('asist-campo-hora').style.display = estado==='asistio' ? 'block' : 'none';
+      document.getElementById('asist-aviso-falta').style.display = estado==='falto' ? 'block' : 'none';
+    }
+
     async function abrirModalAsistencia(fecha){
       const [y,m,d] = fecha.split('-').map(Number);
       if((m-1)!==asistMes || y!==asistAnio){
@@ -934,19 +981,26 @@
       document.getElementById('asist-titulo').textContent = `Llegada — ${asistEmpleadaActual}`;
       document.getElementById('asist-sub').textContent = `${d} de ${MESES[m-1]} ${y} · Horario esperado: ${getHorarioEsperado(asistEmpleadaActual)}`;
       document.getElementById('asist-fecha').value = fecha;
-      document.getElementById('asist-hora').value = reg?.hora_entrada || '';
+      document.getElementById('asist-hora').value = reg?.hora_entrada || getHorarioEsperado(asistEmpleadaActual);
       document.getElementById('asist-notas').value = reg?.notas || '';
+      setEstadoAsist(reg?.falto ? 'falto' : 'asistio');
       document.getElementById('overlay-asistencia').classList.add('visible');
     }
 
     async function guardarAsistencia(){
       const fecha = document.getElementById('asist-fecha').value;
-      const hora = document.getElementById('asist-hora').value;
       const notas = document.getElementById('asist-notas').value;
-      if(!hora){ alert('Ingresá la hora de entrada'); return; }
       const btn = document.querySelector('#overlay-asistencia .btn-guardar');
+      let payload;
+      if(asistEstadoActual === 'falto'){
+        payload = { empleada: asistEmpleadaActual, fecha, hora_entrada: null, falto: true, notas };
+      } else {
+        const hora = document.getElementById('asist-hora').value;
+        if(!hora){ alert('Ingresá la hora de entrada'); return; }
+        payload = { empleada: asistEmpleadaActual, fecha, hora_entrada: hora, falto: false, notas };
+      }
       btn.textContent='Guardando...'; btn.disabled=true;
-      const { error } = await db.from('asistencias').upsert([{ empleada: asistEmpleadaActual, fecha, hora_entrada: hora, notas }], { onConflict: 'empleada,fecha' });
+      const { error } = await db.from('asistencias').upsert([payload], { onConflict: 'empleada,fecha' });
       btn.textContent='✅ Guardar'; btn.disabled=false;
       if(error){ alert('Error: '+error.message); return; }
       OlvisionCache.clear('asistencia_'+asistEmpleadaActual+'_'+getPeriodoAsist());
