@@ -201,8 +201,16 @@
     .rd-stat { background: #f8fafc; border-radius: 12px; padding: 12px; text-align: center; }
     .rd-stat-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; }
     .rd-stat-valor { font-size: 16px; font-weight: 900; color: #1e293b; margin-top: 4px; }
-    .rd-seccion-titulo { font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; }
-    .rd-row { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 10px; padding: 7px 12px; margin-bottom: 5px; font-size: 12px; color: #1e293b; }
+    .rd-card { background: #f8fafc; border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; }
+    .rd-card-titulo { font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 10px; }
+    .rd-subtitulo { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .rd-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+    .rd-item-pos { font-size: 12px; color: #94a3b8; min-width: 22px; }
+    .rd-item-nombre { font-size: 13px; color: #1e293b; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rd-item-barra-wrap { width: 70px; height: 5px; background: #e2e8f0; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .rd-item-barra { height: 100%; background: #1E3A8A; border-radius: 4px; }
+    .rd-item-cant { font-size: 13px; font-weight: 800; color: #1e293b; min-width: 26px; text-align: right; }
+    .rd-item-extra { font-size: 11px; color: #94a3b8; min-width: 100px; text-align: right; white-space: nowrap; }
 
     @media (max-width: 640px) {
       .bento-row-2 { grid-template-columns: 1fr; }
@@ -437,41 +445,40 @@
         <div class="rd-stat"><div class="rd-stat-label">Operaciones</div><div class="rd-stat-valor" id="rd-ops">0</div></div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
-        <div>
-          <div class="rd-seccion-titulo">👁️ Top 10 marcas de lentes de contacto</div>
-          <div id="rd-ranking-lentes"></div>
-        </div>
-        <div>
-          <div class="rd-seccion-titulo">💧 Top 5 líquidos</div>
-          <div id="rd-ranking-liquidos"></div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
-        <div>
-          <div class="rd-seccion-titulo">➖ Graduaciones negativas (miopía) más vendidas</div>
-          <div id="rd-grad-neg"></div>
-        </div>
-        <div>
-          <div class="rd-seccion-titulo">➕ Graduaciones positivas (hipermetropía) más vendidas</div>
-          <div id="rd-grad-pos"></div>
+      <div class="rd-card">
+        <div class="rd-card-titulo">👁️ Lentes de contacto</div>
+        <div class="rd-subtitulo">Marcas más vendidas</div>
+        <div id="rd-ranking-lentes"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+          <div>
+            <div class="rd-subtitulo">➖ Graduaciones negativas</div>
+            <div id="rd-grad-neg"></div>
+          </div>
+          <div>
+            <div class="rd-subtitulo">➕ Graduaciones positivas</div>
+            <div id="rd-grad-pos"></div>
+          </div>
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
-        <div>
-          <div class="rd-seccion-titulo">🔧 Desglose Taller</div>
+      <div class="rd-card">
+        <div class="rd-card-titulo">💧 Líquidos más vendidos</div>
+        <div id="rd-ranking-liquidos"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="rd-card">
+          <div class="rd-card-titulo">🔧 Desglose taller</div>
           <div id="rd-desglose-taller"></div>
         </div>
-        <div>
-          <div class="rd-seccion-titulo">🎀 Desglose Accesorio</div>
+        <div class="rd-card">
+          <div class="rd-card-titulo">🎀 Desglose accesorio</div>
           <div id="rd-desglose-accesorio"></div>
         </div>
       </div>
 
-      <div style="margin-bottom:18px">
-        <div class="rd-seccion-titulo">👥 Ranking vendedoras del período</div>
+      <div class="rd-card">
+        <div class="rd-card-titulo">👥 Ranking vendedoras del período</div>
         <div id="rd-ranking-vendedoras"></div>
       </div>
 
@@ -1024,6 +1031,28 @@
       return Object.entries(contador).map(([nombre,cantidad])=>({nombre,cantidad})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,5);
     }
 
+    // Fila de ranking con medalla (top 3), barra proporcional a la cantidad
+    // y un dato extra opcional (monto, %, etc.) alineado a la derecha.
+    const MEDALLAS_RD = ['🥇','🥈','🥉'];
+    function filaRankingRD(idx, nombre, cantidad, maxCantidad, extra){
+      const pct = maxCantidad>0 ? Math.round(cantidad/maxCantidad*100) : 0;
+      const pos = MEDALLAS_RD[idx] || (idx+1)+'.';
+      return `<div class="rd-item">
+        <span class="rd-item-pos">${pos}</span>
+        <span class="rd-item-nombre">${nombre}</span>
+        <div class="rd-item-barra-wrap"><div class="rd-item-barra" style="width:${pct}%"></div></div>
+        <span class="rd-item-cant">${cantidad}</span>
+        ${extra?`<span class="rd-item-extra">${extra}</span>`:''}
+      </div>`;
+    }
+    function renderRankingRD(elId, items, extraFn){
+      const el = document.getElementById(elId);
+      if(!el) return;
+      if(items.length===0){ el.innerHTML = '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'; return; }
+      const max = Math.max(...items.map(i=>i.cantidad),1);
+      el.innerHTML = items.map((i,idx)=>filaRankingRD(idx, i.nombre, i.cantidad, max, extraFn?extraFn(i):null)).join('');
+    }
+
     async function abrirModalRadiografia(){
       const y=anioSel, m=mesSel;
       const desde = `${y}-${String(m+1).padStart(2,'0')}-01`;
@@ -1060,43 +1089,28 @@
 
       const rc = rankingLentesContactoRD(regs);
       const rl = rankingLiquidosGlobalRD(regs);
-      document.getElementById('rd-ranking-lentes').innerHTML = rc.length===0
-        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
-        : rc.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
-      document.getElementById('rd-ranking-liquidos').innerHTML = rl.length===0
-        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
-        : rl.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
+      renderRankingRD('rd-ranking-lentes', rc, i=>formatPesos(i.monto));
+      renderRankingRD('rd-ranking-liquidos', rl, i=>formatPesos(i.monto));
 
       const rgNeg = rankingGraduacionesRD(regs, 'neg');
       const rgPos = rankingGraduacionesRD(regs, 'pos');
-      document.getElementById('rd-grad-neg').innerHTML = rgNeg.length===0
-        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
-        : rgNeg.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
-      document.getElementById('rd-grad-pos').innerHTML = rgPos.length===0
-        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
-        : rgPos.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
+      renderRankingRD('rd-grad-neg', rgNeg);
+      renderRankingRD('rd-grad-pos', rgPos);
 
       const tallerItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Taller'), 'Taller');
       const accItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Accesorio'), 'Accesorio');
       const totalTaller = tallerItems.reduce((s,i)=>s+i.cantidad,0);
       const totalAcc = accItems.reduce((s,i)=>s+i.cantidad,0);
-
-      document.getElementById('rd-desglose-taller').innerHTML = tallerItems.length===0
-        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
-        : tallerItems.map(i=>{ const p = totalTaller>0?(i.cantidad/totalTaller*100):0; return `<div class="rd-row"><span>${i.nombre}</span><span style="font-weight:700">${i.cantidad} · ${p.toFixed(0)}% · ${formatPesos(i.monto)}</span></div>`; }).join('');
-      document.getElementById('rd-desglose-accesorio').innerHTML = accItems.length===0
-        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
-        : accItems.map(i=>{ const p = totalAcc>0?(i.cantidad/totalAcc*100):0; return `<div class="rd-row"><span>${i.nombre}</span><span style="font-weight:700">${i.cantidad} · ${p.toFixed(0)}% · ${formatPesos(i.monto)}</span></div>`; }).join('');
+      renderRankingRD('rd-desglose-taller', tallerItems, i=>{ const p = totalTaller>0?(i.cantidad/totalTaller*100):0; return `${p.toFixed(0)}% · ${formatPesos(i.monto)}`; });
+      renderRankingRD('rd-desglose-accesorio', accItems, i=>{ const p = totalAcc>0?(i.cantidad/totalAcc*100):0; return `${p.toFixed(0)}% · ${formatPesos(i.monto)}`; });
 
       const nombresVend = empleados.length>0 ? empleados.map(e=>e.nombre) : ['Sandra','Valentina','Andres','Luis'];
       const rankingVend = nombresVend.map(v=>({
         nombre: v,
-        monto: ventas.filter(r=>r.vendedor===v).reduce((s,r)=>s+(parseFloat(r.total)||0),0),
-        cant: ventas.filter(r=>r.vendedor===v).length
-      })).filter(v=>v.cant>0).sort((a,b)=>b.monto-a.monto);
-      document.getElementById('rd-ranking-vendedoras').innerHTML = rankingVend.length===0
-        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
-        : rankingVend.map((v,idx)=>`<div class="rd-row"><span>${idx+1}. ${v.nombre}</span><span style="font-weight:700">${v.cant} op · ${formatPesos(v.monto)}</span></div>`).join('');
+        cantidad: ventas.filter(r=>r.vendedor===v).length,
+        monto: ventas.filter(r=>r.vendedor===v).reduce((s,r)=>s+(parseFloat(r.total)||0),0)
+      })).filter(v=>v.cantidad>0).sort((a,b)=>b.monto-a.monto);
+      renderRankingRD('rd-ranking-vendedoras', rankingVend, i=>formatPesos(i.monto));
     }
     // ═══ FIN RADIOGRAFÍA ══════════════════════════════════════════════
 
