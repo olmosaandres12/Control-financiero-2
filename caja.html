@@ -1123,11 +1123,15 @@
         let items=[];
         if(r.producto==='Liquidos') items=d.items||[];
         else if(r.producto==='Lentes') items=d.liquidos||[];
+        if(!items.length) return;
+        const totalRegistro = parseFloat(r.total)||0;
         items.forEach(it=>{
           const nombre=`${it.producto||'—'} ${it.presentacion||''}`.trim();
           if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
           contador[nombre].cantidad+=(parseInt(it.cantidad)||1);
-          contador[nombre].monto+=(parseFloat(it.precio)||0);
+          let montoItem = parseFloat(it.precio)||0;
+          if(!montoItem && totalRegistro>0) montoItem = totalRegistro/items.length;
+          contador[nombre].monto+=montoItem;
         });
       });
       return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,5);
@@ -1141,7 +1145,9 @@
         const nombre=d.marca||'Sin marca';
         if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
         contador[nombre].cantidad+=1;
-        contador[nombre].monto+=(parseFloat(d.precioLente)||0);
+        let montoItem = parseFloat(d.precioLente)||0;
+        if(!montoItem) montoItem = parseFloat(r.total)||0;
+        contador[nombre].monto+=montoItem;
       });
       return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10);
     }
