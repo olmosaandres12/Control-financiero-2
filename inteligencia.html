@@ -439,12 +439,23 @@
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
         <div>
-          <div class="rd-seccion-titulo">👁️ Top 10 lentes de contacto</div>
+          <div class="rd-seccion-titulo">👁️ Top 10 marcas de lentes de contacto</div>
           <div id="rd-ranking-lentes"></div>
         </div>
         <div>
           <div class="rd-seccion-titulo">💧 Top 5 líquidos</div>
           <div id="rd-ranking-liquidos"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+        <div>
+          <div class="rd-seccion-titulo">➖ Graduaciones negativas (miopía) más vendidas</div>
+          <div id="rd-grad-neg"></div>
+        </div>
+        <div>
+          <div class="rd-seccion-titulo">➕ Graduaciones positivas (hipermetropía) más vendidas</div>
+          <div id="rd-grad-pos"></div>
         </div>
       </div>
 
@@ -993,6 +1004,26 @@
       return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10);
     }
 
+    // Cuenta OD y OI por separado (cada ojo es un lente despachado), agrupando
+    // por el valor exacto de graduación cargado (ej. "-2.25"). signo: 'neg' o 'pos'.
+    function rankingGraduacionesRD(regs, signo){
+      const contador = {};
+      regs.filter(r=>r.producto==='Lentes').forEach(r=>{
+        if(!r.detalle_producto) return;
+        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
+        [d.od, d.oi].forEach(g=>{
+          if(!g) return;
+          const gTrim = String(g).trim();
+          if(!gTrim) return;
+          if(signo==='neg' && gTrim[0]!=='-') return;
+          if(signo==='pos' && gTrim[0]!=='+') return;
+          if(!contador[gTrim]) contador[gTrim]=0;
+          contador[gTrim]++;
+        });
+      });
+      return Object.entries(contador).map(([nombre,cantidad])=>({nombre,cantidad})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,5);
+    }
+
     async function abrirModalRadiografia(){
       const y=anioSel, m=mesSel;
       const desde = `${y}-${String(m+1).padStart(2,'0')}-01`;
@@ -1035,6 +1066,15 @@
       document.getElementById('rd-ranking-liquidos').innerHTML = rl.length===0
         ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
         : rl.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
+
+      const rgNeg = rankingGraduacionesRD(regs, 'neg');
+      const rgPos = rankingGraduacionesRD(regs, 'pos');
+      document.getElementById('rd-grad-neg').innerHTML = rgNeg.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : rgNeg.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
+      document.getElementById('rd-grad-pos').innerHTML = rgPos.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : rgPos.map((i,idx)=>`<div class="rd-row"><span>${idx+1}. ${i.nombre}</span><span style="font-weight:700">${i.cantidad}</span></div>`).join('');
 
       const tallerItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Taller'), 'Taller');
       const accItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Accesorio'), 'Accesorio');
