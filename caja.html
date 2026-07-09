@@ -259,6 +259,10 @@
     .dp-grad-opt { padding: 9px 12px; font-size: 13px; font-weight: 700; color: #1e293b; cursor: pointer; }
     .dp-grad-opt:hover, .dp-grad-opt:active { background: #eff6ff; color: #1E3A8A; }
 
+    .chip-cat { display: inline-flex; align-items: center; padding: 7px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: white; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; margin: 0 6px 6px 0; }
+    .chip-cat.activo { background: #eff6ff; border-color: #1E3A8A; color: #1E3A8A; }
+    .ar-fecha-input { padding: 8px 10px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 13px; color: #1e293b; }
+
     @media (min-width: 768px) {
       .overlay { align-items: center; }
       .modal { border-radius: 24px; max-height: 85vh; margin: 20px; }
@@ -357,6 +361,39 @@
             <span class="mes-nombre" id="hist-mes-nombre">—</span>
             <button class="mes-btn" onclick="cambiarMesHist(1)">›</button>
           </div>
+
+          <!-- ══ ANÁLISIS POR RANGO Y CATEGORÍA ══ -->
+          <div class="tabla-header" onclick="toggleAnalisisRango()">
+            <div><div class="tabla-header-titulo">📈 Análisis por rango y categoría</div><div class="tabla-header-cant" id="ar-resumen-mini">Tocá para elegir un rango de fechas y categorías</div></div>
+            <span class="tabla-chevron" id="ar-chevron">▾</span>
+          </div>
+          <div class="tabla-wrap" id="ar-wrap" style="background:white;padding:16px;border-radius:0 0 16px 16px;margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+              <span style="font-size:13px;font-weight:700;color:#64748b">📅 Desde</span>
+              <input type="date" id="ar-desde" class="ar-fecha-input" onchange="cargarAnalisisRango()" />
+              <span style="font-size:13px;font-weight:700;color:#64748b">Hasta</span>
+              <input type="date" id="ar-hasta" class="ar-fecha-input" onchange="cargarAnalisisRango()" />
+            </div>
+            <div id="ar-chips" style="margin-bottom:14px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+              <div class="stat-card" style="text-align:center;padding:12px"><div class="stat-label">Total período</div><div class="stat-valor" id="ar-total-periodo" style="font-size:16px">$0</div></div>
+              <div class="stat-card" style="text-align:center;padding:12px"><div class="stat-label">Categorías elegidas</div><div class="stat-valor" id="ar-total-sel" style="font-size:16px">$0</div></div>
+              <div class="stat-card" style="text-align:center;padding:12px;background:#eff6ff"><div class="stat-label" style="color:#1e40af">% sobre total</div><div class="stat-valor" id="ar-pct-sel" style="font-size:16px;color:#1e40af">0%</div></div>
+            </div>
+            <div id="ar-detalle-subtipo" style="margin-bottom:16px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div>
+                <div class="formas-titulo" style="font-size:12px">💧 Top líquidos</div>
+                <div id="ar-ranking-liquidos"></div>
+              </div>
+              <div>
+                <div class="formas-titulo" style="font-size:12px">👁️ Top lentes de contacto</div>
+                <div id="ar-ranking-lentes"></div>
+              </div>
+            </div>
+          </div>
+          <!-- ══ FIN ANÁLISIS POR RANGO Y CATEGORÍA ══ -->
+
           <div class="filtros-bar" id="filtros-hist-bar">
             <select class="filtro-select" id="fhi-vendedor" onchange="aplicarFiltrosHist()"><option value="">Vendedor</option></select>
             <select class="filtro-select" id="fhi-producto" onchange="aplicarFiltrosHist()">
@@ -988,6 +1025,168 @@
         }
       } catch(e){return '';}
     }
+
+    // ── ANÁLISIS POR RANGO Y CATEGORÍA ────────────────────────
+    const PRODUCTOS_ANALISIS = ['Recetado','Sol','Lentes','Taller','Accesorio','Liquidos','Pase','PAMI','Reposicion C.'];
+    const CATEGORIAS_CON_DETALLE = ['Taller','Accesorio','Liquidos','Lentes'];
+    let arSeleccionados = new Set();
+    let arRegsActuales = [];
+    let arAbierto = false;
+
+    function idChipAr(p){ return 'ar-chip-'+p.replace(/[\s.]/g,''); }
+
+    function poblarChipsAr(){
+      const cont = document.getElementById('ar-chips');
+      if(!cont) return;
+      cont.innerHTML = PRODUCTOS_ANALISIS.map(p=>`<button type="button" class="chip-cat" id="${idChipAr(p)}" onclick="toggleChipAr('${p}')">${p}</button>`).join('');
+    }
+    function actualizarEstiloChipsAr(){
+      PRODUCTOS_ANALISIS.forEach(p=>{
+        const el=document.getElementById(idChipAr(p));
+        if(el) el.classList.toggle('activo', arSeleccionados.has(p));
+      });
+    }
+    function toggleChipAr(producto){
+      if(arSeleccionados.has(producto)) arSeleccionados.delete(producto); else arSeleccionados.add(producto);
+      actualizarEstiloChipsAr();
+      renderAnalisisRango(arRegsActuales);
+    }
+
+    function toggleAnalisisRango(){
+      arAbierto = !arAbierto;
+      document.getElementById('ar-wrap').classList.toggle('visible', arAbierto);
+      document.getElementById('ar-chevron').classList.toggle('abierto', arAbierto);
+      if(arAbierto && !arRegsActuales.length) inicializarRangoPorDefecto();
+    }
+
+    function inicializarRangoPorDefecto(){
+      const y=histAnio, m=histMes;
+      const desde = `${y}-${String(m+1).padStart(2,'0')}-01`;
+      const ultimoDia = new Date(y, m+1, 0).getDate();
+      const hasta = `${y}-${String(m+1).padStart(2,'0')}-${String(ultimoDia).padStart(2,'0')}`;
+      document.getElementById('ar-desde').value = desde;
+      document.getElementById('ar-hasta').value = hasta;
+      cargarAnalisisRango();
+    }
+
+    function sumarDiaISO(fechaStr, dias){
+      const d = new Date(fechaStr+'T12:00:00');
+      d.setDate(d.getDate()+dias);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    async function cargarAnalisisRango(){
+      const desde = document.getElementById('ar-desde').value;
+      const hasta = document.getElementById('ar-hasta').value;
+      if(!desde || !hasta) return;
+      const hastaSig = sumarDiaISO(hasta, 1);
+      document.getElementById('ar-resumen-mini').textContent = 'Cargando...';
+      const { data } = await db.from('registros').select('*').gte('fecha',desde).lt('fecha',hastaSig).order('fecha',{ascending:true});
+      arRegsActuales = data || [];
+      document.getElementById('ar-resumen-mini').textContent = `${formatFecha(desde)} — ${formatFecha(hasta)} · ${arRegsActuales.length} operaciones`;
+      renderAnalisisRango(arRegsActuales);
+    }
+
+    function contarSubtipos(regsCategoria, producto){
+      const contador = {};
+      regsCategoria.forEach(r=>{
+        if(!r.detalle_producto) return;
+        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
+        const total = parseFloat(r.total)||0;
+        if(producto==='Taller' || producto==='Accesorio'){
+          (d.items||[]).forEach(item=>{
+            if(!contador[item]) contador[item]={cantidad:0,monto:0};
+            contador[item].cantidad+=1; contador[item].monto+=total;
+          });
+        } else if(producto==='Liquidos'){
+          (d.items||[]).forEach(it=>{
+            const nombre=`${it.producto||'—'} ${it.presentacion||''}`.trim();
+            if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+            contador[nombre].cantidad+=(parseInt(it.cantidad)||1);
+            contador[nombre].monto+=(parseFloat(it.precio)||0);
+          });
+        } else if(producto==='Lentes'){
+          const nombre=d.marca||'Sin marca';
+          if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+          contador[nombre].cantidad+=1;
+          contador[nombre].monto+=(parseFloat(d.precioLente)||0);
+        }
+      });
+      return Object.entries(contador).map(([nombre,v])=>({nombre,cantidad:v.cantidad,monto:v.monto})).sort((a,b)=>b.cantidad-a.cantidad);
+    }
+
+    function rankingLiquidosGlobal(regs){
+      const contador = {};
+      regs.forEach(r=>{
+        if(!r.detalle_producto) return;
+        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
+        let items=[];
+        if(r.producto==='Liquidos') items=d.items||[];
+        else if(r.producto==='Lentes') items=d.liquidos||[];
+        items.forEach(it=>{
+          const nombre=`${it.producto||'—'} ${it.presentacion||''}`.trim();
+          if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+          contador[nombre].cantidad+=(parseInt(it.cantidad)||1);
+          contador[nombre].monto+=(parseFloat(it.precio)||0);
+        });
+      });
+      return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,5);
+    }
+
+    function rankingLentesContacto(regs){
+      const contador = {};
+      regs.filter(r=>r.producto==='Lentes').forEach(r=>{
+        if(!r.detalle_producto) return;
+        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
+        const nombre=d.marca||'Sin marca';
+        if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+        contador[nombre].cantidad+=1;
+        contador[nombre].monto+=(parseFloat(d.precioLente)||0);
+      });
+      return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10);
+    }
+
+    function renderAnalisisRango(regs){
+      const ventas = regs.filter(r=>(parseFloat(r.egreso)||0)===0 && r.producto!=='Saldo');
+      const totalPeriodo = ventas.reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+      const seleccionAct = [...arSeleccionados];
+      const ventasSel = seleccionAct.length ? ventas.filter(r=>seleccionAct.includes(r.producto)) : [];
+      const totalSel = ventasSel.reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+      const pct = totalPeriodo>0 ? (totalSel/totalPeriodo*100) : 0;
+
+      document.getElementById('ar-total-periodo').textContent = formatPesos(totalPeriodo);
+      document.getElementById('ar-total-sel').textContent = formatPesos(totalSel);
+      document.getElementById('ar-pct-sel').textContent = pct.toFixed(1)+'%';
+
+      const wrap = document.getElementById('ar-detalle-subtipo');
+      const categoriasConDetalle = seleccionAct.filter(c=>CATEGORIAS_CON_DETALLE.includes(c));
+      if(seleccionAct.length===0){
+        wrap.innerHTML = '<div style="color:#94a3b8;font-size:12px;text-align:center;padding:8px 0">Elegí una o más categorías arriba para ver el desglose</div>';
+      } else if(categoriasConDetalle.length===0){
+        wrap.innerHTML = '';
+      } else {
+        wrap.innerHTML = categoriasConDetalle.map(cat=>{
+          const regsCat = ventas.filter(r=>r.producto===cat);
+          const subitems = contarSubtipos(regsCat, cat);
+          const totalCant = subitems.reduce((s,i)=>s+i.cantidad,0);
+          if(subitems.length===0) return `<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:800;color:#64748b;margin-bottom:6px">${cat}</div><div style="color:#94a3b8;font-size:12px">Sin sub-tipo cargado en este rango</div></div>`;
+          return `<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:800;color:#64748b;margin-bottom:6px">${cat} · ${totalCant} operacion${totalCant!==1?'es':''}</div>${subitems.map(i=>{
+            const p = totalCant>0?(i.cantidad/totalCant*100):0;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:10px;padding:8px 12px;margin-bottom:5px"><span style="font-size:13px;color:#1e293b">${i.nombre}</span><span style="font-size:13px;font-weight:700;color:#1e293b">${i.cantidad} · ${p.toFixed(0)}% · ${formatPesos(i.monto)}</span></div>`;
+          }).join('')}</div>`;
+        }).join('');
+      }
+
+      const rl = rankingLiquidosGlobal(regs);
+      const rc = rankingLentesContacto(regs);
+      document.getElementById('ar-ranking-liquidos').innerHTML = rl.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : rl.map((i,idx)=>`<div style="display:flex;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:7px 12px;margin-bottom:5px"><span style="font-size:12px">${idx+1}. ${i.nombre}</span><span style="font-size:12px;font-weight:700">${i.cantidad}</span></div>`).join('');
+      document.getElementById('ar-ranking-lentes').innerHTML = rc.length===0
+        ? '<div style="color:#94a3b8;font-size:12px">Sin datos en el rango</div>'
+        : rc.map((i,idx)=>`<div style="display:flex;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:7px 12px;margin-bottom:5px"><span style="font-size:12px">${idx+1}. ${i.nombre}</span><span style="font-size:12px;font-weight:700">${i.cantidad}</span></div>`).join('');
+    }
+    // ── FIN ANÁLISIS POR RANGO Y CATEGORÍA ────────────────────
 
     // ── INDICADORES COMERCIALES ───────────────────────────────
     const PRODUCTOS_OPTICOS = ['Recetado','Reposicion C.','PAMI','Pase'];
@@ -2099,7 +2298,7 @@
     }
     // ── FIN INTEGRACIÓN INVENTARIO ────────────────────────────
 
-    async function init(){await Promise.all([cargarEmpleados(),cargarOpcionesProducto()]);cargar();}
+    async function init(){await Promise.all([cargarEmpleados(),cargarOpcionesProducto()]);poblarChipsAr();cargar();}
     init();
   </script>
 </body>
