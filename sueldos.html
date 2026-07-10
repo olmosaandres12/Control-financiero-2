@@ -179,18 +179,30 @@
     .asist-falt-item { display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px; padding: 10px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; font-size: 13px; font-weight: 700; color: #1e293b; }
     .asist-falt-item span.link { color: #1E3A8A; font-weight: 800; }
     .asist-cal-dias { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 6px; font-weight: 700; }
-    .asist-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-bottom: 16px; }
-    .asist-cal-celda { min-height: 58px; border-radius: 10px; background: #f8fafc; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 5px 3px; gap: 2px; cursor: pointer; font-family: 'Nunito', sans-serif; }
+    .asist-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; margin-bottom: 16px; }
+    .asist-cal-celda { min-height: 78px; border-radius: 14px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: stretch; padding: 8px; gap: 5px; cursor: pointer; font-family: 'Nunito', sans-serif; transition: transform .1s, box-shadow .15s; }
+    .asist-cal-celda:hover { box-shadow: 0 4px 10px rgba(30,58,138,0.12); }
+    .asist-cal-celda:active { transform: scale(0.97); }
     .asist-cal-celda.futuro { opacity: 0.4; cursor: default; box-shadow: none; }
-    .asist-cal-celda.no-laboral { opacity: 0.3; background: none; box-shadow: none; cursor: default; }
-    .asist-cal-num { font-size: 12px; font-weight: 800; color: #1e293b; }
-    .asist-cal-chip { width: 100%; border-radius: 6px; font-size: 8.5px; font-weight: 800; padding: 2px 3px; text-align: center; line-height: 1.25; }
-    .asist-cal-chip.pendiente { background: #e2e8f0; color: #64748b; }
-    .asist-cal-chip.ok { background: #d1fae5; color: #065f46; }
-    .asist-cal-chip.tarde1 { background: #fef3c7; color: #92400e; }
-    .asist-cal-chip.tarde2 { background: #fee2e2; color: #991b1b; }
-    .asist-cal-chip.falta { background: #fee2e2; color: #991b1b; }
-    .asist-cal-chip.especial { background: #ede9fe; color: #5b21b6; }
+    .asist-cal-celda.futuro:hover, .asist-cal-celda.futuro:active { transform: none; box-shadow: none; }
+    .asist-cal-celda.no-laboral { opacity: 0.25; background: none; box-shadow: none; cursor: default; }
+    .asist-cal-celda.hoy { outline: 2px solid #1E3A8A; outline-offset: -2px; }
+    .asist-cal-num { font-size: 13px; font-weight: 900; color: #1e293b; text-align: left; }
+    .asist-cal-chip { display: flex; align-items: center; gap: 5px; width: 100%; border-radius: 8px; padding: 4px 6px; border-left: 3px solid transparent; }
+    .asist-cal-chip .chip-ico { font-size: 11px; line-height: 1; flex-shrink: 0; }
+    .asist-cal-chip .chip-txt { font-size: 10.5px; font-weight: 800; line-height: 1.2; }
+    .asist-cal-chip.pendiente { background: #f1f5f9; border-left-color: #cbd5e1; }
+    .asist-cal-chip.pendiente .chip-txt { color: #94a3b8; }
+    .asist-cal-chip.ok { background: #ecfdf5; border-left-color: #10b981; }
+    .asist-cal-chip.ok .chip-txt { color: #065f46; }
+    .asist-cal-chip.tarde1 { background: #fffbeb; border-left-color: #f59e0b; }
+    .asist-cal-chip.tarde1 .chip-txt { color: #92400e; }
+    .asist-cal-chip.tarde2 { background: #fef2f2; border-left-color: #ef4444; }
+    .asist-cal-chip.tarde2 .chip-txt { color: #991b1b; }
+    .asist-cal-chip.falta { background: #fef2f2; border-left-color: #ef4444; }
+    .asist-cal-chip.falta .chip-txt { color: #991b1b; }
+    .asist-cal-chip.especial { background: #f5f3ff; border-left-color: #8b5cf6; }
+    .asist-cal-chip.especial .chip-txt { color: #5b21b6; }
 
     /* ── SELECTOR DE TURNO (día con mañana + tarde) ── */
     .opcion-turno-dia { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; }
@@ -1030,7 +1042,9 @@
         const fecha = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const esNoLaboral = fechaObj.getDay()===0;
         const esFuturo = fechaObj > hoy;
+        const esHoy = fechaObj.getTime() === hoy.getTime();
         let cls = 'asist-cal-celda';
+        if(esHoy) cls += ' hoy';
         let chipsHtml = '';
         if(esNoLaboral){ cls += ' no-laboral'; }
         else if(esFuturo){ cls += ' futuro'; }
@@ -1038,16 +1052,16 @@
           const tipos = tiposTurnoDelDia(asistEmpleadaActual, fechaObj, asistTurnosDB);
           tipos.forEach(turno=>{
             const db_ = asistTurnosDB.find(t=>t.fecha===fecha && t.turno===turno);
-            const letra = turno==='manana' ? 'M' : 'T';
-            if(!db_){ sinCargar++; chipsHtml += `<div class="asist-cal-chip pendiente">${letra} —</div>`; return; }
+            const ico = turno==='manana' ? '🌅' : '🌆';
+            if(!db_){ sinCargar++; chipsHtml += `<div class="asist-cal-chip pendiente"><span class="chip-ico">${ico}</span><span class="chip-txt">Sin cargar</span></div>`; return; }
             const calc = calcularTurnoRend({ horaEsperadaEntrada: db_.hora_esperada_entrada, horaEsperadaSalida: db_.hora_esperada_salida,
               horaRealEntrada: db_.hora_real_entrada, horaRealSalida: db_.hora_real_salida, estado: db_.estado });
             let chipCls, chipTxt;
-            if(calc.esAusente){ chipCls='falta'; chipTxt=`${letra} ausente`; ausentes++; }
-            else if(calc.esPagadoSinTrabajo){ chipCls='especial'; chipTxt=`${letra} ${db_.estado==='feriado'?'feriado':'licencia'}`; }
-            else if(calc.minutosTarde>0){ chipCls='tarde1'; chipTxt=`${letra} +${calc.minutosTarde}m`; tarde++; }
-            else { chipCls='ok'; chipTxt=`${letra} ok`; ok++; }
-            chipsHtml += `<div class="asist-cal-chip ${chipCls}">${chipTxt}</div>`;
+            if(calc.esAusente){ chipCls='falta'; chipTxt='Ausente'; ausentes++; }
+            else if(calc.esPagadoSinTrabajo){ chipCls='especial'; chipTxt=db_.estado==='feriado'?'Feriado':'Licencia'; }
+            else if(calc.minutosTarde>0){ chipCls='tarde1'; chipTxt=`+${calc.minutosTarde}m tarde`; tarde++; }
+            else { chipCls='ok'; chipTxt='A horario'; ok++; }
+            chipsHtml += `<div class="asist-cal-chip ${chipCls}"><span class="chip-ico">${ico}</span><span class="chip-txt">${chipTxt}</span></div>`;
           });
         }
         const clickable = !(esNoLaboral||esFuturo);
