@@ -208,7 +208,45 @@
       .hist-resumen { grid-template-columns: repeat(4, 1fr); }
       .com-prod-grid { grid-template-columns: repeat(3, 1fr); }
       .asist-resumen { grid-template-columns: repeat(4, 1fr); }
+      .rend-hero-grid { grid-template-columns: repeat(4, 1fr); }
     }
+
+    /* ── RENDIMIENTO ── */
+    .rend-hero { background: linear-gradient(135deg,#1E3A8A,#1e40af); border-radius: 20px; padding: 22px; margin-bottom: 16px; color: white; }
+    .rend-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; gap: 10px; }
+    .rend-hero-titulo { font-size: 12px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; }
+    .rend-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 900; white-space: nowrap; }
+    .rend-badge.verde { background: #10b981; color: white; }
+    .rend-badge.amarillo { background: #f59e0b; color: #1e293b; }
+    .rend-badge.rojo { background: #ef4444; color: white; }
+    .rend-badge.gris { background: rgba(255,255,255,0.2); color: white; }
+    .rend-hero-pct { font-size: 40px; font-weight: 900; line-height: 1; }
+    .rend-hero-pct-label { font-size: 13px; color: #bfdbfe; margin-top: 4px; }
+    .rend-hero-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 18px; }
+    .rend-hero-item { text-align: center; }
+    .rend-hero-item .v { font-size: 16px; font-weight: 900; }
+    .rend-hero-item .l { font-size: 10px; color: #93c5fd; margin-top: 2px; text-transform: uppercase; letter-spacing: .3px; }
+    .rend-costo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .rend-costo-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .rend-costo-card .label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .rend-costo-card .monto { font-size: 22px; font-weight: 900; color: #1E3A8A; }
+    .rend-costo-card.real .monto { color: #ef4444; }
+    .rend-comparacion { background: #fffbeb; border: 2px solid #f9f4ab; border-radius: 16px; padding: 16px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.7; color: #78350f; font-weight: 600; }
+    .rend-comparacion b { color: #92400e; }
+    .rend-turno-fila { display: flex; align-items: center; gap: 10px; background: white; border-radius: 12px; padding: 10px 14px; margin-bottom: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); cursor: pointer; }
+    .rend-turno-fila.futuro { opacity: .45; cursor: default; }
+    .rend-turno-fecha { width: 60px; font-size: 12px; font-weight: 800; color: #475569; flex-shrink: 0; }
+    .rend-turno-tag { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px; flex-shrink: 0; }
+    .rend-turno-tag.manana { background: #dbeafe; color: #1e40af; }
+    .rend-turno-tag.tarde { background: #ede9fe; color: #5b21b6; }
+    .rend-turno-horas { flex: 1; font-size: 12px; color: #64748b; min-width: 0; }
+    .rend-turno-horas b { color: #1e293b; }
+    .rend-turno-estado { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 10px; flex-shrink: 0; }
+    .rend-turno-estado.verde { background: #d1fae5; color: #065f46; }
+    .rend-turno-estado.amarillo { background: #fef3c7; color: #92400e; }
+    .rend-turno-estado.rojo { background: #fee2e2; color: #991b1b; }
+    .rend-turno-estado.gris { background: #f1f5f9; color: #94a3b8; }
+    .rend-turno-estado.morado { background: #ede9fe; color: #5b21b6; }
   </style>
 <link rel="stylesheet" href="estetica.css" /></head>
 <body>
@@ -244,6 +282,7 @@
           <button class="tab activo" id="tab-sueldos"    onclick="cambiarTab('sueldos')">💰 Sueldos</button>
           <button class="tab"        id="tab-comisiones" onclick="cambiarTab('comisiones')">📊 Comisiones</button>
           <button class="tab"        id="tab-asistencia" onclick="cambiarTab('asistencia')">📅 Asistencia</button>
+          <button class="tab"        id="tab-rendimiento" onclick="cambiarTab('rendimiento')">📈 Rendimiento</button>
           <button class="tab"        id="tab-historico"  onclick="cambiarTab('historico')">📅 Histórico</button>
           <button class="tab"        id="tab-personal"   onclick="cambiarTab('personal')">👤 Personal</button>
         </div>
@@ -300,6 +339,16 @@
             <span><span class="asist-dot" style="background:#fee2e2"></span> Más de 15 min tarde</span>
             <span><span class="asist-dot" style="background:#ede9fe"></span> Faltó</span>
           </div>
+        </div>
+
+        <div id="panel-rendimiento" style="display:none">
+          <div class="asist-pills" id="rend-pills"></div>
+          <div class="periodo-selector">
+            <button class="periodo-btn" onclick="cambiarMesRend(-1)">&#8249;</button>
+            <span class="periodo-nombre" id="rend-mes-nombre">—</span>
+            <button class="periodo-btn" onclick="cambiarMesRend(1)">&#8250;</button>
+          </div>
+          <div id="rend-contenido"><div class="empty">Cargando...</div></div>
         </div>
 
         <div id="panel-historico" style="display:none">
@@ -515,6 +564,39 @@
     </div>
   </div>
 
+  <!-- MODAL: TURNO RENDIMIENTO -->
+  <div class="overlay" id="overlay-turno-rend" onclick="cerrarFuera(event,'overlay-turno-rend')">
+    <div class="modal">
+      <div class="modal-titulo" id="rend-turno-titulo">Cargar turno</div>
+      <div class="modal-sub" id="rend-turno-sub">—</div>
+      <input type="hidden" id="rend-turno-fecha" />
+      <input type="hidden" id="rend-turno-turno" />
+      <input type="hidden" id="rend-turno-esp-entrada" />
+      <input type="hidden" id="rend-turno-esp-salida" />
+      <div class="campo">
+        <label>Estado</label>
+        <select id="rend-turno-estado" onchange="toggleCamposEstadoRend()">
+          <option value="presente">✅ Presente</option>
+          <option value="tarde">🟡 Llegó tarde</option>
+          <option value="media_jornada">🌓 Media jornada</option>
+          <option value="ausente">❌ Ausente</option>
+          <option value="feriado">🎉 Feriado</option>
+          <option value="licencia">📄 Licencia</option>
+        </select>
+      </div>
+      <div id="rend-turno-campos-hora">
+        <div class="campo"><label>Hora real de entrada</label><input type="time" id="rend-turno-hora-entrada" /></div>
+        <div class="campo"><label>Hora real de salida (opcional)</label><input type="time" id="rend-turno-hora-salida" />
+          <small style="color:#94a3b8;font-size:12px">Si la dejás vacía, se toma la hora de salida esperada</small>
+        </div>
+      </div>
+      <div class="campo"><label>Notas (opcional)</label><input type="text" id="rend-turno-notas" autocomplete="off" /></div>
+      <button class="btn-guardar" onclick="guardarTurnoRend()">✅ Guardar</button>
+      <button class="btn-cancelar" onclick="eliminarTurnoRend()" id="rend-turno-btn-borrar" style="background:#fef2f2;color:#ef4444;display:none">🗑️ Borrar registro</button>
+      <button class="btn-cancelar" onclick="cerrarModal('overlay-turno-rend')">Cancelar</button>
+    </div>
+  </div>
+
   <script>
     if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
     const { createClient } = supabase;
@@ -572,11 +654,12 @@
       tabActual = tab;
       document.querySelectorAll('.tab').forEach(t=>t.classList.remove('activo'));
       document.getElementById('tab-'+tab).classList.add('activo');
-      ['sueldos','comisiones','asistencia','historico','personal'].forEach(p=>{
+      ['sueldos','comisiones','asistencia','rendimiento','historico','personal'].forEach(p=>{
         document.getElementById('panel-'+p).style.display = p===tab ? 'block' : 'none';
       });
       if(tab==='comisiones'){document.getElementById('com-mes-nombre').textContent=getPeriodoComLabel();cargarComisiones();}
       if(tab==='asistencia'){document.getElementById('asist-mes-nombre').textContent=getPeriodoAsistLabel();cargarAsistencia();}
+      if(tab==='rendimiento'){document.getElementById('rend-mes-nombre').textContent=getPeriodoRendLabel();cargarRendimiento();}
       if(tab==='historico'){document.getElementById('anio-nombre').textContent=anioHistorico;cargarHistorico();}
       if(tab==='personal'){renderPersonal();}
     }
@@ -1043,6 +1126,288 @@
       abrirModalAsistencia(v);
     }
 
+    // ── RENDIMIENTO ────────────────────────────────────────────
+    // Motor de cálculo (mismo código que js/motores/motorAsistencia.js)
+    function _toMinRend(hhmm){ if(!hhmm) return null; const [h,m]=hhmm.split(':').map(Number); return h*60+m; }
+    function _diffHorasRend(salida,entrada){ const a=_toMinRend(entrada), b=_toMinRend(salida); if(a===null||b===null) return 0; const d=(b-a)/60; return d>0?d:0; }
+    const REND_ESTADOS_PAGADOS_SIN_TRABAJO = ['feriado','licencia'];
+    const REND_ESTADOS_CON_TRABAJO = ['presente','tarde','media_jornada'];
+
+    function calcularTurnoRend(reg){
+      const horasEsperadas = _diffHorasRend(reg.horaEsperadaSalida, reg.horaEsperadaEntrada);
+      const esAusente = reg.estado==='ausente';
+      const esPagadoSinTrabajo = REND_ESTADOS_PAGADOS_SIN_TRABAJO.includes(reg.estado);
+      const esperaTrabajo = REND_ESTADOS_CON_TRABAJO.includes(reg.estado);
+      const incompleto = esperaTrabajo && !reg.horaRealEntrada;
+      let horasEfectivas=0, minutosTarde=0, salidaAnticipada=false;
+      if(esperaTrabajo && reg.horaRealEntrada){
+        const salidaReal = reg.horaRealSalida || reg.horaEsperadaSalida;
+        horasEfectivas = _diffHorasRend(salidaReal, reg.horaRealEntrada);
+        const diffEntrada = _toMinRend(reg.horaRealEntrada) - _toMinRend(reg.horaEsperadaEntrada);
+        minutosTarde = diffEntrada>0?diffEntrada:0;
+        if(reg.horaRealSalida){ const diffSalida = _toMinRend(reg.horaEsperadaSalida)-_toMinRend(reg.horaRealSalida); salidaAnticipada = diffSalida>0; }
+      }
+      const horasNoTrabajadas = Math.max(0, horasEsperadas-horasEfectivas);
+      const pctCumplimiento = horasEsperadas>0 ? Math.round((horasEfectivas/horasEsperadas)*1000)/10 : null;
+      return { ...reg, horasEsperadas:Math.round(horasEsperadas*100)/100, horasEfectivas:Math.round(horasEfectivas*100)/100,
+        horasNoTrabajadas:Math.round(horasNoTrabajadas*100)/100, minutosTarde, pctCumplimiento, incompleto, salidaAnticipada,
+        esAusente, esPagadoSinTrabajo, cuentaComoTurnoEsperado:!esPagadoSinTrabajo, cuentaComoTurnoTrabajado: horasEfectivas>0 };
+    }
+
+    function _sumRend(arr){ return arr.reduce((s,v)=>s+(v||0),0); }
+    function colorCumplimientoRend(pct){ if(pct===null||pct===undefined) return 'gris'; if(pct>=95) return 'verde'; if(pct>=85) return 'amarillo'; return 'rojo'; }
+
+    function calcularResumenMensualRend(turnos, sueldoMensual){
+      const turnosCalculados = turnos.map(calcularTurnoRend);
+      const turnosEsperados = turnosCalculados.filter(t=>t.cuentaComoTurnoEsperado);
+      const turnosTrabajados = turnosCalculados.filter(t=>t.cuentaComoTurnoTrabajado);
+      const totalHorasEsperadas = _sumRend(turnosEsperados.map(t=>t.horasEsperadas));
+      const totalHorasEfectivas = _sumRend(turnosCalculados.map(t=>t.horasEfectivas));
+      const totalHorasNoTrabajadas = _sumRend(turnosEsperados.map(t=>t.horasNoTrabajadas));
+      const turnosConLlegada = turnosCalculados.filter(t=>t.horaRealEntrada);
+      const promedioPuntualidad = turnosConLlegada.length>0 ? Math.round(_sumRend(turnosConLlegada.map(t=>t.minutosTarde))/turnosConLlegada.length) : 0;
+      const pctCumplimientoMensual = totalHorasEsperadas>0 ? Math.round((totalHorasEfectivas/totalHorasEsperadas)*1000)/10 : null;
+      const costoTeoricoPorHora = totalHorasEsperadas>0 ? sueldoMensual/totalHorasEsperadas : null;
+      const costoRealPorHora = totalHorasEfectivas>0 ? sueldoMensual/totalHorasEfectivas : null;
+      const costoPorTurnoEfectivo = turnosTrabajados.length>0 ? sueldoMensual/turnosTrabajados.length : null;
+      const diferenciaPorHora = (costoRealPorHora!==null&&costoTeoricoPorHora!==null) ? Math.round(costoRealPorHora-costoTeoricoPorHora) : null;
+      return { sueldoMensual,
+        cantidadTurnosEsperados:turnosEsperados.length, cantidadTurnosTrabajados:turnosTrabajados.length,
+        cantidadAusencias:turnosCalculados.filter(t=>t.esAusente).length, cantidadLlegadasTarde:turnosCalculados.filter(t=>t.minutosTarde>0).length,
+        totalHorasEsperadas:Math.round(totalHorasEsperadas*100)/100, totalHorasEfectivas:Math.round(totalHorasEfectivas*100)/100,
+        totalHorasNoTrabajadas:Math.round(totalHorasNoTrabajadas*100)/100, promedioPuntualidadMin:promedioPuntualidad,
+        pctCumplimientoMensual, costoTeoricoPorHora: costoTeoricoPorHora!==null?Math.round(costoTeoricoPorHora):null,
+        costoRealPorHora: costoRealPorHora!==null?Math.round(costoRealPorHora):null,
+        costoPorTurnoEfectivo: costoPorTurnoEfectivo!==null?Math.round(costoPorTurnoEfectivo):null,
+        diferenciaPorHora, colorCumplimiento: colorCumplimientoRend(pctCumplimientoMensual) };
+    }
+
+    function generarTextoComparacionRend(r, empleada){
+      if(r.costoTeoricoPorHora===null||r.costoRealPorHora===null) return `${empleada}: todavía no hay turnos cargados este mes para calcular el costo por hora.`;
+      const fmt = n => '$'+Math.round(n).toLocaleString('es-AR');
+      const causas=[]; if(r.cantidadLlegadasTarde>0) causas.push('llegadas tarde'); if(r.cantidadAusencias>0) causas.push('faltas'); if(r.totalHorasNoTrabajadas>0) causas.push('menor carga horaria');
+      const causasTxt = causas.length?causas.join(', '):'variaciones en la jornada';
+      const signo = r.diferenciaPorHora>=0?'más':'menos';
+      return `${empleada} cobra <b>${fmt(r.sueldoMensual)}</b>. Horas esperadas del mes (turnos ya cargados): <b>${r.totalHorasEsperadas}h</b>. Horas efectivas reales: <b>${r.totalHorasEfectivas}h</b>. `
+        + `Costo teórico por hora: <b>${fmt(r.costoTeoricoPorHora)}</b>. Costo real por hora: <b>${fmt(r.costoRealPorHora)}</b>. `
+        + `Diferencia: estás pagando <b>${fmt(Math.abs(r.diferenciaPorHora))} ${signo}</b> por hora efectiva por ${causasTxt}.`;
+    }
+
+    // Horarios esperados de la óptica (confirmados con Andrés)
+    function horarioMananaRend(empleada, dow){
+      const salida = dow>=4 ? '13:30' : '13:00'; // jueves(4) a sábado(6) cierra 13:30, lunes-miércoles 13:00
+      const entrada = empleada==='Sandra' ? (dow===6 ? '09:30':(getEmpleado('Sandra')?.horario_entrada||'08:30')) : (getEmpleado(empleada)?.horario_entrada||'09:30');
+      return { entrada, salida };
+    }
+    function horarioTardeRend(empleada, dow){
+      if(empleada!=='Sandra') return null;
+      if(dow===2||dow===4) return { entrada:'17:00', salida:'21:00' };
+      return null;
+    }
+
+    function generarTurnosEsperadosMes(empleada, anio, mes){
+      const dias = new Date(anio, mes+1, 0).getDate();
+      const turnos = [];
+      for(let d=1; d<=dias; d++){
+        const fechaObj = new Date(anio, mes, d);
+        const dow = fechaObj.getDay();
+        if(dow===0) continue; // domingo cerrado
+        const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const hm = horarioMananaRend(empleada, dow);
+        turnos.push({ fecha, turno:'manana', horaEsperadaEntrada:hm.entrada, horaEsperadaSalida:hm.salida, dia:d, fechaObj });
+        const ht = horarioTardeRend(empleada, dow);
+        if(ht) turnos.push({ fecha, turno:'tarde', horaEsperadaEntrada:ht.entrada, horaEsperadaSalida:ht.salida, dia:d, fechaObj });
+      }
+      return turnos;
+    }
+
+    let rendEmpleadaActual = null;
+    let rendMes = new Date().getMonth(), rendAnio = new Date().getFullYear();
+    let rendTurnosDB = [];
+
+    function getPeriodoRend(){ return `${rendAnio}-${String(rendMes+1).padStart(2,'0')}`; }
+    function getPeriodoRendLabel(){ return `${MESES[rendMes]} ${rendAnio}`; }
+
+    function renderPillsRend(){
+      const cont = document.getElementById('rend-pills');
+      const lista = getEmpleadosConSueldo();
+      if((!rendEmpleadaActual || !lista.some(e=>e.nombre===rendEmpleadaActual)) && lista.length>0) rendEmpleadaActual = lista[0].nombre;
+      if(lista.length===0) rendEmpleadaActual = null;
+      cont.innerHTML = lista.map(e => `<button class="asist-pill ${e.nombre===rendEmpleadaActual?'activo':''}" onclick="seleccionarEmpRend('${e.nombre}')">${e.nombre}</button>`).join('');
+    }
+
+    function seleccionarEmpRend(nombre){ rendEmpleadaActual = nombre; renderPillsRend(); cargarRendimiento(); }
+
+    function cambiarMesRend(dir){
+      rendMes+=dir;
+      if(rendMes>11){rendMes=0;rendAnio++;} if(rendMes<0){rendMes=11;rendAnio--;}
+      cargarRendimiento();
+    }
+
+    async function getSueldoMensualPeriodo(empleada, periodo){
+      const{data}=await db.from('sueldos').select('monto_total').eq('empleada',empleada).eq('periodo',periodo);
+      if(data && data.length>0) return data.reduce((s,x)=>s+(parseFloat(x.monto_total)||0),0);
+      return getSueldoBase(empleada)*2; // fallback: sueldo base configurado x 2 quincenas
+    }
+
+    async function cargarRendimiento(){
+      document.getElementById('rend-mes-nombre').textContent = getPeriodoRendLabel();
+      renderPillsRend();
+      if(!rendEmpleadaActual){ document.getElementById('rend-contenido').innerHTML='<div class="empty">No hay empleados con sueldo configurados.</div>'; return; }
+      document.getElementById('rend-contenido').innerHTML='<div class="empty">⏳ Cargando...</div>';
+      const periodo = getPeriodoRend();
+      const periodoSig = getMesSig(rendMes,rendAnio);
+      const [{data:turnosData}, sueldoMensual] = await Promise.all([
+        db.from('turnos_asistencia').select('*').eq('empleada',rendEmpleadaActual).gte('fecha',periodo+'-01').lt('fecha',periodoSig),
+        getSueldoMensualPeriodo(rendEmpleadaActual, periodo)
+      ]);
+      rendTurnosDB = turnosData || [];
+      renderRendimiento(sueldoMensual);
+    }
+
+    function renderRendimiento(sueldoMensual){
+      const esperados = generarTurnosEsperadosMes(rendEmpleadaActual, rendAnio, rendMes);
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+      // Turnos ya cargados en Supabase (con estado real) → van al cálculo
+      const turnosParaCalculo = [];
+      // Filas para la lista visual (todas: cargadas, pendientes, futuras)
+      const filas = [];
+
+      esperados.forEach(e => {
+        const db_ = rendTurnosDB.find(t => t.fecha===e.fecha && t.turno===e.turno);
+        if (db_) {
+          const calc = calcularTurnoRend({
+            empleada: rendEmpleadaActual, fecha: e.fecha, turno: e.turno,
+            horaEsperadaEntrada: e.horaEsperadaEntrada, horaEsperadaSalida: e.horaEsperadaSalida,
+            horaRealEntrada: db_.hora_real_entrada, horaRealSalida: db_.hora_real_salida, estado: db_.estado
+          });
+          turnosParaCalculo.push(calc);
+          filas.push({ ...calc, cargado:true, futuro:false });
+        } else {
+          const esFuturo = e.fechaObj > hoy;
+          filas.push({ empleada:rendEmpleadaActual, fecha:e.fecha, turno:e.turno, horaEsperadaEntrada:e.horaEsperadaEntrada,
+            horaEsperadaSalida:e.horaEsperadaSalida, cargado:false, futuro:esFuturo });
+        }
+      });
+
+      const r = calcularResumenMensualRend(turnosParaCalculo, sueldoMensual);
+
+      const fmtDia = (fecha) => { const [y,m,d]=fecha.split('-'); return `${d} ${MESES[parseInt(m)-1].substring(0,3).toLowerCase()}`; };
+
+      const filasHtml = filas.map(f => {
+        if (!f.cargado) {
+          const cls = f.futuro ? 'futuro' : '';
+          const onclickAttr = f.futuro ? '' : `onclick="abrirModalTurnoRend('${f.fecha}','${f.turno}','${f.horaEsperadaEntrada}','${f.horaEsperadaSalida}')"`;
+          const estadoTxt = f.futuro ? '—' : 'Sin cargar';
+          return `<div class="rend-turno-fila ${cls}" ${onclickAttr}>
+            <div class="rend-turno-fecha">${fmtDia(f.fecha)}</div>
+            <div class="rend-turno-tag ${f.turno}">${f.turno==='manana'?'Mañana':'Tarde'}</div>
+            <div class="rend-turno-horas">${f.horaEsperadaEntrada}–${f.horaEsperadaSalida} esperado</div>
+            <div class="rend-turno-estado gris">${estadoTxt}</div>
+          </div>`;
+        }
+        let estadoTxt, estadoCls;
+        if (f.esAusente) { estadoTxt='Ausente'; estadoCls='rojo'; }
+        else if (f.esPagadoSinTrabajo) { estadoTxt = f.estado==='feriado'?'Feriado':'Licencia'; estadoCls='morado'; }
+        else if (f.minutosTarde>0) { estadoTxt=`+${f.minutosTarde}min tarde`; estadoCls='amarillo'; }
+        else { estadoTxt='A horario'; estadoCls='verde'; }
+        const horaRealTxt = f.horaRealEntrada ? ` · real <b>${f.horaRealEntrada}–${f.horaRealSalida||f.horaEsperadaSalida}</b>` : '';
+        return `<div class="rend-turno-fila" onclick="abrirModalTurnoRend('${f.fecha}','${f.turno}','${f.horaEsperadaEntrada}','${f.horaEsperadaSalida}')">
+          <div class="rend-turno-fecha">${fmtDia(f.fecha)}</div>
+          <div class="rend-turno-tag ${f.turno}">${f.turno==='manana'?'Mañana':'Tarde'}</div>
+          <div class="rend-turno-horas">${f.horaEsperadaEntrada}–${f.horaEsperadaSalida} esperado${horaRealTxt}</div>
+          <div class="rend-turno-estado ${estadoCls}">${estadoTxt}</div>
+        </div>`;
+      }).join('');
+
+      const badgeTxt = r.colorCumplimiento==='verde' ? '✅ Óptimo' : r.colorCumplimiento==='amarillo' ? '⚠️ Atención' : r.colorCumplimiento==='rojo' ? '🔴 Crítico' : '⏳ Sin datos';
+
+      document.getElementById('rend-contenido').innerHTML = `
+        <div class="rend-hero">
+          <div class="rend-hero-top">
+            <div>
+              <div class="rend-hero-titulo">Cumplimiento mensual — ${rendEmpleadaActual}</div>
+              <div class="rend-hero-pct">${r.pctCumplimientoMensual!==null?r.pctCumplimientoMensual+'%':'—'}</div>
+              <div class="rend-hero-pct-label">${r.totalHorasEfectivas}h efectivas de ${r.totalHorasEsperadas}h esperadas (cargadas)</div>
+            </div>
+            <div class="rend-badge ${r.colorCumplimiento}">${badgeTxt}</div>
+          </div>
+          <div class="rend-hero-grid">
+            <div class="rend-hero-item"><div class="v">${r.cantidadTurnosTrabajados}/${r.cantidadTurnosEsperados}</div><div class="l">Turnos</div></div>
+            <div class="rend-hero-item"><div class="v">${r.cantidadAusencias}</div><div class="l">Faltas</div></div>
+            <div class="rend-hero-item"><div class="v">${r.cantidadLlegadasTarde}</div><div class="l">Tardanzas</div></div>
+            <div class="rend-hero-item"><div class="v">${r.promedioPuntualidadMin}min</div><div class="l">Prom. tarde</div></div>
+          </div>
+        </div>
+        <div class="rend-costo-grid">
+          <div class="rend-costo-card"><div class="label">Costo teórico / hora</div><div class="monto">${r.costoTeoricoPorHora!==null?formatPesos(r.costoTeoricoPorHora):'—'}</div></div>
+          <div class="rend-costo-card real"><div class="label">Costo real / hora</div><div class="monto">${r.costoRealPorHora!==null?formatPesos(r.costoRealPorHora):'—'}</div></div>
+        </div>
+        <div class="rend-comparacion">💡 ${generarTextoComparacionRend(r, rendEmpleadaActual)}</div>
+        <div class="section-title" style="margin-bottom:10px">📋 Detalle de turnos · Tocá uno para cargar/editar</div>
+        ${filasHtml || '<div class="empty">No hay turnos esperados este mes.</div>'}
+      `;
+    }
+
+    function toggleCamposEstadoRend(){
+      const estado = document.getElementById('rend-turno-estado').value;
+      const ocultar = ['ausente','feriado','licencia'].includes(estado);
+      document.getElementById('rend-turno-campos-hora').style.display = ocultar ? 'none' : 'block';
+    }
+
+    function abrirModalTurnoRend(fecha, turno, horaEspEntrada, horaEspSalida){
+      const db_ = rendTurnosDB.find(t => t.fecha===fecha && t.turno===turno);
+      document.getElementById('rend-turno-fecha').value = fecha;
+      document.getElementById('rend-turno-turno').value = turno;
+      document.getElementById('rend-turno-esp-entrada').value = horaEspEntrada;
+      document.getElementById('rend-turno-esp-salida').value = horaEspSalida;
+      const [y,m,d] = fecha.split('-');
+      document.getElementById('rend-turno-titulo').textContent = `${turno==='manana'?'🌅 Mañana':'🌆 Tarde'} — ${rendEmpleadaActual}`;
+      document.getElementById('rend-turno-sub').textContent = `${d} de ${MESES[parseInt(m)-1]} ${y} · Esperado ${horaEspEntrada}–${horaEspSalida}`;
+      document.getElementById('rend-turno-estado').value = db_?.estado || 'presente';
+      document.getElementById('rend-turno-hora-entrada').value = db_?.hora_real_entrada || horaEspEntrada;
+      document.getElementById('rend-turno-hora-salida').value = db_?.hora_real_salida || '';
+      document.getElementById('rend-turno-notas').value = db_?.notas || '';
+      document.getElementById('rend-turno-btn-borrar').style.display = db_ ? 'block' : 'none';
+      toggleCamposEstadoRend();
+      document.getElementById('overlay-turno-rend').classList.add('visible');
+    }
+
+    async function guardarTurnoRend(){
+      const fecha = document.getElementById('rend-turno-fecha').value;
+      const turno = document.getElementById('rend-turno-turno').value;
+      const estado = document.getElementById('rend-turno-estado').value;
+      const notas = document.getElementById('rend-turno-notas').value;
+      const ocultar = ['ausente','feriado','licencia'].includes(estado);
+      let horaRealEntrada = null, horaRealSalida = null;
+      if(!ocultar){
+        horaRealEntrada = document.getElementById('rend-turno-hora-entrada').value;
+        if(!horaRealEntrada){ alert('Ingresá la hora real de entrada'); return; }
+        horaRealSalida = document.getElementById('rend-turno-hora-salida').value || null;
+      }
+      const payload = { empleada: rendEmpleadaActual, fecha, turno,
+        hora_esperada_entrada: document.getElementById('rend-turno-esp-entrada').value,
+        hora_esperada_salida: document.getElementById('rend-turno-esp-salida').value,
+        hora_real_entrada: horaRealEntrada, hora_real_salida: horaRealSalida, estado, notas };
+      const btn = document.querySelector('#overlay-turno-rend .btn-guardar');
+      btn.textContent='Guardando...'; btn.disabled=true;
+      const { error } = await db.from('turnos_asistencia').upsert([payload], { onConflict: 'empleada,fecha,turno' });
+      btn.textContent='✅ Guardar'; btn.disabled=false;
+      if(error){ alert('Error: '+error.message); return; }
+      cerrarModal('overlay-turno-rend');
+      cargarRendimiento();
+    }
+
+    async function eliminarTurnoRend(){
+      const fecha = document.getElementById('rend-turno-fecha').value;
+      const turno = document.getElementById('rend-turno-turno').value;
+      if(!confirm('¿Borrar este registro y dejarlo como "sin cargar"?')) return;
+      await db.from('turnos_asistencia').delete().eq('empleada',rendEmpleadaActual).eq('fecha',fecha).eq('turno',turno);
+      cerrarModal('overlay-turno-rend');
+      cargarRendimiento();
+    }
+
     function cambiarAnio(dir){anioHistorico+=dir;document.getElementById('anio-nombre').textContent=anioHistorico;cargarHistorico();}
 
     async function cargarHistorico() {
@@ -1405,6 +1770,7 @@
       document.getElementById('periodo-nombre').textContent=getPeriodoLabel();
       document.getElementById('com-mes-nombre').textContent=getPeriodoComLabel();
       document.getElementById('asist-mes-nombre').textContent=getPeriodoAsistLabel();
+      document.getElementById('rend-mes-nombre').textContent=getPeriodoRendLabel();
       document.getElementById('anio-nombre').textContent=anioHistorico;
       document.getElementById('nav-sub').textContent=getPeriodoLabel();
       await cargar();
