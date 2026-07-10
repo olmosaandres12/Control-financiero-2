@@ -419,9 +419,14 @@
         <small style="color:#94a3b8;font-size:12px">Ponelo en 0 si no cobra comisión</small>
       </div>
       <div class="campo">
-        <label>Horario de entrada esperado</label>
+        <label>Horario de entrada esperado (Lunes a Viernes)</label>
         <input type="time" id="config-horario" />
         <small style="color:#94a3b8;font-size:12px">Se usa en la pestaña Asistencia para marcar tardanzas</small>
+      </div>
+      <div class="campo">
+        <label>Horario de entrada — Sábados (opcional)</label>
+        <input type="time" id="config-horario-sabado" />
+        <small style="color:#94a3b8;font-size:12px">Dejalo vacío si el sábado entra al mismo horario</small>
       </div>
       <button class="btn-guardar" onclick="guardarConfig()">✅ Guardar</button>
       <button class="btn-cancelar" onclick="cerrarModal('overlay-config')">Cancelar</button>
@@ -471,8 +476,13 @@
         <small style="color:#94a3b8;font-size:12px">Ponelo en 0 si no cobra comisión</small>
       </div>
       <div class="campo">
-        <label>Horario de entrada esperado</label>
+        <label>Horario de entrada esperado (Lunes a Viernes)</label>
         <input type="time" id="emp-horario" value="09:30" />
+      </div>
+      <div class="campo">
+        <label>Horario de entrada — Sábados (opcional)</label>
+        <input type="time" id="emp-horario-sabado" />
+        <small style="color:#94a3b8;font-size:12px">Dejalo vacío si el sábado entra al mismo horario</small>
       </div>
       <div class="campo" style="margin-bottom:12px">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:700;color:#475569">
@@ -728,6 +738,7 @@
       document.getElementById('emp-sueldo').value = '';
       document.getElementById('emp-comision').value = '0';
       document.getElementById('emp-horario').value = '09:30';
+      document.getElementById('emp-horario-sabado').value = '';
       document.getElementById('emp-registra-asistencia').checked = false;
       document.getElementById('emp-btn-guardar').textContent = '✅ Crear empleado';
       document.getElementById('overlay-empleado').classList.add('visible');
@@ -743,6 +754,7 @@
       setVal(document.getElementById('emp-sueldo'), e.sueldo_quincena);
       document.getElementById('emp-comision').value = e.comision_pct;
       document.getElementById('emp-horario').value = e.horario_entrada || '09:30';
+      document.getElementById('emp-horario-sabado').value = e.horario_entrada_sabado || '';
       document.getElementById('emp-registra-asistencia').checked = !!e.registra_asistencia;
       document.getElementById('emp-btn-guardar').textContent = '💾 Guardar cambios';
       document.getElementById('overlay-empleado').classList.add('visible');
@@ -759,15 +771,16 @@
       const sueldo_quincena = tiene_sueldo ? (getVal(document.getElementById('emp-sueldo')) || 0) : 0;
       const comision_pct = parseFloat(document.getElementById('emp-comision').value) || 0;
       const horario_entrada = document.getElementById('emp-horario').value || '09:30';
+      const horario_entrada_sabado = document.getElementById('emp-horario-sabado').value || null;
       const registra_asistencia = document.getElementById('emp-registra-asistencia').checked;
       if (!nombre) { alert('Ingresá el nombre'); return; }
       const btn = document.getElementById('emp-btn-guardar');
       btn.textContent = 'Guardando...'; btn.disabled = true;
       if (id) {
-        const { error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, registra_asistencia }).eq('id', id);
+        const { error } = await db.from('empleados').update({ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, horario_entrada_sabado, registra_asistencia }).eq('id', id);
         if (error) { alert('Error: ' + error.message); btn.textContent='💾 Guardar cambios'; btn.disabled=false; return; }
       } else {
-        const { error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, registra_asistencia, activo: true }]);
+        const { error } = await db.from('empleados').insert([{ nombre, tiene_sueldo, sueldo_quincena, comision_pct, horario_entrada, horario_entrada_sabado, registra_asistencia, activo: true }]);
         if (error) { alert('Error: ' + error.message); btn.textContent='✅ Crear empleado'; btn.disabled=false; return; }
       }
       cerrarModal('overlay-empleado');
@@ -873,15 +886,18 @@
 
     function toMinAsist(t){ if(!t) return null; const p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
 
-    function getHorarioEsperado(nombre){
+    // esSabado: boolean opcional. Si el empleado tiene un horario especial para sábados
+    // (horario_entrada_sabado) y esSabado es true, se usa ese; si no, cae al horario normal.
+    function getHorarioEsperado(nombre, esSabado){
       const e = getEmpleado(nombre);
+      if (esSabado && e?.horario_entrada_sabado) return e.horario_entrada_sabado;
       return e?.horario_entrada || '09:30';
     }
 
-    function estadoAsist(nombre, hora, falto){
+    function estadoAsist(nombre, hora, falto, esSabado){
       if(falto) return 'falta';
       if(!hora) return 'vacio';
-      const diff = toMinAsist(hora) - toMinAsist(getHorarioEsperado(nombre));
+      const diff = toMinAsist(hora) - toMinAsist(getHorarioEsperado(nombre, esSabado));
       if(diff<=0) return 'ok';
       if(diff<=15) return 'tarde1';
       return 'tarde2';
@@ -919,12 +935,13 @@
         const falto = !!reg?.falto;
         const fechaObj = new Date(asistAnio, asistMes, d);
         const esNoLaboral = fechaObj.getDay()===0;
+        const esSabado = fechaObj.getDay()===6;
         const esFuturo = fechaObj > hoy;
         let cls = 'asist-cal-celda';
         if(esNoLaboral){ cls += ' no-laboral'; }
         else if(esFuturo){ cls += ' futuro'; }
         else {
-          const est = estadoAsist(asistEmpleadaActual, hora, falto);
+          const est = estadoAsist(asistEmpleadaActual, hora, falto, esSabado);
           if(est==='ok'){ cls+=' ok'; ok++; }
           else if(est==='tarde1'){ cls+=' tarde1'; tarde++; }
           else if(est==='tarde2'){ cls+=' tarde2'; tarde++; }
@@ -977,11 +994,13 @@
         asistMes = m-1; asistAnio = y;
         await cargarAsistencia();
       }
+      const esSabado = new Date(y, m-1, d).getDay()===6;
+      const horarioEsperado = getHorarioEsperado(asistEmpleadaActual, esSabado);
       const reg = asistDatos.find(r=>r.fecha===fecha);
       document.getElementById('asist-titulo').textContent = `Llegada — ${asistEmpleadaActual}`;
-      document.getElementById('asist-sub').textContent = `${d} de ${MESES[m-1]} ${y} · Horario esperado: ${getHorarioEsperado(asistEmpleadaActual)}`;
+      document.getElementById('asist-sub').textContent = `${d} de ${MESES[m-1]} ${y} · Horario esperado: ${horarioEsperado}`;
       document.getElementById('asist-fecha').value = fecha;
-      document.getElementById('asist-hora').value = reg?.hora_entrada || getHorarioEsperado(asistEmpleadaActual);
+      document.getElementById('asist-hora').value = reg?.hora_entrada || horarioEsperado;
       document.getElementById('asist-notas').value = reg?.notas || '';
       setEstadoAsist(reg?.falto ? 'falto' : 'asistio');
       document.getElementById('overlay-asistencia').classList.add('visible');
@@ -1118,6 +1137,7 @@
       if(e?.tiene_sueldo) setVal(document.getElementById('config-monto'), e.sueldo_quincena);
       document.getElementById('config-comision').value=getComPct(nombre);
       document.getElementById('config-horario').value=e?.horario_entrada || '09:30';
+      document.getElementById('config-horario-sabado').value=e?.horario_entrada_sabado || '';
       document.getElementById('overlay-config').classList.add('visible');
     }
 
@@ -1310,10 +1330,11 @@
       const nombre=document.getElementById('config-empleada').value;
       const com=parseFloat(document.getElementById('config-comision').value)||0;
       const horario=document.getElementById('config-horario').value || '09:30';
+      const horarioSabado=document.getElementById('config-horario-sabado').value || null;
       const e=getEmpleado(nombre);
       const btn=document.querySelector('#overlay-config .btn-guardar');
       btn.textContent='Guardando...';btn.disabled=true;
-      const updates={comision_pct:com, horario_entrada:horario};
+      const updates={comision_pct:com, horario_entrada:horario, horario_entrada_sabado:horarioSabado};
       if(e?.tiene_sueldo){
         const monto=getVal(document.getElementById('config-monto'));
         if(!monto){alert('Ingresá el monto');btn.textContent='✅ Guardar';btn.disabled=false;return;}
