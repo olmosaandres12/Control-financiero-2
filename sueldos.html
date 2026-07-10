@@ -178,18 +178,26 @@
     .asist-faltantes-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
     .asist-falt-item { display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px; padding: 10px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; font-size: 13px; font-weight: 700; color: #1e293b; }
     .asist-falt-item span.link { color: #1E3A8A; font-weight: 800; }
-    .asist-cal-dias { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 6px; font-weight: 700; }
     .asist-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-bottom: 16px; }
-    .asist-cal-celda { aspect-ratio: 1; border-radius: 10px; background: #f8fafc; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-family: 'Nunito', sans-serif; }
-    .asist-cal-celda.ok { background: #d1fae5; }
-    .asist-cal-celda.tarde1 { background: #fef3c7; }
-    .asist-cal-celda.tarde2 { background: #fee2e2; }
-    .asist-cal-celda.falta { background: #ede9fe; }
+    .asist-cal-celda { min-height: 58px; border-radius: 10px; background: #f8fafc; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 5px 3px; gap: 2px; cursor: pointer; font-family: 'Nunito', sans-serif; }
     .asist-cal-celda.futuro { opacity: 0.4; cursor: default; box-shadow: none; }
     .asist-cal-celda.no-laboral { opacity: 0.3; background: none; box-shadow: none; cursor: default; }
-    .asist-cal-num { font-size: 13px; font-weight: 800; color: #1e293b; }
-    .asist-cal-hora { font-size: 9px; color: #64748b; font-weight: 700; }
-    .asist-cal-falta-txt { font-size: 9px; color: #6d28d9; font-weight: 800; }
+    .asist-cal-num { font-size: 12px; font-weight: 800; color: #1e293b; }
+    .asist-cal-chip { width: 100%; border-radius: 6px; font-size: 8.5px; font-weight: 800; padding: 2px 3px; text-align: center; line-height: 1.25; }
+    .asist-cal-chip.pendiente { background: #e2e8f0; color: #64748b; }
+    .asist-cal-chip.ok { background: #d1fae5; color: #065f46; }
+    .asist-cal-chip.tarde1 { background: #fef3c7; color: #92400e; }
+    .asist-cal-chip.tarde2 { background: #fee2e2; color: #991b1b; }
+    .asist-cal-chip.falta { background: #fee2e2; color: #991b1b; }
+    .asist-cal-chip.especial { background: #ede9fe; color: #5b21b6; }
+
+    /* ── SELECTOR DE TURNO (día con mañana + tarde) ── */
+    .opcion-turno-dia { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; }
+    .opcion-turno-dia .tag { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 8px; }
+    .opcion-turno-dia .tag.manana { background: #dbeafe; color: #1e40af; }
+    .opcion-turno-dia .tag.tarde { background: #ede9fe; color: #5b21b6; }
+    .opcion-turno-dia .estado-txt { font-size: 12px; font-weight: 700; color: #94a3b8; }
+
     .asist-leyenda { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; color: #64748b; font-weight: 700; margin-bottom: 20px; }
     .asist-leyenda span { display: flex; align-items: center; gap: 4px; }
     .asist-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
@@ -325,20 +333,21 @@
             <button class="periodo-btn" onclick="cambiarMesAsist(1)">&#8250;</button>
           </div>
           <div class="asist-resumen">
-            <div class="asist-res-card"><div class="asist-res-label">A tiempo</div><div class="asist-res-val verde" id="asist-ok">0</div></div>
+            <div class="asist-res-card"><div class="asist-res-label">A horario</div><div class="asist-res-val verde" id="asist-ok">0</div></div>
             <div class="asist-res-card"><div class="asist-res-label">Tarde</div><div class="asist-res-val naranja" id="asist-tarde">0</div></div>
-            <div class="asist-res-card"><div class="asist-res-label">Faltó</div><div class="asist-res-val morado" id="asist-falto">0</div></div>
-            <div class="asist-res-card clicable" id="asist-card-faltantes" onclick="toggleFaltantesAsist()"><div class="asist-res-label">Sin cargar</div><div class="asist-res-val gris" id="asist-faltan">0</div></div>
+            <div class="asist-res-card"><div class="asist-res-label">Ausente</div><div class="asist-res-val morado" id="asist-falto">0</div></div>
+            <div class="asist-res-card" id="asist-card-faltantes"><div class="asist-res-label">Sin cargar</div><div class="asist-res-val gris" id="asist-faltan">0</div></div>
           </div>
-          <div id="asist-lista-faltantes" style="display:none" class="asist-faltantes-lista"></div>
           <div class="asist-cal-dias"><div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
           <div class="asist-cal-grid" id="asist-cal-grid"></div>
           <div class="asist-leyenda">
             <span><span class="asist-dot" style="background:#d1fae5"></span> A horario</span>
-            <span><span class="asist-dot" style="background:#fef3c7"></span> Hasta 15 min tarde</span>
-            <span><span class="asist-dot" style="background:#fee2e2"></span> Más de 15 min tarde</span>
-            <span><span class="asist-dot" style="background:#ede9fe"></span> Faltó</span>
+            <span><span class="asist-dot" style="background:#fef3c7"></span> Llegó tarde</span>
+            <span><span class="asist-dot" style="background:#fee2e2"></span> Ausente</span>
+            <span><span class="asist-dot" style="background:#ede9fe"></span> Feriado / Licencia</span>
+            <span><span class="asist-dot" style="background:#e2e8f0"></span> Sin cargar</span>
           </div>
+          <button class="btn-guardar" style="margin-top:6px" onclick="abrirModalTurnoLibre()">➕ Agregar turno libre (cambio de turno)</button>
         </div>
 
         <div id="panel-rendimiento" style="display:none">
@@ -545,22 +554,27 @@
     </div>
   </div>
 
-  <!-- MODAL: ASISTENCIA -->
-  <div class="overlay" id="overlay-asistencia" onclick="cerrarFuera(event,'overlay-asistencia')">
+  <!-- MODAL: SELECTOR DE TURNO DEL DÍA (cuando el día tiene mañana + tarde) -->
+  <div class="overlay" id="overlay-dia-turnos" onclick="cerrarFuera(event,'overlay-dia-turnos')">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-titulo" id="dia-turnos-titulo">Turnos del día</div>
+      <div class="modal-sub" id="dia-turnos-sub">—</div>
+      <div id="dia-turnos-opciones"></div>
+      <button class="btn-cancelar" onclick="cerrarModal('overlay-dia-turnos')">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR TURNO LIBRE (cambio de turno) -->
+  <div class="overlay" id="overlay-turno-libre" onclick="cerrarFuera(event,'overlay-turno-libre')">
     <div class="modal">
-      <div class="modal-titulo" id="asist-titulo">Registrar llegada</div>
-      <div class="modal-sub" id="asist-sub">—</div>
-      <input type="hidden" id="asist-fecha" />
-      <div class="asist-estado-toggle">
-        <button type="button" class="asist-estado-btn" id="asist-btn-asistio" onclick="setEstadoAsist('asistio')">✅ Asistió</button>
-        <button type="button" class="asist-estado-btn" id="asist-btn-falto" onclick="setEstadoAsist('falto')">❌ Faltó</button>
+      <div class="modal-titulo">➕ Turno libre</div>
+      <div class="modal-sub">Para cuando hubo un cambio de turno o cobertura excepcional</div>
+      <div class="campo"><label>Fecha</label><input type="date" id="libre-fecha" /></div>
+      <div class="campo"><label>Turno</label>
+        <select id="libre-turno"><option value="manana">🌅 Mañana</option><option value="tarde">🌆 Tarde</option></select>
       </div>
-      <div id="asist-aviso-falta" class="aviso-falta-modal" style="display:none">Se registra como día faltado, sin horario de entrada.</div>
-      <div class="campo" id="asist-campo-hora"><label>Hora de entrada</label><input type="time" id="asist-hora" /></div>
-      <div class="campo"><label>Notas (opcional)</label><input type="text" id="asist-notas" placeholder="Ej: avisó que llegaba tarde" autocomplete="off" /></div>
-      <button class="btn-guardar" onclick="guardarAsistencia()">✅ Guardar</button>
-      <button class="btn-cancelar" onclick="eliminarAsistenciaDia()" style="background:#fef2f2;color:#ef4444">🗑️ Borrar registro del día</button>
-      <button class="btn-cancelar" onclick="cerrarModal('overlay-asistencia')">Cancelar</button>
+      <button class="btn-guardar" onclick="continuarTurnoLibre()">Continuar ›</button>
+      <button class="btn-cancelar" onclick="cerrarModal('overlay-turno-libre')">Cancelar</button>
     </div>
   </div>
 
@@ -940,9 +954,6 @@
     // ── ASISTENCIA ─────────────────────────────────────────────
     let asistEmpleadaActual = null;
     let asistMes = new Date().getMonth(), asistAnio = new Date().getFullYear();
-    let asistDatos = [];
-    let asistFaltantesArr = [];
-    let asistEstadoActual = 'asistio';
 
     function getPeriodoAsist(){ return `${asistAnio}-${String(asistMes+1).padStart(2,'0')}`; }
     function getPeriodoAsistLabel(){ return `${MESES[asistMes]} ${asistAnio}`; }
@@ -969,35 +980,38 @@
 
     function toMinAsist(t){ if(!t) return null; const p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
 
-    // esSabado: boolean opcional. Si el empleado tiene un horario especial para sábados
-    // (horario_entrada_sabado) y esSabado es true, se usa ese; si no, cae al horario normal.
-    function getHorarioEsperado(nombre, esSabado){
-      const e = getEmpleado(nombre);
-      if (esSabado && e?.horario_entrada_sabado) return e.horario_entrada_sabado;
-      return e?.horario_entrada || '09:30';
+    // Turno "libre": para cambios de turno o coberturas excepcionales que no
+    // coinciden con el horario habitual de la empleada ese día.
+    function horarioEsperadoLibre(empleada, turno, dow){
+      if(turno==='manana') return horarioMananaRend(empleada, dow);
+      return horarioTardeRend(empleada, dow) || { entrada:'17:00', salida:'21:00' };
     }
 
-    function estadoAsist(nombre, hora, falto, esSabado){
-      if(falto) return 'falta';
-      if(!hora) return 'vacio';
-      const diff = toMinAsist(hora) - toMinAsist(getHorarioEsperado(nombre, esSabado));
-      if(diff<=0) return 'ok';
-      if(diff<=15) return 'tarde1';
-      return 'tarde2';
+    // Tipos de turno que corresponden a un día: los esperados de siempre,
+    // más cualquier turno ya cargado en Supabase (aunque sea "libre").
+    function tiposTurnoDelDia(empleada, fechaObj, turnosDB){
+      const dow = fechaObj.getDay();
+      const fecha = `${fechaObj.getFullYear()}-${String(fechaObj.getMonth()+1).padStart(2,'0')}-${String(fechaObj.getDate()).padStart(2,'0')}`;
+      const tipos = new Set(['manana']);
+      if (horarioTardeRend(empleada, dow)) tipos.add('tarde');
+      turnosDB.filter(t => t.fecha === fecha).forEach(t => tipos.add(t.turno));
+      return [...tipos];
     }
+
+    let asistTurnosDB = [];
 
     async function cargarAsistencia(){
       document.getElementById('asist-mes-nombre').textContent = getPeriodoAsistLabel();
       renderPillsAsist();
-      if(!asistEmpleadaActual){ document.getElementById('asist-cal-grid').innerHTML='<div class="empty">No hay empleados con asistencia habilitada.<br>Andá a 👤 Personal y tildá "Registra asistencia".</div>'; return; }
+      if(!asistEmpleadaActual){ document.getElementById('asist-cal-grid').innerHTML='<div class="empty">No hay empleados con sueldo configurados.<br>Andá a 👤 Personal para agregar.</div>'; return; }
       const periodo = getPeriodoAsist();
       const periodoSig = getMesSig(asistMes,asistAnio);
-      const cacheKey = 'asistencia_'+asistEmpleadaActual+'_'+periodo;
+      const cacheKey = 'turnos_'+asistEmpleadaActual+'_'+periodo;
       const cached = OlvisionCache.get(cacheKey);
-      if(cached){ asistDatos = cached; renderAsistencia(); }
-      const { data } = await db.from('asistencias').select('*').eq('empleada',asistEmpleadaActual).gte('fecha',periodo+'-01').lt('fecha',periodoSig);
-      asistDatos = data || [];
-      OlvisionCache.set(cacheKey, asistDatos);
+      if(cached){ asistTurnosDB = cached; renderAsistencia(); }
+      const { data } = await db.from('turnos_asistencia').select('*').eq('empleada',asistEmpleadaActual).gte('fecha',periodo+'-01').lt('fecha',periodoSig);
+      asistTurnosDB = data || [];
+      OlvisionCache.set(cacheKey, asistTurnosDB);
       renderAsistencia();
     }
 
@@ -1009,121 +1023,96 @@
       const hoy = new Date(); hoy.setHours(0,0,0,0);
       let html='';
       for(let i=0;i<offset;i++) html += '<div></div>';
-      let ok=0, tarde=0, faltan=0, faltoCount=0;
-      const faltantesArr = [];
+      let ok=0, tarde=0, ausentes=0, sinCargar=0;
       for(let d=1; d<=diasEnMes; d++){
-        const fecha = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const reg = asistDatos.find(r=>r.fecha===fecha);
-        const hora = reg?.hora_entrada || null;
-        const falto = !!reg?.falto;
         const fechaObj = new Date(asistAnio, asistMes, d);
+        const fecha = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const esNoLaboral = fechaObj.getDay()===0;
-        const esSabado = fechaObj.getDay()===6;
         const esFuturo = fechaObj > hoy;
         let cls = 'asist-cal-celda';
+        let chipsHtml = '';
         if(esNoLaboral){ cls += ' no-laboral'; }
         else if(esFuturo){ cls += ' futuro'; }
         else {
-          const est = estadoAsist(asistEmpleadaActual, hora, falto, esSabado);
-          if(est==='ok'){ cls+=' ok'; ok++; }
-          else if(est==='tarde1'){ cls+=' tarde1'; tarde++; }
-          else if(est==='tarde2'){ cls+=' tarde2'; tarde++; }
-          else if(est==='falta'){ cls+=' falta'; faltoCount++; }
-          else { faltan++; faltantesArr.push(d); }
+          const tipos = tiposTurnoDelDia(asistEmpleadaActual, fechaObj, asistTurnosDB);
+          tipos.forEach(turno=>{
+            const db_ = asistTurnosDB.find(t=>t.fecha===fecha && t.turno===turno);
+            const letra = turno==='manana' ? 'M' : 'T';
+            if(!db_){ sinCargar++; chipsHtml += `<div class="asist-cal-chip pendiente">${letra} —</div>`; return; }
+            const calc = calcularTurnoRend({ horaEsperadaEntrada: db_.hora_esperada_entrada, horaEsperadaSalida: db_.hora_esperada_salida,
+              horaRealEntrada: db_.hora_real_entrada, horaRealSalida: db_.hora_real_salida, estado: db_.estado });
+            let chipCls, chipTxt;
+            if(calc.esAusente){ chipCls='falta'; chipTxt=`${letra} ausente`; ausentes++; }
+            else if(calc.esPagadoSinTrabajo){ chipCls='especial'; chipTxt=`${letra} ${db_.estado==='feriado'?'feriado':'licencia'}`; }
+            else if(calc.minutosTarde>0){ chipCls='tarde1'; chipTxt=`${letra} +${calc.minutosTarde}m`; tarde++; }
+            else { chipCls='ok'; chipTxt=`${letra} ok`; ok++; }
+            chipsHtml += `<div class="asist-cal-chip ${chipCls}">${chipTxt}</div>`;
+          });
         }
         const clickable = !(esNoLaboral||esFuturo);
-        const onclickAttr = clickable ? `onclick="abrirModalAsistencia('${fecha}')"` : '';
-        const subTxt = falto ? `<span class="asist-cal-falta-txt">Faltó</span>` : (hora?`<span class="asist-cal-hora">${hora}</span>`:'');
-        html += `<div class="${cls}" ${onclickAttr}><span class="asist-cal-num">${d}</span>${subTxt}</div>`;
+        const onclickAttr = clickable ? `onclick="onClickDiaAsist('${fecha}')"` : '';
+        html += `<div class="${cls}" ${onclickAttr}><span class="asist-cal-num">${d}</span>${chipsHtml}</div>`;
       }
       grid.innerHTML = html;
       document.getElementById('asist-ok').textContent = ok;
       document.getElementById('asist-tarde').textContent = tarde;
-      document.getElementById('asist-falto').textContent = faltoCount;
-      document.getElementById('asist-faltan').textContent = faltan;
-      asistFaltantesArr = faltantesArr;
-      const listaEl = document.getElementById('asist-lista-faltantes');
-      if(listaEl.style.display !== 'none') renderListaFaltantes();
+      document.getElementById('asist-falto').textContent = ausentes;
+      document.getElementById('asist-faltan').textContent = sinCargar;
     }
 
-    function toggleFaltantesAsist(){
-      const el = document.getElementById('asist-lista-faltantes');
-      if(el.style.display==='none'){ el.style.display='flex'; renderListaFaltantes(); }
-      else el.style.display='none';
-    }
-
-    function renderListaFaltantes(){
-      const el = document.getElementById('asist-lista-faltantes');
-      if(asistFaltantesArr.length===0){ el.innerHTML = '<div class="asist-falt-item" style="cursor:default">✅ No hay días sin cargar</div>'; return; }
-      el.innerHTML = asistFaltantesArr.map(d=>{
-        const fecha = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        return `<div class="asist-falt-item" onclick="abrirModalAsistencia('${fecha}')"><span>${d} de ${MESES[asistMes]}</span><span class="link">Cargar ›</span></div>`;
-      }).join('');
-    }
-
-    function setEstadoAsist(estado){
-      asistEstadoActual = estado;
-      const btnAsistio = document.getElementById('asist-btn-asistio');
-      const btnFalto = document.getElementById('asist-btn-falto');
-      btnAsistio.classList.toggle('activo-asistio', estado==='asistio');
-      btnFalto.classList.toggle('activo-falto', estado==='falto');
-      document.getElementById('asist-campo-hora').style.display = estado==='asistio' ? 'block' : 'none';
-      document.getElementById('asist-aviso-falta').style.display = estado==='falto' ? 'block' : 'none';
-    }
-
-    async function abrirModalAsistencia(fecha){
+    function onClickDiaAsist(fecha){
       const [y,m,d] = fecha.split('-').map(Number);
-      if((m-1)!==asistMes || y!==asistAnio){
-        asistMes = m-1; asistAnio = y;
-        await cargarAsistencia();
+      const fechaObj = new Date(y, m-1, d);
+      const tipos = tiposTurnoDelDia(asistEmpleadaActual, fechaObj, asistTurnosDB);
+      if(tipos.length === 1){
+        const esp = horarioEsperadoLibre(asistEmpleadaActual, tipos[0], fechaObj.getDay());
+        abrirModalTurnoRend(fecha, tipos[0], esp.entrada, esp.salida);
+        return;
       }
-      const esSabado = new Date(y, m-1, d).getDay()===6;
-      const horarioEsperado = getHorarioEsperado(asistEmpleadaActual, esSabado);
-      const reg = asistDatos.find(r=>r.fecha===fecha);
-      document.getElementById('asist-titulo').textContent = `Llegada — ${asistEmpleadaActual}`;
-      document.getElementById('asist-sub').textContent = `${d} de ${MESES[m-1]} ${y} · Horario esperado: ${horarioEsperado}`;
-      document.getElementById('asist-fecha').value = fecha;
-      document.getElementById('asist-hora').value = reg?.hora_entrada || horarioEsperado;
-      document.getElementById('asist-notas').value = reg?.notas || '';
-      setEstadoAsist(reg?.falto ? 'falto' : 'asistio');
-      document.getElementById('overlay-asistencia').classList.add('visible');
+      abrirSelectorDiaAsist(fecha, tipos, fechaObj);
     }
 
-    async function guardarAsistencia(){
-      const fecha = document.getElementById('asist-fecha').value;
-      const notas = document.getElementById('asist-notas').value;
-      const btn = document.querySelector('#overlay-asistencia .btn-guardar');
-      let payload;
-      if(asistEstadoActual === 'falto'){
-        payload = { empleada: asistEmpleadaActual, fecha, hora_entrada: null, falto: true, notas };
-      } else {
-        const hora = document.getElementById('asist-hora').value;
-        if(!hora){ alert('Ingresá la hora de entrada'); return; }
-        payload = { empleada: asistEmpleadaActual, fecha, hora_entrada: hora, falto: false, notas };
-      }
-      btn.textContent='Guardando...'; btn.disabled=true;
-      const { error } = await db.from('asistencias').upsert([payload], { onConflict: 'empleada,fecha' });
-      btn.textContent='✅ Guardar'; btn.disabled=false;
-      if(error){ alert('Error: '+error.message); return; }
-      OlvisionCache.clear('asistencia_'+asistEmpleadaActual+'_'+getPeriodoAsist());
-      cerrarModal('overlay-asistencia');
-      cargarAsistencia();
+    function abrirSelectorDiaAsist(fecha, tipos, fechaObj){
+      const [y,m,d] = fecha.split('-');
+      document.getElementById('dia-turnos-titulo').textContent = `${d} de ${MESES[parseInt(m)-1]} ${y}`;
+      document.getElementById('dia-turnos-sub').textContent = `${asistEmpleadaActual} tiene ${tipos.length} turnos este día`;
+      document.getElementById('dia-turnos-opciones').innerHTML = tipos.map(turno=>{
+        const db_ = asistTurnosDB.find(t=>t.fecha===fecha && t.turno===turno);
+        const esp = horarioEsperadoLibre(asistEmpleadaActual, turno, fechaObj.getDay());
+        const estadoTxt = db_ ? (db_.estado==='ausente'?'Ausente':(db_.hora_real_entrada||'Cargado')) : 'Sin cargar';
+        return `<div class="opcion-turno-dia" onclick="cerrarModal('overlay-dia-turnos');abrirModalTurnoRend('${fecha}','${turno}','${esp.entrada}','${esp.salida}')">
+          <div><span class="tag ${turno}">${turno==='manana'?'Mañana':'Tarde'}</span> <span style="font-size:12px;color:#64748b;margin-left:6px">${esp.entrada}–${esp.salida}</span></div>
+          <div class="estado-txt">${estadoTxt} ›</div>
+        </div>`;
+      }).join('');
+      document.getElementById('overlay-dia-turnos').classList.add('visible');
     }
 
-    async function eliminarAsistenciaDia(){
-      const fecha = document.getElementById('asist-fecha').value;
-      if(!fecha) return;
-      if(!confirm('¿Borrar el registro de este día?')) return;
-      await db.from('asistencias').delete().eq('empleada',asistEmpleadaActual).eq('fecha',fecha);
-      OlvisionCache.clear('asistencia_'+asistEmpleadaActual+'_'+getPeriodoAsist());
-      cerrarModal('overlay-asistencia');
-      cargarAsistencia();
+    function abrirModalTurnoLibre(){
+      const hoy = new Date();
+      const mismoMes = (hoy.getMonth()===asistMes && hoy.getFullYear()===asistAnio);
+      const diaDefault = mismoMes ? hoy.getDate() : 1;
+      document.getElementById('libre-fecha').value = `${asistAnio}-${String(asistMes+1).padStart(2,'0')}-${String(diaDefault).padStart(2,'0')}`;
+      document.getElementById('libre-turno').selectedIndex = 0;
+      document.getElementById('overlay-turno-libre').classList.add('visible');
+    }
+
+    function continuarTurnoLibre(){
+      const fecha = document.getElementById('libre-fecha').value;
+      const turno = document.getElementById('libre-turno').value;
+      if(!fecha){ alert('Elegí una fecha'); return; }
+      const [y,m,d] = fecha.split('-').map(Number);
+      const dow = new Date(y,m-1,d).getDay();
+      if(dow===0){ alert('Los domingos la óptica está cerrada'); return; }
+      const esp = horarioEsperadoLibre(asistEmpleadaActual, turno, dow);
+      cerrarModal('overlay-turno-libre');
+      abrirModalTurnoRend(fecha, turno, esp.entrada, esp.salida);
     }
 
     function buscarFechaAsistencia(){
       const v = document.getElementById('asist-buscar-fecha').value;
       if(!v){ alert('Elegí una fecha'); return; }
-      abrirModalAsistencia(v);
+      onClickDiaAsist(v);
     }
 
     // ── RENDIMIENTO ────────────────────────────────────────────
@@ -1298,7 +1287,7 @@
       const filasHtml = filas.map(f => {
         if (!f.cargado) {
           const cls = f.futuro ? 'futuro' : '';
-          const onclickAttr = f.futuro ? '' : `onclick="abrirModalTurnoRend('${f.fecha}','${f.turno}','${f.horaEsperadaEntrada}','${f.horaEsperadaSalida}')"`;
+          const onclickAttr = f.futuro ? '' : `onclick="irAAsistenciaDesdeRend('${f.fecha}')"`;
           const estadoTxt = f.futuro ? '—' : 'Sin cargar';
           return `<div class="rend-turno-fila ${cls}" ${onclickAttr}>
             <div class="rend-turno-fecha">${fmtDia(f.fecha)}</div>
@@ -1313,7 +1302,7 @@
         else if (f.minutosTarde>0) { estadoTxt=`+${f.minutosTarde}min tarde`; estadoCls='amarillo'; }
         else { estadoTxt='A horario'; estadoCls='verde'; }
         const horaRealTxt = f.horaRealEntrada ? ` · real <b>${f.horaRealEntrada}–${f.horaRealSalida||f.horaEsperadaSalida}</b>` : '';
-        return `<div class="rend-turno-fila" onclick="abrirModalTurnoRend('${f.fecha}','${f.turno}','${f.horaEsperadaEntrada}','${f.horaEsperadaSalida}')">
+        return `<div class="rend-turno-fila" onclick="irAAsistenciaDesdeRend('${f.fecha}')">
           <div class="rend-turno-fecha">${fmtDia(f.fecha)}</div>
           <div class="rend-turno-tag ${f.turno}">${f.turno==='manana'?'Mañana':'Tarde'}</div>
           <div class="rend-turno-horas">${f.horaEsperadaEntrada}–${f.horaEsperadaSalida} esperado${horaRealTxt}</div>
@@ -1345,7 +1334,7 @@
           <div class="rend-costo-card real"><div class="label">Costo real / hora</div><div class="monto">${r.costoRealPorHora!==null?formatPesos(r.costoRealPorHora):'—'}</div></div>
         </div>
         <div class="rend-comparacion">💡 ${generarTextoComparacionRend(r, rendEmpleadaActual)}</div>
-        <div class="section-title" style="margin-bottom:10px">📋 Detalle de turnos · Tocá uno para cargar/editar</div>
+        <div class="section-title" style="margin-bottom:10px">📋 Detalle de turnos · Tocá uno para ir a cargarlo en Asistencia</div>
         ${filasHtml || '<div class="empty">No hay turnos esperados este mes.</div>'}
       `;
     }
@@ -1356,14 +1345,18 @@
       document.getElementById('rend-turno-campos-hora').style.display = ocultar ? 'none' : 'block';
     }
 
+    function empleadaModalActiva(){ return tabActual==='asistencia' ? asistEmpleadaActual : rendEmpleadaActual; }
+    function dbArrModalActivo(){ return tabActual==='asistencia' ? asistTurnosDB : rendTurnosDB; }
+
     function abrirModalTurnoRend(fecha, turno, horaEspEntrada, horaEspSalida){
-      const db_ = rendTurnosDB.find(t => t.fecha===fecha && t.turno===turno);
+      const empleadaModal = empleadaModalActiva();
+      const db_ = dbArrModalActivo().find(t => t.fecha===fecha && t.turno===turno);
       document.getElementById('rend-turno-fecha').value = fecha;
       document.getElementById('rend-turno-turno').value = turno;
       document.getElementById('rend-turno-esp-entrada').value = horaEspEntrada;
       document.getElementById('rend-turno-esp-salida').value = horaEspSalida;
       const [y,m,d] = fecha.split('-');
-      document.getElementById('rend-turno-titulo').textContent = `${turno==='manana'?'🌅 Mañana':'🌆 Tarde'} — ${rendEmpleadaActual}`;
+      document.getElementById('rend-turno-titulo').textContent = `${turno==='manana'?'🌅 Mañana':'🌆 Tarde'} — ${empleadaModal}`;
       document.getElementById('rend-turno-sub').textContent = `${d} de ${MESES[parseInt(m)-1]} ${y} · Esperado ${horaEspEntrada}–${horaEspSalida}`;
       document.getElementById('rend-turno-estado').value = db_?.estado || 'presente';
       document.getElementById('rend-turno-hora-entrada').value = db_?.hora_real_entrada || horaEspEntrada;
@@ -1375,6 +1368,7 @@
     }
 
     async function guardarTurnoRend(){
+      const empleadaModal = empleadaModalActiva();
       const fecha = document.getElementById('rend-turno-fecha').value;
       const turno = document.getElementById('rend-turno-turno').value;
       const estado = document.getElementById('rend-turno-estado').value;
@@ -1386,7 +1380,7 @@
         if(!horaRealEntrada){ alert('Ingresá la hora real de entrada'); return; }
         horaRealSalida = document.getElementById('rend-turno-hora-salida').value || null;
       }
-      const payload = { empleada: rendEmpleadaActual, fecha, turno,
+      const payload = { empleada: empleadaModal, fecha, turno,
         hora_esperada_entrada: document.getElementById('rend-turno-esp-entrada').value,
         hora_esperada_salida: document.getElementById('rend-turno-esp-salida').value,
         hora_real_entrada: horaRealEntrada, hora_real_salida: horaRealSalida, estado, notas };
@@ -1395,17 +1389,29 @@
       const { error } = await db.from('turnos_asistencia').upsert([payload], { onConflict: 'empleada,fecha,turno' });
       btn.textContent='✅ Guardar'; btn.disabled=false;
       if(error){ alert('Error: '+error.message); return; }
+      OlvisionCache.clear('turnos_'+empleadaModal+'_'+fecha.substring(0,7));
       cerrarModal('overlay-turno-rend');
-      cargarRendimiento();
+      if(tabActual==='asistencia') cargarAsistencia(); else cargarRendimiento();
     }
 
     async function eliminarTurnoRend(){
+      const empleadaModal = empleadaModalActiva();
       const fecha = document.getElementById('rend-turno-fecha').value;
       const turno = document.getElementById('rend-turno-turno').value;
       if(!confirm('¿Borrar este registro y dejarlo como "sin cargar"?')) return;
-      await db.from('turnos_asistencia').delete().eq('empleada',rendEmpleadaActual).eq('fecha',fecha).eq('turno',turno);
+      await db.from('turnos_asistencia').delete().eq('empleada',empleadaModal).eq('fecha',fecha).eq('turno',turno);
+      OlvisionCache.clear('turnos_'+empleadaModal+'_'+fecha.substring(0,7));
       cerrarModal('overlay-turno-rend');
-      cargarRendimiento();
+      if(tabActual==='asistencia') cargarAsistencia(); else cargarRendimiento();
+    }
+
+    // Rendimiento es de solo lectura: tocar un turno te lleva a Asistencia para editarlo
+    function irAAsistenciaDesdeRend(fecha){
+      asistEmpleadaActual = rendEmpleadaActual;
+      const [y,m] = fecha.split('-');
+      asistMes = parseInt(m)-1; asistAnio = parseInt(y);
+      cambiarTab('asistencia');
+      setTimeout(()=>onClickDiaAsist(fecha), 400);
     }
 
     function cambiarAnio(dir){anioHistorico+=dir;document.getElementById('anio-nombre').textContent=anioHistorico;cargarHistorico();}
