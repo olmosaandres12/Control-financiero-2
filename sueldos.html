@@ -614,7 +614,7 @@
       <div id="rend-turno-campos-hora">
         <div class="campo"><label>Hora real de entrada</label><input type="time" id="rend-turno-hora-entrada" /></div>
         <div class="campo"><label>Hora real de salida (opcional)</label><input type="time" id="rend-turno-hora-salida" />
-          <small style="color:#94a3b8;font-size:12px">Si la dejás vacía, se toma la hora de salida esperada</small>
+          <small style="color:#94a3b8;font-size:12px">Ya viene precargada con el horario de salida esperado — cambiala solo si salió a otra hora</small>
         </div>
       </div>
       <div class="campo"><label>Notas (opcional)</label><input type="text" id="rend-turno-notas" autocomplete="off" /></div>
@@ -1375,7 +1375,7 @@
       document.getElementById('rend-turno-sub').textContent = `${d} de ${MESES[parseInt(m)-1]} ${y} · Esperado ${horaEspEntrada}–${horaEspSalida}`;
       document.getElementById('rend-turno-estado').value = db_?.estado || 'presente';
       document.getElementById('rend-turno-hora-entrada').value = db_?.hora_real_entrada || horaEspEntrada;
-      document.getElementById('rend-turno-hora-salida').value = db_?.hora_real_salida || '';
+      document.getElementById('rend-turno-hora-salida').value = db_?.hora_real_salida || horaEspSalida;
       document.getElementById('rend-turno-notas').value = db_?.notas || '';
       document.getElementById('rend-turno-btn-borrar').style.display = db_ ? 'block' : 'none';
       toggleCamposEstadoRend();
