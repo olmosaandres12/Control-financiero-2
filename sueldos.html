@@ -697,6 +697,26 @@
       cargar();
     }
 
+    // Crea automáticamente las quincenas que falten para el período que se
+    // está mostrando, usando el sueldo_quincena configurado en la ficha de
+    // cada empleado. Se ejecuta cada vez que se entra/navega a un mes.
+    async function autoCrearQuincenasFaltantes(periodo) {
+      const empConSueldo = getEmpleadosConSueldo();
+      const faltantes = [];
+      empConSueldo.forEach(e => {
+        [1,2].forEach(q => {
+          const existe = sueldos.some(s => s.empleada === e.nombre && s.quincena === q);
+          if (!existe) {
+            const base = e.sueldo_quincena || 0;
+            faltantes.push({ empleada: e.nombre, periodo, quincena: q, monto_total: base, monto_pagado: 0, saldo: base, notas: 'Creada automáticamente' });
+          }
+        });
+      });
+      if (faltantes.length === 0) return;
+      const { data: creadas, error } = await db.from('sueldos').insert(faltantes).select();
+      if (!error && creadas) sueldos = sueldos.concat(creadas);
+    }
+
     async function cargar() {
       const periodo=getPeriodo();
       document.getElementById('periodo-nombre').textContent=getPeriodoLabel();
@@ -706,6 +726,7 @@
       if(cached){sueldos=cached.sueldos;pagos=cached.pagos;renderResumen();renderTodosEmpleados();}
       const{data:s}=await db.from('sueldos').select('*').eq('periodo',periodo).order('empleada').order('quincena');
       sueldos=s||[];
+      await autoCrearQuincenasFaltantes(periodo);
       if(sueldos.length>0){const ids=sueldos.map(x=>x.id);const{data:p}=await db.from('pagos_sueldos').select('*').in('sueldo_id',ids).order('fecha');pagos=p||[];}
       else pagos=[];
       OlvisionCache.set(cacheKey,{sueldos,pagos});
@@ -1544,22 +1565,31 @@
     function cerrarFuera(e,id){if(e.target===document.getElementById(id))cerrarModal(id);}
 
     // ── MENSAJE WHATSAPP ─────────────────────────────────────
-    function mostrarMensajeWA(empleada, periodoLabel, sueldosEmpleada, todosPagos, waPayId) {
+    // Distingue 4 casos: pago a cuenta, quincena saldada (con la otra sin
+    // crear o con saldo), y mes completo saldado. quincenaTocada indica cuál
+    // de las 2 quincenas fue la que se acaba de pagar.
+    function mostrarMensajeWA(empleada, periodoLabel, sueldosEmpleada, todosPagos, waPayId, quincenaTocada) {
       const div = '─────────────────────';
       let mensaje = `💼 Olvisión — Sueldo ${empleada}\n\n`;
       mensaje += `${periodoLabel}\n`;
 
-      let totalGeneral = 0, pagadoGeneral = 0;
+      let totalPagadoGeneral = 0, cantPagosGeneral = 0;
+      const estadoQ = {};
 
       [1, 2].forEach(q => {
         const sd = sueldosEmpleada.find(s => s.quincena === q);
-        if (!sd) return;
-        const total = parseFloat(sd.monto_total) || 0;
-        totalGeneral += total;
-        const qPagos = todosPagos.filter(p => String(p.sueldo_id) === String(sd.id));
-        pagadoGeneral += qPagos.reduce((s, p) => s + (parseFloat(p.monto) || 0), 0);
-        const qTag = q === 1 ? '(1Q)' : '(2Q)';
         const nroLabel = q === 1 ? '1ra' : '2da';
+        const qTag = q === 1 ? '(1Q)' : '(2Q)';
+        if (!sd) { estadoQ[q] = { existe: false }; return; }
+
+        const total = parseFloat(sd.monto_total) || 0;
+        const qPagos = todosPagos.filter(p => String(p.sueldo_id) === String(sd.id));
+        const pagadoQ = qPagos.reduce((s, p) => s + (parseFloat(p.monto) || 0), 0);
+        const saldoQ = Math.max(0, total - pagadoQ);
+        estadoQ[q] = { existe: true, total, pagado: pagadoQ, saldo: saldoQ };
+        totalPagadoGeneral += pagadoQ;
+        cantPagosGeneral += qPagos.length;
+
         mensaje += `${div}\n`;
         mensaje += `${nroLabel} quincena · ${formatPesos(total)}\n`;
         if (qPagos.length === 0) {
@@ -1572,14 +1602,30 @@
         }
       });
 
-      const saldoGeneral = totalGeneral - pagadoGeneral;
       mensaje += `${div}\n`;
-      if (saldoGeneral <= 0) {
-        mensaje += `Pagado:  ${formatPesos(pagadoGeneral)}\n`;
-        mensaje += '✅ Mes saldado';
+
+      const qT = estadoQ[quincenaTocada] || { existe: true, saldo: 0 };
+      const qOtraNro = quincenaTocada === 1 ? 2 : 1;
+      const qOtra = estadoQ[qOtraNro] || { existe: false };
+      const qTocadaLabel = quincenaTocada === 1 ? '1ra' : '2da';
+      const qOtraLabel = qOtraNro === 1 ? '1ra' : '2da';
+
+      if (qT.saldo > 0) {
+        // Caso 1: pago a cuenta, todavía queda saldo en la quincena tocada
+        mensaje += `💰 Pago a cuenta\n`;
+        mensaje += `Queda pendiente: ${formatPesos(qT.saldo)} de la ${qTocadaLabel} quincena`;
+      } else if (!qOtra.existe) {
+        // Caso 2: quincena tocada saldada, la otra ni fue creada todavía
+        mensaje += `✅ ${qTocadaLabel} quincena saldada\n`;
+        mensaje += `📌 La ${qOtraLabel} quincena todavía no fue cargada`;
+      } else if (qOtra.saldo > 0) {
+        // Caso 3: quincena tocada saldada, la otra existe con saldo pendiente
+        mensaje += `✅ ${qTocadaLabel} quincena saldada\n`;
+        mensaje += `⏳ Queda pendiente la ${qOtraLabel} quincena: ${formatPesos(qOtra.saldo)}`;
       } else {
-        mensaje += `Pagado:  ${formatPesos(pagadoGeneral)}\n`;
-        mensaje += `Saldo:   ${formatPesos(saldoGeneral)}`;
+        // Caso 4: ambas quincenas saldadas → mes completo saldado
+        mensaje += `✅ Mes saldado\n`;
+        mensaje += `Pagado: ${formatPesos(totalPagadoGeneral)} en ${cantPagosGeneral} pago${cantPagosGeneral === 1 ? '' : 's'}`;
       }
 
       document.getElementById('wa-texto').textContent = mensaje;
@@ -1667,7 +1713,7 @@
 
         // Mostrar modal WhatsApp con resumen de las 2 quincenas
         const sueldosEmp = sueldos.filter(s => s.empleada === waEmpleada);
-        mostrarMensajeWA(waEmpleada, waPeriodoLabel, sueldosEmp, pagos, pagoInsertado?.id);
+        mostrarMensajeWA(waEmpleada, waPeriodoLabel, sueldosEmp, pagos, pagoInsertado?.id, waNroQ);
 
         await verificarMesSaldado();
       } else {
