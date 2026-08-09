@@ -258,6 +258,7 @@
     .dp-grad-sugerencias { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid #d0d9f0; border-radius: 10px; margin-top: 4px; max-height: 180px; overflow-y: auto; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .dp-grad-opt { padding: 9px 12px; font-size: 13px; font-weight: 700; color: #1e293b; cursor: pointer; }
     .dp-grad-opt:hover, .dp-grad-opt:active { background: #eff6ff; color: #1E3A8A; }
+    .dp-grad-opt.resaltado { background: #eff6ff; color: #1E3A8A; }
 
     .chip-cat { display: inline-flex; align-items: center; padding: 7px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: white; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; margin: 0 6px 6px 0; }
     .chip-cat.activo { background: #eff6ff; border-color: #1E3A8A; color: #1E3A8A; }
@@ -737,8 +738,10 @@
       });
     }
     const GRADUACIONES_CONTACTO = generarGraduaciones();
-    function buscarGraduacion(campo,val){
-      const cont=document.getElementById(campo==='od'?'dp-cont-od-sug':'dp-cont-oi-sug');
+    function _idSugGrad(idx,campo){ return `dp-cont-${idx}-${campo}-sug`; }
+    function _idInputGrad(idx,campo){ return `dp-cont-${idx}-${campo}`; }
+    function buscarGraduacion(idx,campo,val){
+      const cont=document.getElementById(_idSugGrad(idx,campo));
       if(!cont) return;
       const typed=(val||'').trim().replace(',','.');
       if(!typed){cont.style.display='none';cont.innerHTML='';return;}
@@ -750,19 +753,49 @@
         return g.slice(1).startsWith(numPart);
       }).slice(0,8);
       if(!matches.length){cont.style.display='none';cont.innerHTML='';return;}
-      cont.innerHTML=matches.map(g=>`<div class="dp-grad-opt" onmousedown="seleccionarGraduacion('${campo}','${g}')">${g}</div>`).join('');
+      cont.innerHTML=matches.map(g=>`<div class="dp-grad-opt" data-valor="${g}" onmousedown="seleccionarGraduacion(${idx},'${campo}','${g}')">${g}</div>`).join('');
       cont.style.display='block';
     }
-    function seleccionarGraduacion(campo,valor){
-      const inp=document.getElementById(campo==='od'?'dp-cont-od':'dp-cont-oi');
+    function seleccionarGraduacion(idx,campo,valor){
+      const inp=document.getElementById(_idInputGrad(idx,campo));
       if(inp) inp.value=valor;
-      ocultarGraduacion(campo);
+      ocultarGraduacion(idx,campo);
     }
-    function ocultarGraduacion(campo){
-      const cont=document.getElementById(campo==='od'?'dp-cont-od-sug':'dp-cont-oi-sug');
+    function ocultarGraduacion(idx,campo){
+      const cont=document.getElementById(_idSugGrad(idx,campo));
       if(cont){cont.style.display='none';cont.innerHTML='';}
     }
-    let opcionesProducto = {}, liquidoCount = 0;
+    function _resaltarOpcionGrad(opts,nuevoIdx){
+      opts.forEach(o=>o.classList.remove('resaltado'));
+      if(nuevoIdx>=0&&nuevoIdx<opts.length){
+        opts[nuevoIdx].classList.add('resaltado');
+        opts[nuevoIdx].scrollIntoView({block:'nearest'});
+      }
+    }
+    function keydownGraduacion(idx,campo,event){
+      const cont=document.getElementById(_idSugGrad(idx,campo));
+      if(!cont||cont.style.display==='none'||!cont.innerHTML) return;
+      const opts=[...cont.querySelectorAll('.dp-grad-opt')];
+      if(!opts.length) return;
+      let curIdx=opts.findIndex(o=>o.classList.contains('resaltado'));
+      if(event.key==='ArrowDown'){
+        event.preventDefault();
+        curIdx = curIdx<opts.length-1 ? curIdx+1 : 0;
+        _resaltarOpcionGrad(opts,curIdx);
+      } else if(event.key==='ArrowUp'){
+        event.preventDefault();
+        curIdx = curIdx>0 ? curIdx-1 : opts.length-1;
+        _resaltarOpcionGrad(opts,curIdx);
+      } else if(event.key==='Enter'){
+        if(curIdx>=0){
+          event.preventDefault();
+          seleccionarGraduacion(idx,campo,opts[curIdx].dataset.valor);
+        }
+      } else if(event.key==='Escape'){
+        ocultarGraduacion(idx,campo);
+      }
+    }
+    let opcionesProducto = {}, liquidoCount = 0, contactoCount = 0;
 
     async function cargarOpcionesProducto() {
       const claves = ['marcas_armazon','marcas_lentes_contacto','tratamientos_monofocal','tratamientos_bifocal','tratamientos_ocupacional','tratamientos_progresivo','tratamientos_tenido'];
@@ -784,6 +817,7 @@
     function onProductoChange() {
       const producto = document.getElementById('f-producto').value;
       liquidoCount = 0;
+      contactoCount = 0;
       const wrap = document.getElementById('detalle-wrap');
       wrap.innerHTML = renderDetalleForm(producto);
       wrap.querySelectorAll('.dp-checkbox-item').forEach(el => {
@@ -798,7 +832,7 @@
       });
       const invWrap = document.getElementById('inv-link-wrap');
       if (invWrap) { invWrap.style.display = producto && producto!=='Saldo'?'block':'none'; limpiarVinculoInv(); }
-      if (producto==='Lentes') actualizarPrecioContacto();
+      if (producto==='Lentes') actualizarPrecioContacto(0);
       if (producto==='Liquidos') actualizarPrecioLiquido(0);
     }
 
@@ -840,28 +874,65 @@
     function toggleOtraInput(selectId,inputId){const sel=document.getElementById(selectId),inp=document.getElementById(inputId);if(sel&&inp)inp.style.display=sel.value==='__otra__'?'block':'none';}
 
     function renderContacto(){
+      contactoCount=0;
+      const item0=itemContactoHtml(0); contactoCount=1;
       return `<div class="dp-titulo">👁️ Lentes de contacto</div>
-        <div class="campo"><label>Marca</label><select id="dp-cont-marca" class="dp-select" onchange="toggleOtraInput('dp-cont-marca','dp-cont-marca-otra');actualizarPrecioContacto()">${_optsMarcasContacto()}</select><input type="text" id="dp-cont-marca-otra" placeholder="Escribí la marca…" style="display:none;margin-top:6px" oninput="actualizarPrecioContacto()" /></div>
-        <div class="dp-fila-2">
-          <div class="campo dp-grad-wrap"><label>Graduación OD</label><input type="text" id="dp-cont-od" placeholder="Ej: -1.50" autocomplete="off" oninput="buscarGraduacion('od',this.value)" onfocus="buscarGraduacion('od',this.value)" onblur="setTimeout(()=>ocultarGraduacion('od'),150)" /><div class="dp-grad-sugerencias" id="dp-cont-od-sug"></div></div>
-          <div class="campo dp-grad-wrap"><label>Graduación OI</label><input type="text" id="dp-cont-oi" placeholder="Ej: -1.75" autocomplete="off" oninput="buscarGraduacion('oi',this.value)" onfocus="buscarGraduacion('oi',this.value)" onblur="setTimeout(()=>ocultarGraduacion('oi'),150)" /><div class="dp-grad-sugerencias" id="dp-cont-oi-sug"></div></div>
-        </div>
-        <div class="campo"><label>Cantidad</label><div class="dp-radio-group">
-          <label class="dp-checkbox-item marcado"><input type="radio" name="dp-cont-cant" value="Medio par" checked onchange="actualizarPrecioContacto()" /><span>½ par</span></label>
-          <label class="dp-checkbox-item"><input type="radio" name="dp-cont-cant" value="Par completo" onchange="actualizarPrecioContacto()" /><span>Par completo</span></label>
-        </div></div>
-        <div class="campo"><label>Precio lente <small style="font-weight:400;text-transform:none">(automático, editable)</small></label><input type="text" data-miles="true" id="dp-cont-precio" placeholder="0" inputmode="numeric" oninput="fmtMiles(this);actualizarTotalDesdeItems()" /></div>
+        <div id="dp-cont-lista">${item0}</div>
+        <button type="button" class="dp-btn-add" onclick="agregarContacto()">➕ Agregar otro par (graduación distinta)</button>
         <div id="dp-liq-lista"></div>
         <button type="button" class="dp-btn-add" onclick="agregarLiquido()">➕ Agregar líquido</button>`;
     }
-    function actualizarPrecioContacto(){
-      const marcaSel=document.getElementById('dp-cont-marca');
+    function itemContactoHtml(idx){
+      return `<div class="dp-liquido-item" id="dp-cont-${idx}"><div class="dp-liquido-header"><span class="dp-liquido-num">Par ${idx+1}</span>${idx>0?`<button type="button" class="dp-btn-remove" onclick="quitarContacto(${idx})">✕ Quitar</button>`:''}</div>
+        <div class="campo"><label>Marca</label><select id="dp-cont-${idx}-marca" class="dp-select" onchange="toggleOtraInput('dp-cont-${idx}-marca','dp-cont-${idx}-marca-otra');actualizarPrecioContacto(${idx})">${_optsMarcasContacto()}</select><input type="text" id="dp-cont-${idx}-marca-otra" placeholder="Escribí la marca…" style="display:none;margin-top:6px" oninput="actualizarPrecioContacto(${idx})" /></div>
+        <div class="dp-fila-2">
+          <div class="campo dp-grad-wrap"><label>Graduación OD</label><input type="text" id="dp-cont-${idx}-od" placeholder="Ej: -1.50" autocomplete="off" oninput="buscarGraduacion(${idx},'od',this.value)" onfocus="buscarGraduacion(${idx},'od',this.value)" onkeydown="keydownGraduacion(${idx},'od',event)" onblur="setTimeout(()=>ocultarGraduacion(${idx},'od'),150)" /><div class="dp-grad-sugerencias" id="dp-cont-${idx}-od-sug"></div></div>
+          <div class="campo dp-grad-wrap"><label>Graduación OI</label><input type="text" id="dp-cont-${idx}-oi" placeholder="Ej: -1.75" autocomplete="off" oninput="buscarGraduacion(${idx},'oi',this.value)" onfocus="buscarGraduacion(${idx},'oi',this.value)" onkeydown="keydownGraduacion(${idx},'oi',event)" onblur="setTimeout(()=>ocultarGraduacion(${idx},'oi'),150)" /><div class="dp-grad-sugerencias" id="dp-cont-${idx}-oi-sug"></div></div>
+        </div>
+        <div class="campo"><label>Cantidad</label>
+          <select id="dp-cont-${idx}-cant" class="dp-select" onchange="onCambioCantContacto(${idx})">
+            <option value="0.5">½ par</option>
+            <option value="1" selected>1 par</option>
+            <option value="1.5">1 ½ par</option>
+            <option value="2">2 pares</option>
+            <option value="otro">Otra cantidad…</option>
+          </select>
+          <input type="number" id="dp-cont-${idx}-cant-otro" step="0.5" min="0.5" placeholder="Ej: 2.5" style="display:none;margin-top:6px" oninput="actualizarPrecioContacto(${idx})" />
+        </div>
+        <div class="campo"><label>Precio <small style="font-weight:400;text-transform:none">(automático, editable)</small></label><input type="text" data-miles="true" id="dp-cont-${idx}-precio" placeholder="0" inputmode="numeric" oninput="fmtMiles(this);actualizarTotalDesdeItems()" /></div></div>`;
+    }
+    function agregarContacto(){
+      const lista=document.getElementById('dp-cont-lista'); if(!lista) return;
+      const idx=contactoCount;
+      const div=document.createElement('div'); div.innerHTML=itemContactoHtml(idx);
+      lista.appendChild(div.firstElementChild); contactoCount++;
+      actualizarPrecioContacto(idx);
+    }
+    function quitarContacto(idx){document.getElementById('dp-cont-'+idx)?.remove();actualizarTotalDesdeItems();}
+    function getCantidadContacto(idx){
+      const sel=document.getElementById(`dp-cont-${idx}-cant`);
+      if(!sel) return 1;
+      if(sel.value==='otro'){
+        const otro=document.getElementById(`dp-cont-${idx}-cant-otro`);
+        return parseFloat(otro?.value)||0;
+      }
+      return parseFloat(sel.value)||1;
+    }
+    function onCambioCantContacto(idx){
+      const sel=document.getElementById(`dp-cont-${idx}-cant`);
+      const otro=document.getElementById(`dp-cont-${idx}-cant-otro`);
+      if(otro) otro.style.display = sel.value==='otro' ? 'block' : 'none';
+      actualizarPrecioContacto(idx);
+    }
+    function actualizarPrecioContacto(idx){
+      const marcaSel=document.getElementById(`dp-cont-${idx}-marca`);
       if(!marcaSel) return;
       let marca=marcaSel.value;
-      if(marca==='__otra__') marca=document.getElementById('dp-cont-marca-otra')?.value||'';
-      const esMedio=document.querySelector('#detalle-wrap input[name="dp-cont-cant"]:checked')?.value!=='Par completo';
-      const precio=precioLenteContacto(marca,esMedio);
-      const inp=document.getElementById('dp-cont-precio');
+      if(marca==='__otra__') marca=document.getElementById(`dp-cont-${idx}-marca-otra`)?.value||'';
+      const cantidad=getCantidadContacto(idx);
+      const precioPorPar=precioLenteContacto(marca,false);
+      const precio=Math.round(precioPorPar*cantidad);
+      const inp=document.getElementById(`dp-cont-${idx}-precio`);
       if(inp) setVal(inp,precio);
       actualizarTotalDesdeItems();
     }
@@ -904,8 +975,11 @@
       const producto=document.getElementById('f-producto')?.value;
       if(producto!=='Lentes'&&producto!=='Liquidos') return;
       let total=0;
-      const precioLente=document.getElementById('dp-cont-precio');
-      if(precioLente) total+=getVal(precioLente)||0;
+      document.querySelectorAll('#dp-cont-lista .dp-liquido-item').forEach(el=>{
+        const idx=el.id.replace('dp-cont-','');
+        const inp=document.getElementById(`dp-cont-${idx}-precio`);
+        if(inp) total+=getVal(inp)||0;
+      });
       document.querySelectorAll('[id^="dp-liq-precio-"]').forEach(inp=>{ total+=getVal(inp)||0; });
       const fTotal=document.getElementById('f-total');
       if(fTotal){ setVal(fTotal,total); calcularSaldo(); }
@@ -956,12 +1030,17 @@
             return JSON.stringify({tipo,marca,tratamiento,codigo,cantidad});
           }
           case 'Lentes':{
-            const marcaSel=document.getElementById('dp-cont-marca')?.value||'';
-            const marca=marcaSel==='__otra__'?(document.getElementById('dp-cont-marca-otra')?.value||''):marcaSel;
-            const od=document.getElementById('dp-cont-od')?.value||'';
-            const oi=document.getElementById('dp-cont-oi')?.value||'';
-            const cantidad=document.querySelector('#detalle-wrap input[name="dp-cont-cant"]:checked')?.value||'Medio par';
-            const precioLente=getVal(document.getElementById('dp-cont-precio'))||0;
+            const items=[];
+            document.querySelectorAll('#dp-cont-lista .dp-liquido-item').forEach(el=>{
+              const idx=el.id.replace('dp-cont-','');
+              const marcaSel=document.getElementById(`dp-cont-${idx}-marca`)?.value||'';
+              const marca=marcaSel==='__otra__'?(document.getElementById(`dp-cont-${idx}-marca-otra`)?.value||''):marcaSel;
+              const od=document.getElementById(`dp-cont-${idx}-od`)?.value||'';
+              const oi=document.getElementById(`dp-cont-${idx}-oi`)?.value||'';
+              const cantidad=getCantidadContacto(idx);
+              const precio=getVal(document.getElementById(`dp-cont-${idx}-precio`))||0;
+              if(marca||od||oi) items.push({marca,od,oi,cantidad,precio});
+            });
             const liquidos=[];
             document.querySelectorAll('#dp-liq-lista .dp-liquido-item').forEach(el=>{
               const idx=el.id.replace('dp-liq-','');
@@ -971,7 +1050,7 @@
               const precio=getVal(document.getElementById('dp-liq-precio-'+idx))||0;
               if(prod) liquidos.push({producto:prod,presentacion:pres,cantidad:cant,precio});
             });
-            return JSON.stringify({marca,od,oi,cantidad,precioLente,liquidos});
+            return JSON.stringify({items,liquidos});
           }
           case 'Liquidos':{
             const items=[];
@@ -1011,8 +1090,20 @@
         switch(producto){
           case 'Recetado':case 'PAMI':{const p=[];if(d.tipo)p.push(d.tipo.charAt(0).toUpperCase()+d.tipo.slice(1));if(d.marca)p.push(d.marca);if(d.tratamiento)p.push(d.tratamiento);if(d.codigo)p.push(d.codigo);if(d.cantidad)p.push(d.cantidad);return p.join(' · ');}
           case 'Lentes':{
-            const p=[];if(d.marca)p.push(d.marca);if(d.od||d.oi)p.push(`OD ${d.od||'—'} / OI ${d.oi||'—'}`);if(d.cantidad)p.push(d.cantidad);
-            let base=p.join(' · ');
+            let base='';
+            if(d.items&&d.items.length){
+              base=d.items.map(it=>{
+                const p=[];if(it.marca)p.push(it.marca);if(it.od||it.oi)p.push(`OD ${it.od||'—'} / OI ${it.oi||'—'}`);
+                const cn=it.cantidad;
+                const cantLabel=cn===1?'1 par':cn===0.5?'½ par':cn===1.5?'1 ½ par':cn+' pares';
+                p.push(cantLabel);
+                return p.join(' · ');
+              }).join(' + ');
+            } else if(d.marca||d.od||d.oi){
+              // formato antiguo (un solo par por operación)
+              const p=[];if(d.marca)p.push(d.marca);if(d.od||d.oi)p.push(`OD ${d.od||'—'} / OI ${d.oi||'—'}`);if(d.cantidad)p.push(d.cantidad);
+              base=p.join(' · ');
+            }
             if(d.liquidos&&d.liquidos.length) base+=(base?' + ':'')+d.liquidos.map(i=>`${i.producto} ${i.presentacion}${i.cantidad>1?' x'+i.cantidad:''}`).join(' + ');
             return base;
           }
@@ -1106,10 +1197,19 @@
             contador[nombre].monto+=(parseFloat(it.precio)||0);
           });
         } else if(producto==='Lentes'){
-          const nombre=d.marca||'Sin marca';
-          if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
-          contador[nombre].cantidad+=1;
-          contador[nombre].monto+=(parseFloat(d.precioLente)||0);
+          if(d.items&&d.items.length){
+            d.items.forEach(it=>{
+              const nombre=it.marca||'Sin marca';
+              if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+              contador[nombre].cantidad+=1;
+              contador[nombre].monto+=(parseFloat(it.precio)||0);
+            });
+          } else {
+            const nombre=d.marca||'Sin marca';
+            if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+            contador[nombre].cantidad+=1;
+            contador[nombre].monto+=(parseFloat(d.precioLente)||0);
+          }
         }
       });
       return Object.entries(contador).map(([nombre,v])=>({nombre,cantidad:v.cantidad,monto:v.monto})).sort((a,b)=>b.cantidad-a.cantidad);
@@ -1142,12 +1242,21 @@
       regs.filter(r=>r.producto==='Lentes').forEach(r=>{
         if(!r.detalle_producto) return;
         let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
-        const nombre=d.marca||'Sin marca';
-        if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
-        contador[nombre].cantidad+=1;
-        let montoItem = parseFloat(d.precioLente)||0;
-        if(!montoItem) montoItem = parseFloat(r.total)||0;
-        contador[nombre].monto+=montoItem;
+        if(d.items&&d.items.length){
+          d.items.forEach(it=>{
+            const nombre=it.marca||'Sin marca';
+            if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+            contador[nombre].cantidad+=1;
+            contador[nombre].monto+=(parseFloat(it.precio)||0);
+          });
+        } else {
+          const nombre=d.marca||'Sin marca';
+          if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
+          contador[nombre].cantidad+=1;
+          let montoItem = parseFloat(d.precioLente)||0;
+          if(!montoItem) montoItem = parseFloat(r.total)||0;
+          contador[nombre].monto+=montoItem;
+        }
       });
       return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10);
     }
@@ -1823,7 +1932,7 @@
       document.getElementById('banner-saldo').style.display='none';
       const invWrap=document.getElementById('inv-link-wrap');
       if(invWrap)invWrap.style.display='none';
-      limpiarVinculoInv(); liquidoCount=0; setTipoOp('venta');
+      limpiarVinculoInv(); liquidoCount=0; contactoCount=0; setTipoOp('venta');
     }
     function setTipoOp(tipo){
       const esEgreso=tipo==='egreso';
