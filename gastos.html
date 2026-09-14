@@ -17,34 +17,30 @@
   <script src="config.js"></script>
   <script src="cache.js"></script>
   <script src="utils.js"></script>
+  <script src="js/motores/datosRentabilidad.js"></script>
   <link rel="manifest" href="manifest.json" />
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
   <style>
     .mes-selector { display: flex; align-items: center; justify-content: space-between; background: white; border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
     .mes-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #1E3A8A; padding: 4px 8px; }
     .mes-nombre { font-size: 17px; font-weight: 800; color: #1e293b; }
-
     .resumen { background: #1E3A8A; border-radius: 20px; padding: 20px; margin-bottom: 16px; color: white; }
     .resumen-titulo { font-size: 12px; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
     .resumen-total { font-size: 36px; font-weight: 900; margin-bottom: 4px; }
     .resumen-sub { font-size: 13px; color: #93c5fd; }
-
     .cats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .cat-card { background: white; border-radius: 16px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
     .cat-card.activa { border-color: #1E3A8A; }
     .cat-icon { font-size: 20px; margin-bottom: 6px; }
     .cat-nombre { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
     .cat-monto { font-size: 18px; font-weight: 900; color: #1e293b; margin-top: 2px; }
-
     .filtros { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
     .filtros::-webkit-scrollbar { display: none; }
     .filtro-btn { background: white; border: 2px solid #e2e8f0; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer; white-space: nowrap; font-family: inherit; transition: all 0.2s; }
     .filtro-btn.activo { background: #1E3A8A; border-color: #1E3A8A; color: white; }
-
     .export-row { display: flex; gap: 10px; margin-bottom: 20px; }
     .btn-export { flex: 1; background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 700; color: #1E3A8A; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
     .btn-export:hover { background: #f0f4ff; border-color: #1E3A8A; }
-
     .lista { display: flex; flex-direction: column; gap: 10px; }
     .gasto-card { background: white; border-radius: 16px; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .gasto-info { flex: 1; }
@@ -55,7 +51,6 @@
     .gasto-fecha { font-size: 11px; color: #94a3b8; margin-top: 2px; text-align: right; }
     .gasto-acciones { display: flex; flex-direction: column; gap: 4px; }
     .btn-accion { background: none; border: none; font-size: 17px; cursor: pointer; padding: 4px; color: #cbd5e1; }
-
     .anual-toggle { background: white; border: 2px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; font-size: 15px; font-weight: 700; color: #1E3A8A; cursor: pointer; font-family: inherit; width: 100%; text-align: left; margin-top: 24px; display: flex; justify-content: space-between; align-items: center; }
     .anual-panel { display: none; background: white; border-radius: 0 0 14px 14px; border: 2px solid #e2e8f0; border-top: none; padding: 12px; margin-top: -2px; }
     .anual-panel.visible { display: block; }
@@ -68,7 +63,6 @@
     .anual-total-label { font-size: 14px; font-weight: 900; color: #1E3A8A; }
     .anual-total-monto { font-size: 18px; font-weight: 900; color: #1E3A8A; }
     .anual-loading { text-align: center; color: #94a3b8; font-size: 14px; padding: 20px; }
-
     .lab-label { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; margin-top: -4px; }
     #lab-block { display: none; }
     #lab-block.show { display: block; margin-top: 10px; }
@@ -80,11 +74,29 @@
     .add-lab-form.show { display: flex; }
     .add-lab-form input { flex: 1; padding: 10px 12px; border-radius: 12px; border: 2px solid #e2e8f0; font-family: inherit; font-size: 14px; }
     .add-lab-form button { padding: 0 16px; border-radius: 12px; border: none; background: #1E3A8A; color: white; font-weight: 700; font-size: 13px; cursor: pointer; }
-
     @media (min-width: 768px) {
       .cats-grid { grid-template-columns: repeat(4, 1fr); }
     }
-
+    /* GASTOS FIJOS */
+    .tabs-gastos { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab-gastos-btn { flex: 1; background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 800; color: #64748b; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .tab-gastos-btn.activo { background: #1E3A8A; border-color: #1E3A8A; color: white; }
+    .nota-fijos { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #3730a3; margin-bottom: 14px; line-height: 1.5; }
+    .alert-fijos { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+    .fijos-cat-card { background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); overflow: hidden; }
+    .fijos-cat-head { display: flex; justify-content: space-between; padding: 12px 16px; font-size: 13px; font-weight: 800; color: #1E3A8A; background: #f8fafc; text-transform: uppercase; letter-spacing: 0.5px; }
+    .fijos-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-top: 1px solid #f1f5f9; }
+    .fijos-check input { width: 20px; height: 20px; accent-color: #1E3A8A; cursor: pointer; }
+    .fijos-item-info { flex: 1; min-width: 0; }
+    .fijos-item-nombre { font-size: 14px; font-weight: 800; color: #1e293b; }
+    .fijos-item-nombre.pagado { color: #94a3b8; text-decoration: line-through; }
+    .venc-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 3px; }
+    .venc-vencido { background: #fee2e2; color: #dc2626; }
+    .venc-proximo { background: #fef3c7; color: #d97706; }
+    .venc-ok { background: #f1f5f9; color: #64748b; }
+    .fijos-item-right { display: flex; align-items: center; gap: 6px; }
+    .fijos-item-monto { font-size: 14px; font-weight: 900; color: #1e293b; white-space: nowrap; }
+    .fijos-empty { text-align: center; padding: 30px 16px; color: #64748b; background: white; border-radius: 16px; }
     /* REPORTE IMAGEN */
     #reporte-img {
       position: fixed; left: -9999px; top: 0;
@@ -129,7 +141,6 @@
         <button class="btn-salir-sidebar" onclick="salir()">🚪 Salir</button>
       </div>
     </aside>
-
     <div class="app-content">
       <nav class="nav">
         <div class="nav-left">
@@ -140,52 +151,66 @@
           </div>
         </div>
       </nav>
-
       <main class="main">
+        <div class="tabs-gastos">
+          <button class="tab-gastos-btn activo" id="tab-btn-mes" onclick="cambiarVista('mes')">💸 Gastos del mes</button>
+          <button class="tab-gastos-btn" id="tab-btn-fijos" onclick="cambiarVista('fijos')">📌 Gastos Fijos</button>
+        </div>
         <div class="mes-selector">
           <button class="mes-btn" onclick="cambiarMes(-1)">‹</button>
           <span class="mes-nombre" id="mes-nombre">—</span>
           <button class="mes-btn" onclick="cambiarMes(1)">›</button>
         </div>
 
-        <div class="resumen">
-          <div class="resumen-titulo">💸 Total del mes</div>
-          <div class="resumen-total" id="res-total">$0</div>
-          <div class="resumen-sub" id="res-cant">0 gastos registrados</div>
+        <div id="panel-mes">
+          <div class="resumen">
+            <div class="resumen-titulo">💸 Total del mes</div>
+            <div class="resumen-total" id="res-total">$0</div>
+            <div class="resumen-sub" id="res-cant">0 gastos registrados</div>
+          </div>
+          <div class="cats-grid" id="cats-grid"></div>
+          <div class="filtros">
+            <button class="filtro-btn activo" onclick="filtrar('Todos', this)">Todos</button>
+            <button class="filtro-btn" onclick="filtrar('Gastos admin', this)">🏢 Gastos admin</button>
+            <button class="filtro-btn" onclick="filtrar('Costos Admin.', this)">📋 Costos Admin.</button>
+            <button class="filtro-btn" onclick="filtrar('Retiro Andres', this)">👤 Retiro Andres</button>
+            <button class="filtro-btn" onclick="filtrar('Retiro Luisito', this)">👤 Retiro Luisito</button>
+            <button class="filtro-btn" onclick="filtrar('Laboratorio', this)">🔬 Laboratorio</button>
+            <button class="filtro-btn" onclick="filtrar('Sueldos', this)">💰 Sueldos</button>
+          </div>
+          <div class="export-row">
+            <button class="btn-export" id="btn-img" onclick="exportarImagen()">📸 Imagen</button>
+            <button class="btn-export" id="btn-xlsx" onclick="exportarExcel()">📊 Excel</button>
+          </div>
+          <button class="btn-primario" onclick="abrirModal()" style="margin-bottom:20px">+ Registrar gasto</button>
+          <div class="section-title">📋 Detalle</div>
+          <div class="lista" id="lista-gastos"><p class="empty">Cargando...</p></div>
+          <button class="anual-toggle" onclick="toggleAnual()">
+            <span>📅 Resumen anual <span id="anual-anio"></span></span>
+            <span id="anual-arrow">▼</span>
+          </button>
+          <div class="anual-panel" id="anual-panel">
+            <div class="anual-loading" id="anual-loading">Cargando...</div>
+            <div id="anual-contenido"></div>
+          </div>
         </div>
 
-        <div class="cats-grid" id="cats-grid"></div>
-
-        <div class="filtros">
-          <button class="filtro-btn activo" onclick="filtrar('Todos', this)">Todos</button>
-          <button class="filtro-btn" onclick="filtrar('Gastos admin', this)">🏢 Gastos admin</button>
-          <button class="filtro-btn" onclick="filtrar('Costos Admin.', this)">📋 Costos Admin.</button>
-          <button class="filtro-btn" onclick="filtrar('Retiro Andres', this)">👤 Retiro Andres</button>
-          <button class="filtro-btn" onclick="filtrar('Retiro Luisito', this)">👤 Retiro Luisito</button>
-          <button class="filtro-btn" onclick="filtrar('Laboratorio', this)">🔬 Laboratorio</button>
-          <button class="filtro-btn" onclick="filtrar('Sueldos', this)">💰 Sueldos</button>
-        </div>
-
-        <div class="export-row">
-          <button class="btn-export" id="btn-img" onclick="exportarImagen()">📸 Imagen</button>
-          <button class="btn-export" id="btn-xlsx" onclick="exportarExcel()">📊 Excel</button>
-        </div>
-
-        <button class="btn-primario" onclick="abrirModal()" style="margin-bottom:20px">+ Registrar gasto</button>
-
-        <div class="section-title">📋 Detalle</div>
-        <div class="lista" id="lista-gastos"><p class="empty">Cargando...</p></div>
-
-        <button class="anual-toggle" onclick="toggleAnual()">
-          <span>📅 Resumen anual <span id="anual-anio"></span></span>
-          <span id="anual-arrow">▼</span>
-        </button>
-        <div class="anual-panel" id="anual-panel">
-          <div class="anual-loading" id="anual-loading">Cargando...</div>
-          <div id="anual-contenido"></div>
+        <div id="panel-fijos" style="display:none">
+          <div class="nota-fijos">💡 Es una lista de referencia para saber qué gasto fijo falta pagar este mes y cuál ya pagaste. No genera el registro real en Gastos — eso lo seguís cargando en "Gastos del mes" el día que lo pagás.</div>
+          <div id="alert-fijos" class="alert-fijos" style="display:none"></div>
+          <div class="resumen">
+            <div class="resumen-titulo">📌 Estructura fija mensual</div>
+            <div class="resumen-total" id="fijos-total">$0</div>
+            <div class="resumen-sub" id="fijos-sub">0 pagados de 0</div>
+          </div>
+          <div id="fijos-lista"></div>
+          <div id="fijos-empty" class="fijos-empty" style="display:none">
+            <p>Este mes todavía no tiene gastos fijos cargados.</p>
+            <button class="btn-primario" onclick="copiarFijosMesAnterior()">📋 Copiar del mes anterior</button>
+          </div>
+          <button class="btn-primario" onclick="abrirModalFijo()" style="margin-top:16px; margin-bottom:20px;">+ Agregar gasto fijo</button>
         </div>
       </main>
-
       <nav class="bottom-nav">
         <a class="bnav-item" href="dashboard.html"><span class="bnav-icon">🏠</span><span class="bnav-label">Inicio</span></a>
         <a class="bnav-item" href="caja.html"><span class="bnav-icon">🧾</span><span class="bnav-label">Caja</span></a>
@@ -195,8 +220,7 @@
       </nav>
     </div>
   </div>
-
-  <!-- MODAL -->
+  <!-- MODAL: registrar/editar gasto del mes -->
   <div class="overlay" id="overlay" onclick="cerrarModalFuera(event)">
     <div class="modal">
       <div class="modal-titulo" id="modal-titulo">Registrar gasto</div>
@@ -233,7 +257,24 @@
       <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
     </div>
   </div>
-
+  <!-- MODAL: nuevo/editar gasto fijo -->
+  <div class="overlay" id="overlay-fijo" onclick="cerrarModalFijoFuera(event)">
+    <div class="modal">
+      <div class="modal-titulo" id="modal-fijo-titulo">Nuevo gasto fijo</div>
+      <div class="campo"><label>Nombre</label><input type="text" id="ff-nombre" placeholder="Ej: Alquiler del local" autocomplete="off" /></div>
+      <div class="campo"><label>Categoría</label>
+        <select id="ff-categoria" onchange="onCategoriaFijoChange()"></select>
+      </div>
+      <div class="add-lab-form" id="add-cat-fijo-form">
+        <input type="text" id="new-cat-fijo-name" placeholder="Nombre de la categoría" autocomplete="off" />
+        <button type="button" onclick="agregarCategoriaFijo()">Agregar</button>
+      </div>
+      <div class="campo"><label>Monto $</label><input type="text" data-miles="true" id="ff-monto" placeholder="0" inputmode="numeric" oninput="fmtMiles(this)" /></div>
+      <div class="campo"><label>Día del mes en que vence (opcional)</label><input type="number" id="ff-dia" min="1" max="31" placeholder="Ej: 10" /></div>
+      <button class="btn-guardar" onclick="guardarFijo()">✅ Guardar</button>
+      <button class="btn-cancelar" onclick="cerrarModalFijo()">Cancelar</button>
+    </div>
+  </div>
   <!-- DIV OCULTO PARA IMAGEN -->
   <div id="reporte-img">
     <div class="rep-header">
@@ -250,12 +291,10 @@
     </div>
     <div class="rep-footer" id="rep-footer">Generado el —</div>
   </div>
-
   <script>
     if (!sessionStorage.getItem('olvision_auth')) window.location.href = 'index.html';
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     const CATEGORIAS = [
       { nombre: 'Gastos admin', icon: '🏢' },
@@ -265,7 +304,7 @@
       { nombre: 'Laboratorio', icon: '🔬' },
       { nombre: 'Sueldos', icon: '💰' }
     ];
-
+    const CATEGORIAS_FIJOS_DEFAULT = ['Alquiler', 'Sueldos', 'Servicios', 'Impuestos', 'Cuotas / Financiamiento'];
     let mesActual = new Date().getMonth();
     let anioActual = new Date().getFullYear();
     let gastos = [];
@@ -274,7 +313,10 @@
     let anualAbierto = false;
     let labs = [];
     let labSeleccionado = null;
-
+    let vistaActual = 'mes';
+    let gastosFijos = [];
+    let categoriasFijos = [];
+    let editandoFijoId = null;
     function getMesStr() {
       return `${anioActual}-${String(mesActual + 1).padStart(2, '0')}`;
     }
@@ -303,13 +345,19 @@
       sessionStorage.removeItem('olvision_auth');
       window.location.href = 'index.html';
     }
-
     function actualizarHeader() {
       document.getElementById('mes-nombre').textContent = `${MESES[mesActual]} ${anioActual}`;
       document.getElementById('nav-sub').textContent = `${MESES[mesActual]} ${anioActual}`;
       document.getElementById('anual-anio').textContent = anioActual;
     }
-
+    function cambiarVista(v) {
+      vistaActual = v;
+      document.getElementById('panel-mes').style.display = v === 'mes' ? 'block' : 'none';
+      document.getElementById('panel-fijos').style.display = v === 'fijos' ? 'block' : 'none';
+      document.getElementById('tab-btn-mes').classList.toggle('activo', v === 'mes');
+      document.getElementById('tab-btn-fijos').classList.toggle('activo', v === 'fijos');
+      if (v === 'fijos') cargarFijos();
+    }
     function cambiarMes(dir) {
       mesActual += dir;
       if (mesActual > 11) { mesActual = 0; anioActual++; }
@@ -318,10 +366,9 @@
       document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
       document.querySelector('.filtro-btn').classList.add('activo');
       actualizarHeader();
-      cargar();
-      if (anualAbierto) cargarAnual();
+      if (vistaActual === 'fijos') cargarFijos(); else cargar();
+      if (anualAbierto && vistaActual === 'mes') cargarAnual();
     }
-
     async function cargar() {
       const mes = getMesStr();
       const cacheKey = 'gastos_' + mes;
@@ -335,7 +382,6 @@
       OlvisionCache.set(cacheKey, gastos);
       renderTodo();
     }
-
     async function cargarLaboratorios() {
       const cached = OlvisionCache.get('laboratorios_data');
       if (cached && cached.length) labs = cached;
@@ -349,7 +395,6 @@
         OlvisionCache.set('laboratorios_data', labs);
       }
     }
-
     function onCategoriaChange() {
       const cat = document.getElementById('f-cat').value;
       const block = document.getElementById('lab-block');
@@ -361,7 +406,6 @@
         document.getElementById('add-lab-form').classList.remove('show');
       }
     }
-
     function renderLabChips() {
       const wrap = document.getElementById('lab-chips');
       wrap.innerHTML = '';
@@ -385,7 +429,6 @@
       };
       wrap.appendChild(addChip);
     }
-
     async function agregarLaboratorio() {
       const input = document.getElementById('new-lab-name');
       const nombre = input.value.trim();
@@ -400,17 +443,14 @@
       document.getElementById('add-lab-form').classList.remove('show');
       renderLabChips();
     }
-
     function gastosFiltrados() {
       if (filtroActual === 'Todos') return gastos;
       return gastos.filter(g => g.categoria === filtroActual);
     }
-
     function renderTodo() {
       const total = gastos.reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
       document.getElementById('res-total').textContent = formatPesos(total);
       document.getElementById('res-cant').textContent = `${gastos.length} gasto${gastos.length !== 1 ? 's' : ''} registrado${gastos.length !== 1 ? 's' : ''}`;
-
       document.getElementById('cats-grid').innerHTML = CATEGORIAS.map(c => {
         const subtotal = gastos.filter(g => g.categoria === c.nombre).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
         const activa = filtroActual === c.nombre ? 'activa' : '';
@@ -420,10 +460,8 @@
           <div class="cat-monto">${formatPesos(subtotal)}</div>
         </div>`;
       }).join('');
-
       renderLista();
     }
-
     function renderLista() {
       const lista = document.getElementById('lista-gastos');
       const datos = gastosFiltrados();
@@ -448,7 +486,6 @@
           </div>
         </div>`).join('');
     }
-
     /* ===== FILTROS ===== */
     function filtrar(cat, btn) {
       filtroActual = cat;
@@ -457,7 +494,6 @@
       document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('activa'));
       renderLista();
     }
-
     function filtrarCat(cat, card) {
       if (filtroActual === cat) {
         filtroActual = 'Todos';
@@ -474,8 +510,7 @@
       }
       renderLista();
     }
-
-    /* ===== MODAL ===== */
+    /* ===== MODAL: gasto del mes ===== */
     function abrirModal() {
       editandoId = null;
       document.getElementById('modal-titulo').textContent = 'Registrar gasto';
@@ -483,7 +518,6 @@
       limpiarForm();
       document.getElementById('overlay').classList.add('visible');
     }
-
     function abrirEditar(id) {
       const g = gastos.find(x => x.id === id);
       if (!g) return;
@@ -492,7 +526,6 @@
       document.getElementById('f-fecha').value = g.fecha || '';
       setVal(document.getElementById('f-monto'), g.monto);
       document.getElementById('f-obs').value = g.observacion || '';
-
       labSeleccionado = null;
       let descParaCampo = g.descripcion || '';
       if (g.categoria === 'Laboratorio' && descParaCampo.includes(' — ')) {
@@ -501,7 +534,6 @@
         descParaCampo = partes.slice(1).join(' — ');
       }
       document.getElementById('f-desc').value = descParaCampo;
-
       const catSel = document.getElementById('f-cat');
       for (let i = 0; i < catSel.options.length; i++) {
         if (catSel.options[i].text === g.categoria) { catSel.selectedIndex = i; break; }
@@ -513,7 +545,6 @@
       onCategoriaChange();
       document.getElementById('overlay').classList.add('visible');
     }
-
     function cerrarModal() {
       document.getElementById('overlay').classList.remove('visible');
       editandoId = null;
@@ -524,12 +555,12 @@
     }
     function limpiarForm() {
       ['f-desc', 'f-monto', 'f-obs'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('f-monto').dataset.raw = '';
       ['f-cat', 'f-forma'].forEach(id => document.getElementById(id).selectedIndex = 0);
       labSeleccionado = null;
       document.getElementById('lab-block').classList.remove('show');
       document.getElementById('add-lab-form').classList.remove('show');
     }
-
     async function guardar() {
       const fecha = document.getElementById('f-fecha').value;
       const desc = document.getElementById('f-desc').value.trim();
@@ -537,16 +568,12 @@
       const categoria = document.getElementById('f-cat').value;
       const forma_pago = document.getElementById('f-forma').value;
       const observacion = document.getElementById('f-obs').value.trim();
-
       if (!desc) { alert('Ingresá una descripción'); return; }
       if (!monto || isNaN(monto)) { alert('Ingresá el monto'); return; }
       if (categoria === 'Laboratorio' && !labSeleccionado) { alert('Elegí qué laboratorio es'); return; }
-
       const descFinal = (categoria === 'Laboratorio' && labSeleccionado) ? `${labSeleccionado} — ${desc}` : desc;
-
       const btn = document.querySelector('.btn-guardar');
       btn.textContent = 'Guardando...'; btn.disabled = true;
-
       let error;
       if (editandoId) {
         ({ error } = await db.from('gastos').update({
@@ -559,31 +586,209 @@
           mes: fecha.substring(0, 7)
         }]));
       }
-
       if (error) { alert('Error: ' + error.message); btn.textContent = '✅ Guardar'; btn.disabled = false; return; }
-
       OlvisionCache.clear('gastos_' + getMesStr());
       cerrarModal();
       await cargar();
       btn.textContent = '✅ Guardar'; btn.disabled = false;
     }
-
     async function eliminar(id) {
       if (!confirm('¿Eliminar este gasto?')) return;
       await db.from('gastos').delete().eq('id', id);
       OlvisionCache.clear('gastos_' + getMesStr());
       await cargar();
     }
+    /* ===== GASTOS FIJOS ===== */
+    async function cargarFijos() {
+      const periodo = getMesStr();
+      const cacheKey = 'gastos_fijos_' + periodo;
+      const cached = OlvisionCache.get(cacheKey);
+      if (cached) { gastosFijos = cached; renderFijos(); }
+      gastosFijos = await cargarGastosFijos(db, periodo);
+      OlvisionCache.set(cacheKey, gastosFijos);
+      if (!categoriasFijos.length) {
+        categoriasFijos = await cargarCategoriasGastosFijos(db);
+        if (!categoriasFijos.length) categoriasFijos = CATEGORIAS_FIJOS_DEFAULT.slice();
+      }
+      renderFijos();
+    }
+    function renderFijos() {
+      const total = gastosFijos.reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+      const pagados = gastosFijos.filter(g => g.pagado).length;
+      document.getElementById('fijos-total').textContent = formatPesos(total);
+      document.getElementById('fijos-sub').textContent = `${pagados} pagado${pagados !== 1 ? 's' : ''} de ${gastosFijos.length}`;
 
+      const lista = document.getElementById('fijos-lista');
+      const empty = document.getElementById('fijos-empty');
+      const alertEl = document.getElementById('alert-fijos');
+
+      if (gastosFijos.length === 0) {
+        lista.innerHTML = '';
+        empty.style.display = 'block';
+        alertEl.style.display = 'none';
+        return;
+      }
+      empty.style.display = 'none';
+
+      const hoyDia = new Date().getDate();
+      const pendientesProximos = gastosFijos.filter(g => !g.pagado && g.dia_vencimiento && (g.dia_vencimiento - hoyDia) <= 3);
+      if (pendientesProximos.length > 0) {
+        alertEl.style.display = 'block';
+        alertEl.textContent = `⚠️ ${pendientesProximos.length} gasto${pendientesProximos.length > 1 ? 's' : ''} fijo${pendientesProximos.length > 1 ? 's' : ''} sin pagar con vencimiento próximo o vencido`;
+      } else {
+        alertEl.style.display = 'none';
+      }
+
+      const porCategoria = {};
+      gastosFijos.forEach(g => {
+        if (!porCategoria[g.categoria]) porCategoria[g.categoria] = [];
+        porCategoria[g.categoria].push(g);
+      });
+
+      lista.innerHTML = Object.keys(porCategoria).map(cat => {
+        const items = porCategoria[cat].slice().sort((a, b) => (a.dia_vencimiento || 99) - (b.dia_vencimiento || 99));
+        const subtotal = items.reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+        return `
+        <div class="fijos-cat-card">
+          <div class="fijos-cat-head">
+            <span>${cat}</span>
+            <span>${formatPesos(subtotal)}</span>
+          </div>
+          ${items.map(g => {
+            let badge = '';
+            if (g.dia_vencimiento) {
+              const diff = g.dia_vencimiento - hoyDia;
+              let clase = 'venc-ok', texto = `Vence el ${g.dia_vencimiento}`;
+              if (!g.pagado && diff < 0) { clase = 'venc-vencido'; texto = `Venció el ${g.dia_vencimiento}`; }
+              else if (!g.pagado && diff <= 3) { clase = 'venc-proximo'; texto = `Vence el ${g.dia_vencimiento}`; }
+              badge = `<span class="venc-badge ${clase}">${texto}</span>`;
+            }
+            return `
+            <div class="fijos-item">
+              <label class="fijos-check">
+                <input type="checkbox" ${g.pagado ? 'checked' : ''} onchange="togglePagado('${g.id}', this.checked)">
+              </label>
+              <div class="fijos-item-info">
+                <div class="fijos-item-nombre ${g.pagado ? 'pagado' : ''}">${g.nombre}</div>
+                ${badge}
+              </div>
+              <div class="fijos-item-right">
+                <div class="fijos-item-monto">${formatPesos(g.monto)}</div>
+                <button class="btn-accion" onclick="abrirEditarFijo('${g.id}')">✏️</button>
+                <button class="btn-accion" onclick="eliminarFijo('${g.id}')">🗑️</button>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+      }).join('');
+    }
+    async function togglePagado(id, pagado) {
+      gastosFijos = gastosFijos.map(g => g.id === id ? { ...g, pagado } : g);
+      renderFijos();
+      OlvisionCache.clear('gastos_fijos_' + getMesStr());
+      const r = await actualizarGastoFijo(db, id, { pagado });
+      if (!r.ok) { alert('No se pudo guardar: ' + r.error); await cargarFijos(); }
+    }
+    async function copiarFijosMesAnterior() {
+      const periodoActual = getMesStr();
+      let mesAnt = mesActual - 1, anioAnt = anioActual;
+      if (mesAnt < 0) { mesAnt = 11; anioAnt--; }
+      const periodoAnterior = `${anioAnt}-${String(mesAnt + 1).padStart(2, '0')}`;
+      const r = await duplicarGastosFijosDesdeMesAnterior(db, periodoAnterior, periodoActual);
+      if (!r.ok) { alert(r.error); return; }
+      OlvisionCache.clear('gastos_fijos_' + periodoActual);
+      await cargarFijos();
+    }
+    function renderCategoriasFijoSelect(seleccion) {
+      const sel = document.getElementById('ff-categoria');
+      sel.innerHTML = categoriasFijos.map(c => `<option ${c === seleccion ? 'selected' : ''}>${c}</option>`).join('') + `<option value="__nueva__">+ Nueva categoría…</option>`;
+    }
+    function onCategoriaFijoChange() {
+      const sel = document.getElementById('ff-categoria');
+      const form = document.getElementById('add-cat-fijo-form');
+      if (sel.value === '__nueva__') { form.classList.add('show'); document.getElementById('new-cat-fijo-name').focus(); }
+      else { form.classList.remove('show'); }
+    }
+    async function agregarCategoriaFijo() {
+      const input = document.getElementById('new-cat-fijo-name');
+      const nombre = input.value.trim();
+      if (!nombre) return;
+      if (!categoriasFijos.includes(nombre)) {
+        categoriasFijos.push(nombre);
+        await guardarCategoriasGastosFijos(db, categoriasFijos);
+      }
+      input.value = '';
+      document.getElementById('add-cat-fijo-form').classList.remove('show');
+      renderCategoriasFijoSelect(nombre);
+    }
+    function abrirModalFijo() {
+      editandoFijoId = null;
+      document.getElementById('modal-fijo-titulo').textContent = 'Nuevo gasto fijo';
+      document.getElementById('ff-nombre').value = '';
+      document.getElementById('ff-dia').value = '';
+      document.getElementById('ff-monto').dataset.raw = '';
+      setVal(document.getElementById('ff-monto'), '');
+      renderCategoriasFijoSelect();
+      document.getElementById('add-cat-fijo-form').classList.remove('show');
+      document.getElementById('overlay-fijo').classList.add('visible');
+    }
+    function abrirEditarFijo(id) {
+      const g = gastosFijos.find(x => x.id === id);
+      if (!g) return;
+      editandoFijoId = id;
+      document.getElementById('modal-fijo-titulo').textContent = '✏️ Editar gasto fijo';
+      document.getElementById('ff-nombre').value = g.nombre;
+      document.getElementById('ff-dia').value = g.dia_vencimiento || '';
+      setVal(document.getElementById('ff-monto'), g.monto);
+      renderCategoriasFijoSelect(g.categoria);
+      document.getElementById('add-cat-fijo-form').classList.remove('show');
+      document.getElementById('overlay-fijo').classList.add('visible');
+    }
+    function cerrarModalFijo() {
+      document.getElementById('overlay-fijo').classList.remove('visible');
+      editandoFijoId = null;
+    }
+    function cerrarModalFijoFuera(e) {
+      if (e.target === document.getElementById('overlay-fijo')) cerrarModalFijo();
+    }
+    async function guardarFijo() {
+      const nombre = document.getElementById('ff-nombre').value.trim();
+      const categoria = document.getElementById('ff-categoria').value;
+      const monto = getVal(document.getElementById('ff-monto'));
+      const diaInput = document.getElementById('ff-dia').value;
+      const dia = diaInput ? parseInt(diaInput) : null;
+      if (!nombre) { alert('Ingresá un nombre'); return; }
+      if (categoria === '__nueva__') { alert('Completá el nombre de la nueva categoría'); return; }
+      if (!monto || isNaN(monto)) { alert('Ingresá el monto'); return; }
+      const btn = document.querySelector('#overlay-fijo .btn-guardar');
+      btn.textContent = 'Guardando...'; btn.disabled = true;
+      const periodo = getMesStr();
+      let r;
+      if (editandoFijoId) {
+        r = await actualizarGastoFijo(db, editandoFijoId, { nombre, categoria, monto, dia_vencimiento: dia });
+      } else {
+        r = await crearGastoFijo(db, { periodo, categoria, nombre, monto, dia_vencimiento: dia });
+      }
+      btn.textContent = '✅ Guardar'; btn.disabled = false;
+      if (!r.ok) { alert('Error: ' + r.error); return; }
+      OlvisionCache.clear('gastos_fijos_' + periodo);
+      cerrarModalFijo();
+      await cargarFijos();
+    }
+    async function eliminarFijo(id) {
+      if (!confirm('¿Eliminar este gasto fijo de la estructura?')) return;
+      const r = await eliminarGastoFijo(db, id);
+      if (!r.ok) { alert('Error: ' + r.error); return; }
+      OlvisionCache.clear('gastos_fijos_' + getMesStr());
+      await cargarFijos();
+    }
     /* ===== EXPORTAR IMAGEN ===== */
     async function exportarImagen() {
       if (gastos.length === 0) { alert('No hay gastos este mes para exportar.'); return; }
       const btn = document.getElementById('btn-img');
       btn.textContent = '⏳ Generando...'; btn.disabled = true;
-
       const mesStr = `${MESES[mesActual]} ${anioActual}`;
       const total = gastos.reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
-
       document.getElementById('rep-mes').textContent = mesStr;
       document.getElementById('rep-total-rep').textContent = formatPesos(total);
       document.getElementById('rep-cats').innerHTML = CATEGORIAS.map(c => {
@@ -593,7 +798,6 @@
           <div class="rep-cat-monto">${formatPesos(sub)}</div>
         </div>`;
       }).join('');
-
       const sorted = [...gastos].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
       document.getElementById('rep-lista').innerHTML = sorted.map(g => `
         <div class="rep-row">
@@ -606,10 +810,8 @@
             <div class="rep-row-fecha">${formatFecha(g.fecha)}</div>
           </div>
         </div>`).join('');
-
       const hoy = new Date().toLocaleDateString('es-AR');
       document.getElementById('rep-footer').textContent = `Olvisión · Generado el ${hoy}`;
-
       try {
         const canvas = await html2canvas(document.getElementById('reporte-img'), {
           scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false
@@ -621,15 +823,12 @@
       } catch(e) {
         alert('Error al generar imagen: ' + e.message);
       }
-
       btn.textContent = '📸 Imagen'; btn.disabled = false;
     }
-
     /* ===== EXPORTAR EXCEL ===== */
     function exportarExcel() {
       if (gastos.length === 0) { alert('No hay gastos este mes para exportar.'); return; }
       const wb = XLSX.utils.book_new();
-
       // Hoja Detalle
       const detalle = [...gastos]
         .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
@@ -644,7 +843,6 @@
       const ws1 = XLSX.utils.json_to_sheet(detalle);
       ws1['!cols'] = [{ wch: 12 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 25 }];
       XLSX.utils.book_append_sheet(wb, ws1, 'Detalle');
-
       // Hoja Resumen por categoría
       const resumenData = CATEGORIAS.map(c => ({
         'Categoría': c.nombre,
@@ -659,10 +857,8 @@
       const ws2 = XLSX.utils.json_to_sheet(resumenData);
       ws2['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 16 }];
       XLSX.utils.book_append_sheet(wb, ws2, 'Resumen');
-
       XLSX.writeFile(wb, `gastos_${getMesStr()}.xlsx`);
     }
-
     /* ===== RESUMEN ANUAL ===== */
     function toggleAnual() {
       anualAbierto = !anualAbierto;
@@ -670,22 +866,17 @@
       document.getElementById('anual-arrow').textContent = anualAbierto ? '▲' : '▼';
       if (anualAbierto) cargarAnual();
     }
-
     async function cargarAnual() {
       document.getElementById('anual-loading').style.display = 'block';
       document.getElementById('anual-contenido').innerHTML = '';
-
       const { data } = await db.from('gastos').select('fecha, monto')
         .gte('fecha', `${anioActual}-01-01`)
         .lt('fecha', `${anioActual + 1}-01-01`);
-
       document.getElementById('anual-loading').style.display = 'none';
-
       if (!data || data.length === 0) {
         document.getElementById('anual-contenido').innerHTML = `<p class="empty" style="text-align:center;padding:16px">No hay gastos en ${anioActual}</p>`;
         return;
       }
-
       const porMes = {};
       data.forEach(g => {
         const m = g.fecha.substring(0, 7);
@@ -693,10 +884,8 @@
         porMes[m].total += parseFloat(g.monto) || 0;
         porMes[m].cant++;
       });
-
       const totalAnual = data.reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
       const mesesOrdenados = Object.keys(porMes).sort();
-
       let html = mesesOrdenados.map(m => {
         const [y, mo] = m.split('-');
         const nombre = MESES[parseInt(mo) - 1];
@@ -709,15 +898,12 @@
           <div class="anual-mes-monto">-${formatPesos(porMes[m].total)}</div>
         </div>`;
       }).join('');
-
       html += `<div class="anual-total-row">
         <div class="anual-total-label">Total ${anioActual}</div>
         <div class="anual-total-monto">-${formatPesos(totalAnual)}</div>
       </div>`;
-
       document.getElementById('anual-contenido').innerHTML = html;
     }
-
     function irAMes(mesStr) {
       const [y, m] = mesStr.split('-');
       anioActual = parseInt(y);
@@ -729,7 +915,6 @@
       cargar();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
     actualizarHeader();
     cargar();
     cargarLaboratorios();
