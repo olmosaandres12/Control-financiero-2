@@ -521,7 +521,7 @@
       document.getElementById('overlay').classList.add('visible');
     }
     function abrirEditar(id) {
-      const g = gastos.find(x => x.id === id);
+      const g = gastos.find(x => String(x.id) === String(id));
       if (!g) return;
       editandoId = id;
       document.getElementById('modal-titulo').textContent = '✏️ Editar gasto';
@@ -690,7 +690,9 @@
     // confirmó el guardado, mostrando ⏳ mientras tanto. Si falla, avisa con el error
     // real y deja el log en consola (F12 / Inspeccionar → Console) para diagnosticar.
     async function togglePagado(id) {
-      const item = gastosFijos.find(g => g.id === id);
+      // String(...) en la comparación: el id puede venir como número desde Supabase
+      // pero como texto desde el HTML, y "18" === 18 es false en JS aunque sea el mismo ítem.
+      const item = gastosFijos.find(g => String(g.id) === String(id));
       if (!item) { console.warn('[gastosFijos] togglePagado: no encontré el ítem', id); return; }
       if (item._guardando) return; // ya hay un guardado en curso para este ítem, ignora el doble click
       const nuevoValor = !item.pagado;
@@ -704,7 +706,7 @@
         r = { ok: false, error: e.message };
       }
       console.log('[gastosFijos] resultado de actualizarGastoFijo:', r);
-      const actual = gastosFijos.find(g => g.id === id);
+      const actual = gastosFijos.find(g => String(g.id) === String(id));
       if (!r.ok) {
         alert('No se pudo guardar el cambio: ' + r.error + '\n\n(mirá la consola del navegador para más detalle)');
         if (actual) actual._guardando = false;
@@ -713,7 +715,7 @@
       }
       // Reflejamos exactamente lo que confirmó el servidor, no lo que asumimos acá.
       const pagadoConfirmado = r.data ? r.data.pagado : nuevoValor;
-      gastosFijos = gastosFijos.map(g => g.id === id ? { ...g, pagado: pagadoConfirmado, _guardando: false } : g);
+      gastosFijos = gastosFijos.map(g => String(g.id) === String(id) ? { ...g, pagado: pagadoConfirmado, _guardando: false } : g);
       OlvisionCache.clear('gastos_fijos_' + getMesStr());
       renderFijos();
     }
@@ -761,7 +763,7 @@
       document.getElementById('overlay-fijo').classList.add('visible');
     }
     function abrirEditarFijo(id) {
-      const g = gastosFijos.find(x => x.id === id);
+      const g = gastosFijos.find(x => String(x.id) === String(id));
       if (!g) return;
       editandoFijoId = id;
       document.getElementById('modal-fijo-titulo').textContent = '✏️ Editar gasto fijo';
