@@ -665,10 +665,12 @@
               else if (!g.pagado && diff <= 3) { clase = 'venc-proximo'; texto = `Vence el ${g.dia_vencimiento}`; }
               badge = `<span class="venc-badge ${clase}">${texto}</span>`;
             }
+            const icono = g._guardando ? '⏳' : (g.pagado ? '✅' : '⬜');
+            const clickAttr = g._guardando ? '' : `onclick="togglePagado('${g.id}')"`;
             return `
             <div class="fijos-item">
-              <div class="fijos-item-main" onclick="togglePagado('${g.id}', ${g.pagado ? 'false' : 'true'})">
-                <span class="fijos-check-icon">${g.pagado ? '✅' : '⬜'}</span>
+              <div class="fijos-item-main" ${clickAttr}>
+                <span class="fijos-check-icon">${icono}</span>
                 <div class="fijos-item-info">
                   <div class="fijos-item-nombre ${g.pagado ? 'pagado' : ''}">${g.nombre}</div>
                   ${badge}
@@ -684,12 +686,36 @@
         </div>`;
       }).join('');
     }
-    async function togglePagado(id, pagado) {
-      gastosFijos = gastosFijos.map(g => g.id === id ? { ...g, pagado } : g);
+    // Marca/desmarca "pagado". No asume nada: solo cambia el ícono cuando Supabase
+    // confirmó el guardado, mostrando ⏳ mientras tanto. Si falla, avisa con el error
+    // real y deja el log en consola (F12 / Inspeccionar → Console) para diagnosticar.
+    async function togglePagado(id) {
+      const item = gastosFijos.find(g => g.id === id);
+      if (!item) { console.warn('[gastosFijos] togglePagado: no encontré el ítem', id); return; }
+      if (item._guardando) return; // ya hay un guardado en curso para este ítem, ignora el doble click
+      const nuevoValor = !item.pagado;
+      console.log('[gastosFijos] togglePagado', { id, de: item.pagado, a: nuevoValor });
+      item._guardando = true;
       renderFijos();
+      let r;
+      try {
+        r = await actualizarGastoFijo(db, id, { pagado: nuevoValor });
+      } catch (e) {
+        r = { ok: false, error: e.message };
+      }
+      console.log('[gastosFijos] resultado de actualizarGastoFijo:', r);
+      const actual = gastosFijos.find(g => g.id === id);
+      if (!r.ok) {
+        alert('No se pudo guardar el cambio: ' + r.error + '\n\n(mirá la consola del navegador para más detalle)');
+        if (actual) actual._guardando = false;
+        renderFijos();
+        return;
+      }
+      // Reflejamos exactamente lo que confirmó el servidor, no lo que asumimos acá.
+      const pagadoConfirmado = r.data ? r.data.pagado : nuevoValor;
+      gastosFijos = gastosFijos.map(g => g.id === id ? { ...g, pagado: pagadoConfirmado, _guardando: false } : g);
       OlvisionCache.clear('gastos_fijos_' + getMesStr());
-      const r = await actualizarGastoFijo(db, id, { pagado });
-      if (!r.ok) { alert('No se pudo guardar: ' + r.error); await cargarFijos(); }
+      renderFijos();
     }
     async function copiarFijosMesAnterior() {
       const periodoActual = getMesStr();
