@@ -2411,6 +2411,7 @@
       const buscar=document.getElementById('inv-buscar');if(buscar){buscar.value='';buscar.style.display='block';}
       const res=document.getElementById('inv-resultados');if(res)res.innerHTML='';
     }
+         <script src="facturar.js"></script>
     // ── FIN INTEGRACIÓN INVENTARIO ────────────────────────────
 
     async function init(){await Promise.all([cargarEmpleados(),cargarOpcionesProducto()]);poblarChipsAr();cargar();}
