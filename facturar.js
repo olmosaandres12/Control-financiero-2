@@ -139,6 +139,9 @@
   let fFiltroPago = 'Todas', fFiltroEstado = 'Pendientes';
   let fHayColumna = true;
   let fCargando = false;
+  let fDia = 'mes';             // 'mes' = todo el mes, o 'YYYY-MM-DD'
+  let fFiltrosAbiertos = false;
+  const DIAS_SEM = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   // ── ESTILOS ─────────────────────────────────────────────────
   const css = `
@@ -171,6 +174,17 @@
     .fc-check{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#64748b;cursor:pointer;user-select:none}
     .fc-check input{width:20px;height:20px;accent-color:#10b981;cursor:pointer}
     .fc-card.hecha .fc-check{color:#10b981}
+    .fc-dia-sel{display:flex;align-items:center;justify-content:space-between;background:white;border-radius:16px;padding:10px 12px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border:2px solid #c7d4f5}
+    .fc-dia-nombre{font-size:16px;font-weight:900;color:#1E3A8A;text-align:center}
+    .fc-dia-sub{font-size:12px;font-weight:700;color:#94a3b8;text-align:center;margin-top:1px}
+    .fc-filtros-btn{width:100%;display:flex;justify-content:space-between;align-items:center;background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#64748b;cursor:pointer;margin-bottom:10px}
+    .fc-filtros-btn.activo{border-color:#1E3A8A;color:#1E3A8A;background:#eff6ff}
+    .fc-filtros-chev{transition:transform .2s}
+    .fc-filtros-chev.abierto{transform:rotate(180deg)}
+    .fc-filtros-wrap{background:white;border-radius:14px;padding:12px 12px 4px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.05)}
+    .fc-filtros-label{font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+    .fc-dia-header{font-size:12px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;margin:16px 0 8px 4px}
+    .fc-dia-header:first-child{margin-top:0}
     .fc-banner{background:#fef2f2;border:2px solid #fca5a5;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:13px;font-weight:700;color:#991b1b}
   `;
   const st = document.createElement('style');
@@ -203,8 +217,18 @@
         <div class="fc-kpi azul"><div class="l">Falta facturar</div><div class="v" id="fc-k-pend">$0</div><div class="s" id="fc-k-pend-n">0 operaciones</div></div>
         <div class="fc-kpi"><div class="l">Ya facturado</div><div class="v" id="fc-k-fac" style="color:#10b981">$0</div><div class="s" id="fc-k-fac-n">0 operaciones</div></div>
       </div>
-      <div class="fc-chips" id="fc-chips-pago"></div>
-      <div class="fc-chips" id="fc-chips-estado" style="margin-bottom:14px"></div>
+      <div class="fc-dia-sel">
+        <button class="mes-btn" id="fc-dia-prev" onclick="facturarCambiarDia(-1)">‹</button>
+        <div><div class="fc-dia-nombre" id="fc-dia-nombre">Todo el mes</div><div class="fc-dia-sub" id="fc-dia-sub"></div></div>
+        <button class="mes-btn" id="fc-dia-next" onclick="facturarCambiarDia(1)">›</button>
+      </div>
+      <button class="fc-filtros-btn" id="fc-filtros-btn" onclick="facturarToggleFiltros()"><span id="fc-filtros-label">🔎 Filtros</span><span class="fc-filtros-chev" id="fc-filtros-chev">▾</span></button>
+      <div class="fc-filtros-wrap" id="fc-filtros-wrap" style="display:none">
+        <div class="fc-filtros-label">Forma de pago</div>
+        <div class="fc-chips" id="fc-chips-pago"></div>
+        <div class="fc-filtros-label">Estado</div>
+        <div class="fc-chips" id="fc-chips-estado"></div>
+      </div>
       <div id="fc-lista"><p class="empty">Cargando...</p></div>`;
     panelHist.parentNode.insertBefore(p, panelHist.nextSibling);
   }
@@ -303,10 +327,30 @@
     document.getElementById('fc-chips-pago').innerHTML = ['Todas', ...FORMAS_FACTURAR].map(v => chip('pago', v, fFiltroPago)).join('');
     document.getElementById('fc-chips-estado').innerHTML = ['Pendientes', 'Facturadas', 'Todas'].map(v => chip('estado', v, fFiltroEstado)).join('');
 
-    let items = fRegs;
-    if (fFiltroPago !== 'Todas') items = items.filter(r => r.forma_pago === fFiltroPago);
-    if (fFiltroEstado === 'Pendientes') items = items.filter(r => !r.facturada);
-    if (fFiltroEstado === 'Facturadas') items = items.filter(r => r.facturada);
+    // Botón de filtros desplegable
+    const esDefault = fFiltroPago === 'Todas' && fFiltroEstado === 'Pendientes';
+    document.getElementById('fc-filtros-btn').classList.toggle('activo', !esDefault);
+    document.getElementById('fc-filtros-label').textContent = `🔎 Filtros · ${fFiltroPago === 'Todas' ? 'todas las formas' : fFiltroPago} · ${fFiltroEstado.toLowerCase()}`;
+    document.getElementById('fc-filtros-wrap').style.display = fFiltrosAbiertos ? 'block' : 'none';
+    document.getElementById('fc-filtros-chev').classList.toggle('abierto', fFiltrosAbiertos);
+
+    // Vista según filtros y día
+    const { base, dias } = calcularVista();
+    if (fDia !== 'mes' && !dias.includes(fDia)) {
+      // El día actual quedó sin operaciones (ej: se facturó todo): pasar al siguiente, o al anterior
+      const sig = dias.find(d => d > fDia);
+      const ant = [...dias].reverse().find(d => d < fDia);
+      fDia = sig || ant || 'mes';
+    }
+    const items = fDia === 'mes' ? base : base.filter(r => r.fecha === fDia);
+    const posiciones = ['mes', ...dias];
+    const idx = posiciones.indexOf(fDia);
+    document.getElementById('fc-dia-prev').disabled = idx <= 0;
+    document.getElementById('fc-dia-next').disabled = idx >= posiciones.length - 1;
+    document.getElementById('fc-dia-nombre').textContent = fDia === 'mes' ? 'Todo el mes' : etiquetaDia(fDia);
+    document.getElementById('fc-dia-sub').textContent = fDia === 'mes'
+      ? `${dias.length} día${dias.length !== 1 ? 's' : ''} · ${formatPesos(suma(items))}`
+      : `${ops(items.length)} · ${formatPesos(suma(items))}`;
 
     const lista = document.getElementById('fc-lista');
     if (!items.length) {
@@ -314,7 +358,14 @@
       return;
     }
 
+    let ultimaFecha = null;
     lista.innerHTML = items.map(r => {
+      let header = '';
+      if (fDia === 'mes' && r.fecha !== ultimaFecha) {
+        ultimaFecha = r.fecha;
+        const delDia = items.filter(x => x.fecha === r.fecha);
+        header = `<div class="fc-dia-header">${etiquetaDia(r.fecha)} · ${delDia.length} op · ${formatPesos(suma(delDia))}</div>`;
+      }
       const id = String(r.id);
       const desc = descripcionDe(r);
       const esSena = (parseFloat(r.a_cuenta) || 0) > 0 && r.producto !== 'Saldo';
@@ -323,7 +374,7 @@
         ? '<div class="fc-aviso">⚠️ No encontré la venta original de esta orden. Escribí la descripción a mano.</div>'
         : (!desc.completo ? '<div class="fc-aviso">⚠️ Falta detalle cargado. Revisá o completá antes de copiar.</div>' : '');
       const tipoTag = esSena ? ' · <span style="color:#b45309;font-weight:800">Seña</span>' : (r.producto === 'Saldo' ? ' · <span style="color:#7c3aed;font-weight:800">Saldo</span>' : '');
-      return `<div class="fc-card${r.facturada ? ' hecha' : ''}" id="fc-card-${escH(id)}">
+      return `${header}<div class="fc-card${r.facturada ? ' hecha' : ''}" id="fc-card-${escH(id)}">
         <div class="fc-top">
           <div>
             <div class="fc-cli">${escH(r.nombre_cliente || 'Sin nombre')}</div>
@@ -342,7 +393,38 @@
     }).join('');
   }
 
+  function calcularVista() {
+    let base = fRegs;
+    if (fFiltroPago !== 'Todas') base = base.filter(r => r.forma_pago === fFiltroPago);
+    if (fFiltroEstado === 'Pendientes') base = base.filter(r => !r.facturada);
+    if (fFiltroEstado === 'Facturadas') base = base.filter(r => r.facturada);
+    const dias = [...new Set(base.map(r => r.fecha))].sort();
+    return { base, dias };
+  }
+
+  function etiquetaDia(fecha) {
+    const [y, m, d] = fecha.split('-');
+    const dt = new Date(fecha + 'T12:00:00');
+    return `${DIAS_SEM[dt.getDay()]} ${d}/${m}`;
+  }
+
   // ── ACCIONES ────────────────────────────────────────────────
+  window.facturarCambiarDia = function (dir) {
+    const { dias } = calcularVista();
+    const posiciones = ['mes', ...dias];
+    let idx = posiciones.indexOf(fDia);
+    if (idx < 0) idx = 0;
+    const nuevo = idx + dir;
+    if (nuevo < 0 || nuevo >= posiciones.length) return;
+    fDia = posiciones[nuevo];
+    renderFacturar();
+  };
+
+  window.facturarToggleFiltros = function () {
+    fFiltrosAbiertos = !fFiltrosAbiertos;
+    renderFacturar();
+  };
+
   async function copiarTexto(texto) {
     try {
       if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(texto); return true; }
@@ -404,7 +486,7 @@
     if (m > 11) { m = 0; a++; }
     if (m < 0) { m = 11; a--; }
     if (a > hoy.getFullYear() || (a === hoy.getFullYear() && m > hoy.getMonth())) return;
-    fMes = m; fAnio = a; fEdits = {};
+    fMes = m; fAnio = a; fEdits = {}; fDia = 'mes';
     cargarFacturar();
   };
 })();
