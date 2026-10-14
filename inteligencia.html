@@ -212,10 +212,19 @@
     .rd-item-cant { font-size: 13px; font-weight: 800; color: #1e293b; min-width: 26px; text-align: right; }
     .rd-item-extra { font-size: 11px; color: #94a3b8; min-width: 100px; text-align: right; white-space: nowrap; }
 
+    /* Graduaciones de lentes de contacto: selector de marca + 2 columnas */
+    .rd-grad-bloque { margin-top: 16px; padding-top: 14px; border-top: 1.5px solid #e2e8f0; }
+    .rd-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; -webkit-overflow-scrolling: touch; }
+    .rd-chip { flex-shrink: 0; background: white; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 5px 12px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: #475569; cursor: pointer; white-space: nowrap; user-select: none; }
+    .rd-chip.activo { background: #1E3A8A; border-color: #1E3A8A; color: white; }
+    .rd-grad-nota { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
+    .rd-grad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
     @media (max-width: 640px) {
       .bento-row-2 { grid-template-columns: 1fr; }
       .bento-row-4 { grid-template-columns: repeat(2,1fr); }
       .pred-grid { grid-template-columns: 1fr 1fr; }
+      .rd-grad-grid { grid-template-columns: 1fr; }
     }
   </style>
   <link rel="stylesheet" href="estetica.css" />
@@ -447,16 +456,22 @@
 
       <div class="rd-card">
         <div class="rd-card-titulo">👁️ Lentes de contacto</div>
-        <div class="rd-subtitulo">Marcas más vendidas</div>
+        <div class="rd-subtitulo">Marcas más vendidas (en pares)</div>
         <div id="rd-ranking-lentes"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
-          <div>
-            <div class="rd-subtitulo">➖ Graduaciones negativas</div>
-            <div id="rd-grad-neg"></div>
-          </div>
-          <div>
-            <div class="rd-subtitulo">➕ Graduaciones positivas</div>
-            <div id="rd-grad-pos"></div>
+
+        <div class="rd-grad-bloque">
+          <div class="rd-subtitulo">👓 Graduaciones que más salen</div>
+          <div class="rd-chips" id="rd-chips-marcas"></div>
+          <div class="rd-grad-nota" id="rd-grad-nota"></div>
+          <div class="rd-grad-grid">
+            <div>
+              <div class="rd-subtitulo">➖ Negativas (miopía)</div>
+              <div id="rd-grad-neg"></div>
+            </div>
+            <div>
+              <div class="rd-subtitulo">➕ Positivas (hipermetropía)</div>
+              <div id="rd-grad-pos"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -964,6 +979,16 @@
     }
     function formatFechaRD(f){ if(!f) return '—'; const [y,m,d]=f.split('-'); return `${d}/${m}/${y}`; }
 
+    // Cantidades con medios (½ par, 1½ par…): 1 → "1", 0.5 → "½", 2.5 → "2½"
+    function fmtCantRD(n){
+      if(n===null || n===undefined || isNaN(n)) return '0';
+      const ent = Math.floor(n + 1e-9);
+      const frac = n - ent;
+      if(frac < 0.01) return String(ent);
+      if(Math.abs(frac-0.5) < 0.01) return (ent ? ent : '') + '½';
+      return n.toFixed(1).replace('.', ',');
+    }
+
     function contarSubtiposRD(regsCategoria, producto){
       const contador = {};
       regsCategoria.forEach(r=>{
@@ -1005,41 +1030,121 @@
       return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,5);
     }
 
-    function rankingLentesContactoRD(regs){
-      const contador = {};
-      regs.filter(r=>r.producto==='Lentes').forEach(r=>{
+    // ── Lentes de contacto: lectura unificada de ambos formatos ──────
+    // Formato nuevo (multi-par):  { items:[{marca,od,oi,cantidad,precio}], liquidos:[...] }
+    // Formato viejo (un par):     { marca, od, oi, precioLente, ... }
+    // Devuelve una lista plana de pares: { marca, od, oi, cantidad, monto }.
+    // Antes la Radiografía solo leía el formato viejo, así que las ventas
+    // nuevas aparecían como "Sin marca" y sin graduación.
+    function paresLentesRD(regs){
+      const pares = [];
+      regs.filter(r=>r.producto==='Lentes' && (parseFloat(r.egreso)||0)===0).forEach(r=>{
         if(!r.detalle_producto) return;
         let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
-        const nombre=d.marca||'Sin marca';
-        if(!contador[nombre]) contador[nombre]={cantidad:0,monto:0};
-        contador[nombre].cantidad+=1;
-        // Mismo respaldo: si precioLente quedó en 0 (ventas importadas), usamos
-        // el total de la operación para no mostrar $0 sin sentido.
-        let montoItem = parseFloat(d.precioLente)||0;
-        if(!montoItem) montoItem = parseFloat(r.total)||0;
-        contador[nombre].monto+=montoItem;
-      });
-      return Object.entries(contador).map(([nombre,v])=>({nombre,...v})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10);
-    }
-
-    // Cuenta OD y OI por separado (cada ojo es un lente despachado), agrupando
-    // por el valor exacto de graduación cargado (ej. "-2.25"). signo: 'neg' o 'pos'.
-    function rankingGraduacionesRD(regs, signo){
-      const contador = {};
-      regs.filter(r=>r.producto==='Lentes').forEach(r=>{
-        if(!r.detalle_producto) return;
-        let d; try{ d=JSON.parse(r.detalle_producto); }catch(e){ return; }
-        [d.od, d.oi].forEach(g=>{
-          if(!g) return;
-          const gTrim = String(g).trim();
-          if(!gTrim) return;
-          if(signo==='neg' && gTrim[0]!=='-') return;
-          if(signo==='pos' && gTrim[0]!=='+') return;
-          if(!contador[gTrim]) contador[gTrim]=0;
-          contador[gTrim]++;
+        if(!d) return;
+        const totalReg = parseFloat(r.total)||0;
+        let items;
+        if(Array.isArray(d.items) && d.items.length && typeof d.items[0]==='object'){
+          items = d.items.map(it=>({
+            marca: it.marca, od: it.od, oi: it.oi,
+            cantidad: parseFloat(it.cantidad)||1,
+            precio: parseFloat(it.precio)||0
+          }));
+        } else if(d.marca || d.od || d.oi){
+          items = [{ marca:d.marca, od:d.od, oi:d.oi, cantidad: parseFloat(d.cantidad)||1, precio: parseFloat(d.precioLente)||0 }];
+        } else {
+          return;
+        }
+        // Respaldo de monto: si ningún par trae precio (ventas importadas),
+        // se reparte el total de la operación según la cantidad de cada par.
+        const sinPrecio = items.every(it=>!it.precio);
+        const cantTotal = items.reduce((s,it)=>s+it.cantidad,0) || 1;
+        items.forEach(it=>{
+          pares.push({
+            marca: (it.marca||'').toString().trim() || 'Sin marca',
+            od: it.od, oi: it.oi,
+            cantidad: it.cantidad,
+            monto: sinPrecio ? totalReg*(it.cantidad/cantTotal) : it.precio
+          });
         });
       });
-      return Object.entries(contador).map(([nombre,cantidad])=>({nombre,cantidad})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,5);
+      return pares;
+    }
+
+    // Marcas agrupadas sin importar mayúsculas ("Acuvue" = "ACUVUE"),
+    // contadas en pares (respeta ½, 1½, etc.).
+    function rankingLentesContactoRD(pares){
+      const contador = {};
+      pares.forEach(p=>{
+        const key = p.marca.toLowerCase();
+        if(!contador[key]) contador[key] = { key, nombre:p.marca, cantidad:0, monto:0 };
+        contador[key].cantidad += p.cantidad;
+        contador[key].monto += p.monto;
+      });
+      return Object.values(contador).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10);
+    }
+
+    // Normaliza cómo se escribió la graduación para que "-2,25", "-2.25" y
+    // "-225" cuenten como la misma. Sin signo = positiva. 0 / "plano" = Plano.
+    // Tóricas u otros formatos (ej. "-2.00 -0.75 x 180") se agrupan por el
+    // texto tal cual, y el signo lo da la esfera (el primer número).
+    function normalizarGraduacionRD(g){
+      if(g===null || g===undefined) return null;
+      let s = String(g).trim().replace(/,/g,'.').replace(/\s+/g,' ');
+      if(!s) return null;
+      if(/^(pl|plano|neutro|neutra)$/i.test(s)) s = '0';
+      if(/^[+-]?\d+(\.\d+)?$/.test(s)){
+        let n = parseFloat(s);
+        if(isNaN(n)) return null;
+        if(!s.includes('.') && Math.abs(n) >= 50) n = n/100; // "-225" → -2.25
+        if(n === 0) return { clave:'Plano', signo:'pos' };
+        return { clave: (n>0?'+':'-') + Math.abs(n).toFixed(2), signo: n<0 ? 'neg' : 'pos' };
+      }
+      const m = s.match(/[+-]?\d+(\.\d+)?/);
+      if(!m) return null;
+      return { clave: s, signo: parseFloat(m[0])<0 ? 'neg' : 'pos' };
+    }
+
+    // Cada ojo es un lente: OD y OI se cuentan por separado, multiplicados
+    // por la cantidad de pares de esa línea. marcaKey opcional para filtrar.
+    function rankingGraduacionesRD(pares, signo, marcaKey){
+      const contador = {};
+      pares.forEach(p=>{
+        if(marcaKey && p.marca.toLowerCase()!==marcaKey) return;
+        [p.od, p.oi].forEach(g=>{
+          const n = normalizarGraduacionRD(g);
+          if(!n || n.signo!==signo) return;
+          contador[n.clave] = (contador[n.clave]||0) + p.cantidad;
+        });
+      });
+      return Object.entries(contador).map(([nombre,cantidad])=>({nombre,cantidad})).sort((a,b)=>b.cantidad-a.cantidad).slice(0,8);
+    }
+
+    // Estado del bloque de graduaciones (se reinicia al abrir el modal)
+    let rdParesLentes = [];
+    let rdRankingMarcas = [];
+    let rdMarcaSel = null; // null = todas las marcas
+
+    function seleccionarMarcaGradRD(idx){
+      rdMarcaSel = idx < 0 ? null : (rdRankingMarcas[idx] ? rdRankingMarcas[idx].key : null);
+      renderGraduacionesRD();
+    }
+
+    function renderGraduacionesRD(){
+      const chips = document.getElementById('rd-chips-marcas');
+      if(!rdRankingMarcas.length){
+        chips.innerHTML = '';
+      } else {
+        chips.innerHTML =
+          `<span class="rd-chip ${rdMarcaSel===null?'activo':''}" onclick="seleccionarMarcaGradRD(-1)">Todas</span>` +
+          rdRankingMarcas.map((m,i)=>`<span class="rd-chip ${rdMarcaSel===m.key?'activo':''}" onclick="seleccionarMarcaGradRD(${i})">${m.nombre}</span>`).join('');
+      }
+      const marcaNombre = rdMarcaSel ? (rdRankingMarcas.find(m=>m.key===rdMarcaSel)||{}).nombre : null;
+      document.getElementById('rd-grad-nota').textContent =
+        (marcaNombre ? `Solo ${marcaNombre}` : 'Todas las marcas') + ' · cantidad en lentes (cada ojo cuenta aparte)';
+
+      renderRankingRD('rd-grad-neg', rankingGraduacionesRD(rdParesLentes, 'neg', rdMarcaSel));
+      renderRankingRD('rd-grad-pos', rankingGraduacionesRD(rdParesLentes, 'pos', rdMarcaSel));
     }
 
     // Fila de ranking con medalla (top 3), barra proporcional a la cantidad
@@ -1052,7 +1157,7 @@
         <span class="rd-item-pos">${pos}</span>
         <span class="rd-item-nombre">${nombre}</span>
         <div class="rd-item-barra-wrap"><div class="rd-item-barra" style="width:${pct}%"></div></div>
-        <span class="rd-item-cant">${cantidad}</span>
+        <span class="rd-item-cant">${fmtCantRD(cantidad)}</span>
         ${extra?`<span class="rd-item-extra">${extra}</span>`:''}
       </div>`;
     }
@@ -1071,6 +1176,7 @@
       const hasta = `${y}-${String(m+1).padStart(2,'0')}-${String(ultimoDia).padStart(2,'0')}`;
       document.getElementById('rd-desde').value = desde;
       document.getElementById('rd-hasta').value = hasta;
+      rdMarcaSel = null;
       document.getElementById('overlay-radiografia').classList.add('visible');
       await cargarRadiografia();
     }
@@ -1098,15 +1204,15 @@
       document.getElementById('rd-total').textContent = formatPesos(totalFacturado);
       document.getElementById('rd-ops').textContent = cantOps;
 
-      const rc = rankingLentesContactoRD(regs);
-      const rl = rankingLiquidosGlobalRD(regs);
-      renderRankingRD('rd-ranking-lentes', rc, i=>formatPesos(i.monto));
-      renderRankingRD('rd-ranking-liquidos', rl, i=>formatPesos(i.monto));
+      // Lentes de contacto: marcas + graduaciones (con selector de marca)
+      rdParesLentes = paresLentesRD(regs);
+      rdRankingMarcas = rankingLentesContactoRD(rdParesLentes);
+      if(rdMarcaSel && !rdRankingMarcas.some(m=>m.key===rdMarcaSel)) rdMarcaSel = null;
+      renderRankingRD('rd-ranking-lentes', rdRankingMarcas, i=>formatPesos(i.monto));
+      renderGraduacionesRD();
 
-      const rgNeg = rankingGraduacionesRD(regs, 'neg');
-      const rgPos = rankingGraduacionesRD(regs, 'pos');
-      renderRankingRD('rd-grad-neg', rgNeg);
-      renderRankingRD('rd-grad-pos', rgPos);
+      const rl = rankingLiquidosGlobalRD(regs);
+      renderRankingRD('rd-ranking-liquidos', rl, i=>formatPesos(i.monto));
 
       const tallerItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Taller'), 'Taller');
       const accItems = contarSubtiposRD(ventas.filter(r=>r.producto==='Accesorio'), 'Accesorio');
